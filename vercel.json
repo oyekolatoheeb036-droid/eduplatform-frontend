@@ -1,3 +1,1 @@
-{
-  "framework": "create-react-app"
-}
+{"rewrites":[{"source":"/(.*)", "destination":"/"}]}
