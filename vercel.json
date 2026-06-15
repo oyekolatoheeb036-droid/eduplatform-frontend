@@ -1,3 +1,8 @@
 {
-    "installcommand": "npm install --legacy-peer-deps"
+  "framework": "create-react-app",
+  "build": {
+    "env": {
+      "NPM_FLAGS": "--legacy-peer-deps"
+    }
+  }
 }
