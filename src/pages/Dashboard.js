@@ -38,11 +38,11 @@ function Dashboard() {
   useEffect(() => {
     if (!student_id) return;
 
-    axios.get(`http://localhost:5000/api/enrollments/${student_id}`)
+    axios.get(`https://eduplatform-api-pol1.onrender.com/api/enrollments/${student_id}`)
       .then(res => {
         setEnrolledCourses(res.data);
         res.data.forEach(course => {
-          axios.get(`http://localhost:5000/api/progress/${student_id}/${course.id}`)
+          axios.get(`https://eduplatform-api-pol1.onrender.com/api/progress/${student_id}/${course.id}`)
             .then(progressRes => {
               setProgress(prev => ({ ...prev, [course.id]: progressRes.data }));
             })
@@ -51,7 +51,7 @@ function Dashboard() {
       })
       .catch(err => console.log(err));
 
-    axios.get(`http://localhost:5000/api/quiz/results/${student_id}`)
+    axios.get(`https://eduplatform-api-pol1.onrender.com/api/quiz/results/${student_id}`)
       .then(res => setQuizResults(res.data))
       .catch(err => console.log(err));
   }, [student_id]);

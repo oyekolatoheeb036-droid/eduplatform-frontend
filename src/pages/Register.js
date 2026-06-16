@@ -25,7 +25,7 @@ function Register() {
     if (password.length < 6) { setMessage('Password must be at least 6 characters.'); return; }
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
+      await axios.post('https://eduplatform-api-pol1.onrender.com/api/auth/register', { name, email, password });
       navigate('/login');
     } catch (err) {
       setMessage('Registration failed. Email may already exist.');

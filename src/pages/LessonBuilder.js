@@ -60,7 +60,7 @@ function LessonBuilder() {
 
   const fetchLesson = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/lessons/${course_id}`);
+      const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/lessons/${course_id}`);
       const found = res.data.find(l => l.id === parseInt(lesson_id));
       setLesson(found);
     } catch (err) { console.log(err); }
@@ -68,14 +68,14 @@ function LessonBuilder() {
 
   const fetchSections = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/sections/${lesson_id}`);
+      const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/sections/${lesson_id}`);
       setSections(res.data);
     } catch (err) { console.log(err); }
   };
 
   const handleAddSection = async () => {
     try {
-      await axios.post('http://localhost:5000/api/sections', {
+      await axios.post('https://eduplatform-api-pol1.onrender.com/api/sections', {
         lesson_id: parseInt(lesson_id),
         type: addingSection,
         title: newSection.title,
@@ -99,7 +99,7 @@ function LessonBuilder() {
 
   const handleDeleteSection = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/sections/${id}`);
+      await axios.delete(`https://eduplatform-api-pol1.onrender.com/api/sections/${id}`);
       fetchSections();
     } catch (err) { console.log(err); }
   };
@@ -120,7 +120,7 @@ function LessonBuilder() {
 
   const handleSaveEdit = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/sections/${editingSection.id}`, {
+      await axios.put(`https://eduplatform-api-pol1.onrender.com/api/sections/${editingSection.id}`, {
         title: editData.title,
         content: editData.content,
         video_url: editData.video_url,

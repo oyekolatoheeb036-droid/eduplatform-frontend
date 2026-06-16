@@ -52,14 +52,14 @@ function TeacherDashboard() {
   }, []);
 
   const fetchCourses = () => {
-    axios.get('http://localhost:5000/api/courses')
+    axios.get('https://eduplatform-api-pol1.onrender.com/api/courses')
       .then(res => setCourses(res.data))
       .catch(err => console.log(err));
   };
 
   const handleCreateCourse = async () => {
     try {
-      await axios.post('http://localhost:5000/api/courses', {
+      await axios.post('https://eduplatform-api-pol1.onrender.com/api/courses', {
         title: newCourse.title,
         description: newCourse.description,
         instructor_id
@@ -77,7 +77,7 @@ function TeacherDashboard() {
 
   const handleEditCourse = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/courses/${selectedCourse.id}`, {
+      await axios.put(`https://eduplatform-api-pol1.onrender.com/api/courses/${selectedCourse.id}`, {
         title: editCourse.title,
         description: editCourse.description
       });
@@ -93,7 +93,7 @@ function TeacherDashboard() {
 
   const handleDeleteCourse = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/courses/${selectedCourse.id}`);
+      await axios.delete(`https://eduplatform-api-pol1.onrender.com/api/courses/${selectedCourse.id}`);
       setMessageType('success');
       setMessage('Course deleted successfully!');
       setOpenDeleteDialog(false);

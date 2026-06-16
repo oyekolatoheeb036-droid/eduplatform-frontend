@@ -30,7 +30,7 @@ function Courses() {
   const student_id = user?.id;
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/courses')
+    axios.get('https://eduplatform-api-pol1.onrender.com/api/courses')
       .then(res => {
         setCourses(res.data);
         setFiltered(res.data);
@@ -38,7 +38,7 @@ function Courses() {
       .catch(err => console.log(err));
 
     if (student_id) {
-      axios.get(`http://localhost:5000/api/enrollments/${student_id}`)
+      axios.get(`https://eduplatform-api-pol1.onrender.com/api/enrollments/${student_id}`)
         .then(res => setEnrolledCourses(res.data.map(c => c.id)))
         .catch(err => console.log(err));
     }
@@ -60,7 +60,7 @@ function Courses() {
         setMessage('Please login first to enroll in a course!');
         return;
       }
-      await axios.post('http://localhost:5000/api/enrollments', {
+      await axios.post('https://eduplatform-api-pol1.onrender.com/api/enrollments', {
         student_id, course_id
       });
       setMessageType('success');

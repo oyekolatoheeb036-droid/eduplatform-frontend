@@ -24,7 +24,7 @@ function Login() {
     if (!email || !password) { setMessage('Please fill in all fields.'); return; }
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const res = await axios.post('https://eduplatform-api-pol1.onrender.com/api/auth/login', { email, password });
       login(res.data.user, res.data.token);
       if (res.data.user.role === 'admin') navigate('/admin');
       else if (res.data.user.role === 'teacher') navigate('/teacher');

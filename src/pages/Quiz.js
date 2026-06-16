@@ -16,7 +16,7 @@ function Quiz() {
 const student_id = user?.id;
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/quiz/lesson/${lesson_id}`)
+    axios.get(`https://eduplatform-api-pol1.onrender.com/api/quiz/lesson/${lesson_id}`)
       .then(res => {
         setQuiz(res.data);
         setLoading(false);
@@ -33,7 +33,7 @@ const student_id = user?.id;
 
   const handleSubmit = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/api/quiz/submit', {
+      const res = await axios.post('https://eduplatform-api-pol1.onrender.com/api/quiz/submit', {
         student_id,
         quiz_id: quiz.id,
         answers

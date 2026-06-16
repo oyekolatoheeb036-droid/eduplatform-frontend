@@ -93,7 +93,7 @@ function Badges() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/dashboard/${student_id}`);
+      const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/dashboard/${student_id}`);
       const data = res.data;
 
       const completedLessons = data.enrolled_courses.reduce(

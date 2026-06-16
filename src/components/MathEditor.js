@@ -63,7 +63,7 @@ function MathEditor({ value, onChange, label }) {
     try {
       const formData = new FormData();
       formData.append('image', img.file);
-      const res = await fetch('http://localhost:5000/api/upload/image', {
+      const res = await fetch('https://eduplatform-api-pol1.onrender.com//api/upload/image', {
         method: 'POST',
         body: formData
       });

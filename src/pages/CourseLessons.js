@@ -42,7 +42,7 @@ function CourseLessons() {
 
   const fetchCourse = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/courses');
+      const res = await axios.get('https://eduplatform-api-pol1.onrender.com/api/courses');
       const found = res.data.find(c => c.id === parseInt(course_id));
       setCourse(found);
     } catch (err) {

@@ -136,7 +136,7 @@ function DiveDeeperChat({ section }) {
     setInput('');
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
+      const response = await fetch('https://eduplatform-api-pol1.onrender.com/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -246,17 +246,17 @@ function Lessons() {
   const bodyFont = { fontFamily: "'Inter', sans-serif" };
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/lessons/${course_id}`)
+    axios.get(`https://eduplatform-api-pol1.onrender.com/api/lessons/${course_id}`)
       .then(res => { setLessons(res.data); if (res.data.length > 0) setSelectedLesson(res.data[0]); })
       .catch(err => console.log(err));
-    axios.get(`http://localhost:5000/api/progress/${student_id}/${course_id}`)
+    axios.get(`https://eduplatform-api-pol1.onrender.com/api/progress/${student_id}/${course_id}`)
       .then(res => setProgress(res.data))
       .catch(err => console.log(err));
   }, [course_id]);
 
   useEffect(() => {
     if (selectedLesson) {
-      axios.get(`http://localhost:5000/api/sections/${selectedLesson.id}`)
+      axios.get(`https://eduplatform-api-pol1.onrender.com/api/sections/${selectedLesson.id}`)
         .then(res => { setSections(res.data); if (res.data.length > 0) setSelectedSection(res.data[0]); else setSelectedSection(null); })
         .catch(err => console.log(err));
     }
@@ -266,11 +266,11 @@ function Lessons() {
 
   const handleComplete = async () => {
     try {
-      await axios.post('http://localhost:5000/api/progress/complete', {
+      await axios.post('https://eduplatform-api-pol1.onrender.com/api/progress/complete', {
         student_id, lesson_id: selectedLesson.id, course_id: parseInt(course_id)
       });
       setMessage('Lesson marked as complete! 🎉');
-      const res = await axios.get(`http://localhost:5000/api/progress/${student_id}/${course_id}`);
+      const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/progress/${student_id}/${course_id}`);
       setProgress(res.data);
     } catch (err) { setMessage('Error marking lesson complete.'); }
   };
