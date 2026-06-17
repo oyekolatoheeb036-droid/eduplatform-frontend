@@ -255,6 +255,7 @@ function Login() {
           <Typography variant="body1" style={{ color: '#888', marginBottom: '35px' }}>Sign in to continue your learning journey</Typography>
 
           <Button fullWidth variant="outlined"
+          onClick={() => window.location.href = 'https://eduplatform-api-pol1.onrender.com/api/auth/google'}
             style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
             <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
             Sign in with Google
