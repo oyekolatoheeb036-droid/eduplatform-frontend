@@ -12,7 +12,9 @@ import Badges from './pages/Badges';
 import LessonBuilder from './pages/LessonBuilder';
 import CourseLessons from './pages/CourseLessons';
 import ProtectedRoute from './ProtectedRoute';
-import Home from './pages/Home';import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem, useMediaQuery } from '@mui/material';
+import Home from './pages/Home';
+import VerifyEmail from './pages/VerifyEmail'; {/* ✅ ADDED */}
+import { AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem, useMediaQuery } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -159,6 +161,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/verify-email" element={<VerifyEmail />} /> {/* ✅ ADDED */}
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:course_id/lessons" element={<Lessons />} />
         <Route path="/courses/:course_id/lessons/:lesson_id/quiz" element={<Quiz />} />
