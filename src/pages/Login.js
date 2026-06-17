@@ -15,17 +15,17 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  const userStr = params.get('user');
-  
-  if (token && userStr) {
-    const userData = JSON.parse(decodeURIComponent(userStr));
-    login(userData, token);
-    navigate('/');
-  }
-}, []);
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const userStr = params.get('user');
+    if (token && userStr) {
+      const userData = JSON.parse(decodeURIComponent(userStr));
+      login(userData, token);
+      navigate('/');
+    }
+  }, []);
 
   const isMobile = useMediaQuery('(max-width:768px)');
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
@@ -62,13 +62,12 @@ function Login() {
     return (
       <Box style={{ minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
 
-        {/* Top — dark panel (left panel moved to top) */}
+        {/* Top — dark panel */}
         <Box style={{
           background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)',
           padding: '36px 24px 32px',
           color: 'white'
         }}>
-          {/* Logo */}
           <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
             <Box style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography style={{ color: 'white', fontWeight: '800', fontSize: '16px' }}>N</Typography>
@@ -87,7 +86,6 @@ function Login() {
             Continue your Mathematics journey. Your progress, badges and courses are waiting for you!
           </Typography>
 
-          {/* Features — horizontal scroll on mobile */}
           <Box style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
             {features.map((feature, index) => (
               <Box key={index} style={{
@@ -122,6 +120,20 @@ function Login() {
           <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>
             Enter your details below to continue
           </Typography>
+
+          {/* Google Sign In Button - MOBILE */}
+          <Button fullWidth variant="outlined"
+            onClick={() => window.location.href = 'https://eduplatform-api-pol1.onrender.com/api/auth/google'}
+            style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '16px', textTransform: 'none' }}>
+            <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
+            Sign in with Google
+          </Button>
+
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '16px' }}>
+            <Divider style={{ flex: 1 }} />
+            <Typography variant="body2" style={{ color: '#999' }}>or sign in with email</Typography>
+            <Divider style={{ flex: 1 }} />
+          </Box>
 
           <TextField fullWidth label="Email Address" type="email" value={email}
             onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown}
@@ -161,7 +173,6 @@ function Login() {
             </Link>
           </Typography>
 
-          {/* Testimonial on mobile */}
           <Box style={{
             marginTop: '32px',
             background: '#f8f9ff',
@@ -188,7 +199,7 @@ function Login() {
     );
   }
 
-  // ── DESKTOP LAYOUT — unchanged ──
+  // ── DESKTOP LAYOUT ──
   return (
     <Box style={{ display: 'flex', minHeight: '100vh', ...bodyFont }}>
 
@@ -266,7 +277,7 @@ function Login() {
           <Typography variant="body1" style={{ color: '#888', marginBottom: '35px' }}>Sign in to continue your learning journey</Typography>
 
           <Button fullWidth variant="outlined"
-          onClick={() => window.location.href = 'https://eduplatform-api-pol1.onrender.com/api/auth/google'}
+            onClick={() => window.location.href = 'https://eduplatform-api-pol1.onrender.com/api/auth/google'}
             style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
             <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
             Sign in with Google
