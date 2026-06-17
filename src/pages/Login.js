@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Button, TextField, Typography, Divider, useMediaQuery } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -15,6 +15,17 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const userStr = params.get('user');
+  
+  if (token && userStr) {
+    const userData = JSON.parse(decodeURIComponent(userStr));
+    login(userData, token);
+    navigate('/');
+  }
+}, []);
 
   const isMobile = useMediaQuery('(max-width:768px)');
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
