@@ -52,7 +52,7 @@ function CourseLessons() {
 
   const fetchLessons = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/lessons/${course_id}`);
+      const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/lessons/${course_id}`);
       setLessons(res.data);
     } catch (err) {
       console.log(err);
@@ -61,7 +61,7 @@ function CourseLessons() {
 
   const handleCreateLesson = async () => {
     try {
-      await axios.post('http://localhost:5000/api/lessons', {
+      await axios.post('https://eduplatform-api-pol1.onrender.com/api/lessons', {
         course_id: parseInt(course_id),
         title: newLesson.title,
         content: '',
@@ -80,7 +80,7 @@ function CourseLessons() {
 
   const handleEditLesson = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/lessons/${selectedLesson.id}`, {
+      await axios.put(`https://eduplatform-api-pol1.onrender.com/api/lessons/${selectedLesson.id}`, {
         title: editLesson.title,
         content: selectedLesson.content,
         video_url: selectedLesson.video_url,
@@ -99,7 +99,7 @@ function CourseLessons() {
 
   const handleDeleteLesson = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/lessons/${selectedLesson.id}`);
+      await axios.delete(`https://eduplatform-api-pol1.onrender.com/api/lessons/${selectedLesson.id}`);
       setMessageType('success');
       setMessage('Lesson deleted successfully! 🗑️');
       setOpenDeleteDialog(false);

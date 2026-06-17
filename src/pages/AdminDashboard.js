@@ -66,8 +66,8 @@ function AdminDashboard() {
   const fetchData = async () => {
     try {
       const [usersRes, statsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/users'),
-        axios.get('http://localhost:5000/api/admin/stats')
+        axios.get('https://eduplatform-api-pol1.onrender.com/api/admin/users'),
+        axios.get('https://eduplatform-api-pol1.onrender.com/api/admin/stats')
       ]);
       setUsers(usersRes.data.users);
       setCourses(usersRes.data.courses);
@@ -79,7 +79,7 @@ function AdminDashboard() {
 
   const handleDeleteUser = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${selectedUser.id}`);
+      await axios.delete(`https://eduplatform-api-pol1.onrender.com/api/admin/users/${selectedUser.id}`);
       setMessageType('success');
       setMessage(`User "${selectedUser.name}" deleted successfully!`);
       setOpenDeleteUserDialog(false);
@@ -92,7 +92,7 @@ function AdminDashboard() {
 
   const handleDeleteCourse = async () => {
     try {
-      await axios.delete(`http://localhost:5000/api/courses/${selectedCourse.id}`);
+      await axios.delete(`https://eduplatform-api-pol1.onrender.com/api/courses/${selectedCourse.id}`);
       setMessageType('success');
       setMessage(`Course "${selectedCourse.title}" deleted successfully!`);
       setOpenDeleteCourseDialog(false);
@@ -105,7 +105,7 @@ function AdminDashboard() {
 
   const handleUpdateRole = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/admin/users/${selectedUser.id}/role`, {
+      await axios.put(`https://eduplatform-api-pol1.onrender.com/api/admin/users/${selectedUser.id}/role`, {
         role: newRole
       });
       setMessageType('success');
