@@ -16,6 +16,7 @@ import Home from './pages/Home';
 import VerifyEmail from './pages/VerifyEmail'; {/* ✅ ADDED */}
 import { Menu, MenuItem, useMediaQuery } from '@mui/material';
 import { useAuth } from './AuthContext';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -262,6 +263,7 @@ function App() {
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:course_id/lessons" element={<Lessons />} />
         <Route path="/courses/:course_id/lessons/:lesson_id/quiz" element={<Quiz />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Dashboard />
