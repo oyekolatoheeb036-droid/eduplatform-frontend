@@ -277,8 +277,7 @@ function Home() {
             { icon: '📝', title: 'Auto-Graded Quizzes', description: 'Test your understanding with instant feedback and detailed explanations', color: '#4caf50', link: '/courses' },
             { icon: '📊', title: 'Progress Tracking', description: 'Track your learning progress and see how far you have come in each course', color: '#ff6f00', link: '/dashboard' },
             { icon: '🏆', title: 'Badges & Rewards', description: 'Earn badges and rewards as you complete lessons and pass quizzes', color: '#9c27b0', link: '/badges' },
-            { icon: '🤖', title: 'AI Dive Deeper', description: 'Get AI powered explanations when you need more help understanding a concept', color: '#f44336', link: '/courses' },
-          ].map((feature, index) => (
+{ icon: '🤖', title: 'Nairafame AI Tutor', description: 'Chat with your personal AI tutor for step-by-step help in Mathematics and Science. Powered by advanced AI.', color: '#f44336', link: '/ai-tutor' },          ].map((feature, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
               <Card elevation={hoveredFeature === index ? 8 : 0}
                 component={Link} to={feature.link}
