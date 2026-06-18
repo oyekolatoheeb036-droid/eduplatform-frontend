@@ -4,7 +4,7 @@ import {
   useMediaQuery, CircularProgress, Chip
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
@@ -249,7 +249,7 @@ RULES:
             </Typography>
             <IconButton size="small" onClick={(e) => handleDeleteChat(chat.id, e)}
               style={{ color: 'rgba(255,255,255,0.3)', padding: '2px', marginLeft: '4px' }}>
-              <DeleteOutlineIcon fontSize="small" />
+<DeleteIcon fontSize="small" />
             </IconButton>
           </Box>
         ))}
