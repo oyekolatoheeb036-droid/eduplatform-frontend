@@ -13,7 +13,7 @@ import LessonBuilder from './pages/LessonBuilder';
 import CourseLessons from './pages/CourseLessons';
 import ProtectedRoute from './ProtectedRoute';
 import Home from './pages/Home';
-import VerifyEmail from './pages/VerifyEmail'; {/* ✅ ADDED */}
+import VerifyEmail from './pages/VerifyEmail';
 import { Menu, MenuItem, useMediaQuery } from '@mui/material';
 import { useAuth } from './AuthContext';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -170,7 +170,6 @@ function Navbar() {
 
   return (
     <nav style={navStyles.wrapper}>
-      {/* Logo */}
       <Link to="/" style={navStyles.logoArea}>
         <div style={navStyles.logoMark}>
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -184,13 +183,11 @@ function Navbar() {
         </div>
       </Link>
 
-      {/* Desktop nav */}
       {!isMobile ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <div style={navStyles.navLinks}>
             <Link to="/" style={navStyles.navLink}>Home</Link>
             <Link to="/courses" style={navStyles.navLink}>Courses</Link>
-
             {user && user.role === 'student' && (
               <>
                 <Link to="/dashboard" style={navStyles.navLink}>Dashboard</Link>
@@ -209,7 +206,6 @@ function Navbar() {
               </>
             )}
           </div>
-
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
             {!user && (
               <>
@@ -226,7 +222,6 @@ function Navbar() {
           </div>
         </div>
       ) : (
-        /* Mobile hamburger */
         <>
           <button
             style={navStyles.hamburger}
@@ -254,18 +249,23 @@ function Navbar() {
   );
 }
 
+function NairafameAIWrapper() {
+  const { user } = useAuth();
+  return <NairafameAI user={user} />;
+}
+
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/verify-email" element={<VerifyEmail />} /> {/* ✅ ADDED */}
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:course_id/lessons" element={<Lessons />} />
         <Route path="/courses/:course_id/lessons/:lesson_id/quiz" element={<Quiz />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/ai-tutor" element={<NairafameAI user={user} />} />
+        <Route path="/ai-tutor" element={<NairafameAIWrapper />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Dashboard />
