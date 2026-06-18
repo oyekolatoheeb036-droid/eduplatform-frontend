@@ -19,7 +19,9 @@ const SUGGESTED_QUESTIONS = [
   'What is the difference between speed and velocity?',
   'Explain photosynthesis simply',
   'How do I find the area of a circle?',
-  'What is Newton\'s second law of motion?',
+  "What is Newton's second law of motion?",
+  'How do I use Nairafame Academy?',
+  'What courses are available on Nairafame?',
 ];
 
 const STORAGE_KEY = 'nairafame_ai_chats';
@@ -43,11 +45,51 @@ function createNewChat() {
   };
 }
 
+const AI_CONTEXT = `You are Nairafame AI, a friendly and expert tutor for Nigerian secondary school and university students.
+
+ABOUT NAIRAFAME ACADEMY (nairafame.net):
+- Nigeria's #1 Mathematics and Science learning platform
+- Helps students prepare for WAEC and JAMB exams
+- Free to start, no credit card needed
+- Website: nairafame.net
+
+HOW TO USE THE PLATFORM:
+1. Register for a free account at nairafame.net — no credit card needed
+2. Browse available courses under the Courses page
+3. Enroll in a course and start learning lessons
+4. Each lesson has sections in this order:
+   - Introduction: Overview of what the lesson covers
+   - Learn: The main lesson content with explanations and images
+   - Relate: Real life examples and applications of the topic
+   - Quiz: Test your understanding with auto-graded questions
+   - Dive Deeper (AI): Chat with Nairafame AI to ask questions on topics you just learnt
+5. Complete quizzes to test your understanding and get instant feedback
+6. Earn badges and rewards as you complete lessons and courses
+7. Use Nairafame AI (this chat) anytime to ask questions about Maths and Science
+8. Track your progress and see how far you have come on your Dashboard
+
+SUBJECTS CURRENTLY ON NAIRAFAME.NET:
+- Mathematics: Algebra, Calculus, Statistics, Geometry, Trigonometry, Number Theory
+
+COMING SOON TO NAIRAFAME.NET:
+- Physics, Chemistry, and Biology courses are not yet on the platform but Nairafame AI can still teach students these subjects through this chat until the courses are added.
+
+RULES:
+- Answer questions about Nairafame Academy and how to use the website helpfully and accurately
+- Focus on Mathematics and Science topics
+- Use simple, clear language suitable for Nigerian secondary school and university students
+- Use relatable Nigerian examples where possible
+- Help students understand WAEC and JAMB topics
+- Be encouraging, patient and supportive at all times
+- Show step-by-step workings for math problems so students can learn the process
+- If asked about topics outside Mathematics and Science, politely redirect the student
+- Never do homework directly for students — guide them to understand the concept instead
+- Always be positive and motivating`;
+
 export default function NairafameAI({ user }) {
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
   const bodyFont = { fontFamily: "'Inter', sans-serif" };
   const isMobile = useMediaQuery('(max-width:600px)');
-  const isTablet = useMediaQuery('(max-width:900px)');
 
   const [chats, setChats] = useState(() => loadChats());
   const [activeChatId, setActiveChatId] = useState(() => {
@@ -92,7 +134,6 @@ export default function NairafameAI({ user }) {
     let chatId = activeChatId;
     let currentChats = chats;
 
-    // Create new chat if none active
     if (!chatId) {
       const chat = createNewChat();
       currentChats = [chat, ...chats];
@@ -105,7 +146,6 @@ export default function NairafameAI({ user }) {
     setInput('');
     setLoading(true);
 
-    // Add user message
     const updatedChats = currentChats.map(c =>
       c.id === chatId
         ? {
@@ -121,22 +161,7 @@ export default function NairafameAI({ user }) {
       const chat = updatedChats.find(c => c.id === chatId);
       const res = await axios.post(`${API_BASE}/api/ai/chat`, {
         messages: chat.messages,
-        ai_context: `You are Nairafame AI, a friendly and expert tutor for Nigerian secondary school and university students. 
-You specialize in Mathematics and Science subjects including:
-- Mathematics: Algebra, Calculus, Statistics, Geometry, Trigonometry, Number Theory
-- Physics: Mechanics, Electricity, Waves, Optics, Modern Physics
-- Chemistry: Organic, Inorganic, Physical Chemistry, Stoichiometry
-- Biology: Cell Biology, Genetics, Ecology, Human Biology
-
-RULES:
-- Focus only on Mathematics and Science topics
-- Use simple language suitable for Nigerian students
-- Use relatable Nigerian examples where possible  
-- Help students understand WAEC and JAMB topics
-- Be encouraging, patient and supportive
-- Show step-by-step workings for math problems
-- If asked about other topics, politely redirect to Math or Science
-- Never do homework directly — guide students to understand`
+        ai_context: AI_CONTEXT
       });
 
       const assistantMessage = { role: 'assistant', content: res.data.reply };
@@ -155,7 +180,6 @@ RULES:
     setLoading(false);
   };
 
-  // If not logged in
   if (!user) {
     return (
       <Box style={{
@@ -187,7 +211,6 @@ RULES:
       height: '100%', flexShrink: 0,
       padding: '20px 14px'
     }}>
-      {/* Logo */}
       <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', padding: '0 6px' }}>
         <SmartToyIcon style={{ color: '#7c8cf8', fontSize: '28px' }} />
         <Box>
@@ -200,7 +223,6 @@ RULES:
         </Box>
       </Box>
 
-      {/* New Chat Button */}
       <Button
         onClick={handleNewChat}
         startIcon={<AddIcon />}
@@ -216,7 +238,6 @@ RULES:
         New Chat
       </Button>
 
-      {/* Chat History */}
       <Typography style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', fontWeight: '700', letterSpacing: '1px', marginBottom: '8px', padding: '0 6px', ...bodyFont }}>
         RECENT CHATS
       </Typography>
@@ -249,13 +270,12 @@ RULES:
             </Typography>
             <IconButton size="small" onClick={(e) => handleDeleteChat(chat.id, e)}
               style={{ color: 'rgba(255,255,255,0.3)', padding: '2px', marginLeft: '4px' }}>
-<DeleteIcon fontSize="small" />
+              <DeleteIcon fontSize="small" />
             </IconButton>
           </Box>
         ))}
       </Box>
 
-      {/* User info */}
       <Box style={{
         marginTop: '16px', padding: '10px 12px',
         background: 'rgba(255,255,255,0.06)', borderRadius: '10px',
@@ -279,7 +299,6 @@ RULES:
   return (
     <Box style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#fafafa' }}>
 
-      {/* Sidebar */}
       {isMobile ? (
         sidebarOpen && (
           <Box style={{ position: 'fixed', inset: 0, zIndex: 1200, display: 'flex' }}>
@@ -289,10 +308,8 @@ RULES:
         )
       ) : sidebar}
 
-      {/* Main Chat Area */}
       <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
 
-        {/* Top Bar */}
         <Box style={{
           background: 'white', borderBottom: '1px solid #f0f0f0',
           padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px',
@@ -309,7 +326,7 @@ RULES:
               🤖 Nairafame AI Tutor
             </Typography>
             <Typography style={{ fontSize: '12px', color: '#999', ...bodyFont }}>
-              Mathematics & Science · Powered by Groq
+              Mathematics & Science · Nairafame Academy
             </Typography>
           </Box>
           <Chip
@@ -320,10 +337,8 @@ RULES:
           />
         </Box>
 
-        {/* Messages Area */}
         <Box style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px 32px' }}>
 
-          {/* Empty State */}
           {(!activeChat || activeChat.messages.length === 0) && (
             <Box style={{ maxWidth: '640px', margin: '0 auto', paddingTop: isMobile ? '20px' : '40px' }}>
               <Box style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -339,11 +354,10 @@ RULES:
                   Hi {user?.name?.split(' ')[0] || 'there'}, I'm your AI Tutor! 👋
                 </Typography>
                 <Typography style={{ color: '#666', lineHeight: '1.7', ...bodyFont }}>
-                  Ask me anything about Mathematics or Science. I'm here to help you understand concepts, solve problems step by step, and prepare for WAEC & JAMB.
+                  Ask me anything about Mathematics or Science — or how to use Nairafame Academy. I'm here to help you learn, solve problems step by step, and prepare for WAEC & JAMB!
                 </Typography>
               </Box>
 
-              {/* Suggested Questions */}
               <Typography style={{ fontWeight: '700', color: '#0a0a0a', marginBottom: '12px', fontSize: '14px', ...bodyFont }}>
                 Try asking:
               </Typography>
@@ -368,7 +382,6 @@ RULES:
             </Box>
           )}
 
-          {/* Messages */}
           {activeChat?.messages.map((msg, index) => (
             <Box key={index} style={{
               display: 'flex',
@@ -419,7 +432,6 @@ RULES:
             </Box>
           ))}
 
-          {/* Loading indicator */}
           {loading && (
             <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', maxWidth: '800px', margin: '0 auto 16px' }}>
               <Box style={{
@@ -447,7 +459,6 @@ RULES:
           <div ref={messagesEndRef} />
         </Box>
 
-        {/* Input Area */}
         <Box style={{
           background: 'white', borderTop: '1px solid #f0f0f0',
           padding: isMobile ? '12px 16px' : '16px 32px', flexShrink: 0
@@ -460,7 +471,7 @@ RULES:
               fullWidth
               multiline
               maxRows={4}
-              placeholder="Ask about Mathematics or Science..."
+              placeholder="Ask about Mathematics, Science, or how to use Nairafame..."
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => {
