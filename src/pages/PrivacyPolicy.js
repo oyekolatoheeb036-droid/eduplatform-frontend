@@ -286,9 +286,9 @@ function PrivacyPolicy() {
             padding: '14px 24px',
             display: 'inline-block'
           }}>
-            <Typography style={{ fontWeight: '700', fontSize: '16px' }}>
-              📧 nairafameonline@gmail.com
-            </Typography>
+           <a href="https://mail.google.com/mail/?view=cm&to=nairafameonline@gmail.com" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+  <Typography style={{ fontWeight: '700', fontSize: '16px', color: 'white' }}>📧 nairafameonline@gmail.com</Typography>
+</a>
           </Box>
         </Box>
 
