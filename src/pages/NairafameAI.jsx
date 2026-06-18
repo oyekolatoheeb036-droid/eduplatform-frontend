@@ -45,7 +45,7 @@ function createNewChat() {
   };
 }
 
-const AI_CONTEXT = `You are Nairafame AI, a friendly and expert tutor for Nigerian secondary school and university students.
+const BASE_AI_CONTEXT = `You are Nairafame AI, a friendly and expert tutor for Nigerian secondary school and university students.
 
 ABOUT NAIRAFAME ACADEMY (nairafame.net):
 - Nigeria's #1 Mathematics and Science learning platform
@@ -76,6 +76,7 @@ COMING SOON TO NAIRAFAME.NET:
 
 RULES:
 - Answer questions about Nairafame Academy and how to use the website helpfully and accurately
+- Use the FULL COURSE AND LESSON DATA below to answer questions about what is on Nairafame accurately
 - Focus on Mathematics and Science topics
 - Use simple, clear language suitable for Nigerian secondary school and university students
 - Use relatable Nigerian examples where possible
@@ -99,9 +100,39 @@ export default function NairafameAI({ user }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [siteContext, setSiteContext] = useState('');
   const messagesEndRef = useRef(null);
 
   const activeChat = chats.find(c => c.id === activeChatId) || null;
+
+  // Fetch all courses, lessons and sections from the database on page load
+  useEffect(() => {
+    const fetchSiteContext = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/ai/context`);
+        const data = res.data.context;
+
+        // Build a readable text version of the site content
+        let contextText = '\n\nFULL NAIRAFAME ACADEMY COURSE CONTENT:\n';
+        data.forEach((courseItem, ci) => {
+          contextText += `\nCOURSE ${ci + 1}: ${courseItem.course}\n`;
+          if (courseItem.description) contextText += `Description: ${courseItem.description}\n`;
+          courseItem.lessons.forEach((lessonItem, li) => {
+            contextText += `  LESSON ${li + 1}: ${lessonItem.lesson}\n`;
+            lessonItem.sections.forEach((section) => {
+              contextText += `    - [${section.type.toUpperCase()}] ${section.title}\n`;
+              if (section.content) contextText += `      Content preview: ${section.content}\n`;
+            });
+          });
+        });
+
+        setSiteContext(contextText);
+      } catch (err) {
+        console.log('Could not fetch site context:', err);
+      }
+    };
+    fetchSiteContext();
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -161,7 +192,8 @@ export default function NairafameAI({ user }) {
       const chat = updatedChats.find(c => c.id === chatId);
       const res = await axios.post(`${API_BASE}/api/ai/chat`, {
         messages: chat.messages,
-        ai_context: AI_CONTEXT
+        // Combine base context with live site data from database
+        ai_context: BASE_AI_CONTEXT + siteContext
       });
 
       const assistantMessage = { role: 'assistant', content: res.data.reply };
