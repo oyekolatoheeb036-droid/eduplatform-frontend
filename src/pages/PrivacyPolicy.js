@@ -130,7 +130,7 @@ function PrivacyPolicy() {
             <Box style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography style={{ color: 'white', fontWeight: '800', fontSize: '16px' }}>N</Typography>
             </Box>
-            <a href="mailto:nairafameonline@gmail.com" style={{ textDecoration: 'none' }}>
+           <a href="https://mail.google.com/mail/?view=cm&to=nairafameonline@gmail.com" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
   <Typography style={{ fontWeight: '700', fontSize: '16px', color: 'white' }}>📧 nairafameonline@gmail.com</Typography>
 </a>
           </Box>
