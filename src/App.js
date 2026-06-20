@@ -18,6 +18,7 @@ import { Menu, MenuItem, useMediaQuery } from '@mui/material';
 import { useAuth } from './AuthContext';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import NairafameAI from './pages/NairafameAI';
+import Community from './pages/Community';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -29,6 +30,7 @@ function Navbar() {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Courses', path: '/courses' },
+    { label: 'Community', path: '/community' },
   ];
 
   if (!user) {
@@ -188,6 +190,7 @@ function Navbar() {
           <div style={navStyles.navLinks}>
             <Link to="/" style={navStyles.navLink}>Home</Link>
             <Link to="/courses" style={navStyles.navLink}>Courses</Link>
+            <Link to="/community" style={navStyles.navLink}>Community</Link>
             {user && user.role === 'student' && (
               <>
                 <Link to="/dashboard" style={navStyles.navLink}>Dashboard</Link>
@@ -266,6 +269,7 @@ function App() {
         <Route path="/courses/:course_id/lessons/:lesson_id/quiz" element={<Quiz />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/ai-tutor" element={<NairafameAIWrapper />} />
+        <Route path="/community" element={<Community />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Dashboard />
