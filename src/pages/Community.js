@@ -8,7 +8,7 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/People';
 import CloseIcon from '@mui/icons-material/Close';
