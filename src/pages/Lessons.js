@@ -5,7 +5,7 @@ import { useAuth } from '../AuthContext';
 import {
   Box, Typography, Card, CardContent, Button, Divider,
   LinearProgress, Chip, TextField, IconButton, CircularProgress,
-  useMediaQuery
+  useMediaQuery, Alert
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -17,8 +17,11 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
+
+const API = 'https://eduplatform-api-pol1.onrender.com';
 
 const sectionTypes = [
   { type: 'introduction', label: '📖 Introduction', color: '#1a237e' },
@@ -78,6 +81,149 @@ function renderContent(content) {
   });
 }
 
+// ── Q&A Component (outside to prevent re-render bug) ──
+const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, fontStyle, isMobile }) => {
+  const [questions, setQuestions] = useState([]);
+  const [questionText, setQuestionText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (sectionId) {
+      axios.get(`${API}/api/questions/section/${sectionId}`)
+        .then(res => setQuestions(res.data))
+        .catch(err => console.log(err));
+    }
+  }, [sectionId]);
+
+  const handleSubmit = async () => {
+    if (!questionText.trim()) return;
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/api/questions`, {
+        lesson_id: lessonId,
+        section_id: sectionId,
+        student_id: studentId,
+        student_name: studentName,
+        question_text: questionText.trim()
+      });
+      setQuestionText('');
+      setSubmitted(true);
+      // Refresh questions
+      const res = await axios.get(`${API}/api/questions/section/${sectionId}`);
+      setQuestions(res.data);
+      setTimeout(() => setSubmitted(false), 3000);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const answeredQuestions = questions.filter(q => q.answer_text);
+  const displayQuestions = showAll ? answeredQuestions : answeredQuestions.slice(0, 3);
+
+  return (
+    <Box style={{ marginTop: '32px', borderTop: '1px solid #f0f0f0', paddingTop: '28px' }}>
+      {/* Header */}
+      <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <Box style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <QuestionAnswerIcon style={{ color: '#1a237e', fontSize: '20px' }} />
+        </Box>
+        <Box>
+          <Typography style={{ fontWeight: '800', fontSize: '16px', color: '#0a0a0a', ...fontStyle }}>
+            Ask a Question
+          </Typography>
+          <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
+            Your teacher will answer below
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Question input */}
+      <Box style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '24px' }}>
+        <TextField
+          fullWidth
+          multiline
+          maxRows={4}
+          placeholder="What would you like to ask about this section?"
+          value={questionText}
+          onChange={e => setQuestionText(e.target.value)}
+          variant="outlined"
+          size="small"
+          InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }}
+        />
+        <IconButton
+          onClick={handleSubmit}
+          disabled={!questionText.trim() || submitting}
+          style={{
+            backgroundColor: questionText.trim() && !submitting ? '#1a237e' : '#e0e0e0',
+            color: 'white', width: '42px', height: '42px', flexShrink: 0
+          }}>
+          {submitting ? <CircularProgress size={18} style={{ color: 'white' }} /> : <SendIcon style={{ fontSize: '18px' }} />}
+        </IconButton>
+      </Box>
+
+      {submitted && (
+        <Alert severity="success" style={{ marginBottom: '20px', borderRadius: '10px' }}>
+          Question submitted! Your teacher will answer soon. 🎉
+        </Alert>
+      )}
+
+      {/* Answered questions */}
+      {answeredQuestions.length > 0 && (
+        <Box>
+          <Typography style={{ fontWeight: '700', fontSize: '14px', color: '#666', marginBottom: '12px', ...bodyFont }}>
+            💬 {answeredQuestions.length} Answered Question{answeredQuestions.length !== 1 ? 's' : ''}
+          </Typography>
+          {displayQuestions.map(q => (
+            <Box key={q.id} style={{
+              backgroundColor: '#fafafa', border: '1px solid #f0f0f0',
+              borderRadius: '14px', padding: '16px', marginBottom: '12px'
+            }}>
+              {/* Student question */}
+              <Box style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+                <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <PersonIcon style={{ color: '#1a237e', fontSize: '16px' }} />
+                </Box>
+                <Box>
+                  <Typography variant="caption" style={{ fontWeight: '700', color: '#1a237e', ...bodyFont }}>
+                    {q.student_name}
+                  </Typography>
+                  <Typography variant="body2" style={{ color: '#333', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>
+                    {q.question_text}
+                  </Typography>
+                </Box>
+              </Box>
+              {/* Teacher answer */}
+              <Box style={{ display: 'flex', gap: '10px', backgroundColor: '#e8f5e9', borderRadius: '10px', padding: '12px' }}>
+                <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Typography style={{ color: 'white', fontSize: '12px', fontWeight: '800' }}>T</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" style={{ fontWeight: '700', color: '#2e7d32', ...bodyFont }}>
+                    Teacher
+                  </Typography>
+                  <Typography variant="body2" style={{ color: '#1b5e20', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>
+                    {q.answer_text}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+          {answeredQuestions.length > 3 && (
+            <Button onClick={() => setShowAll(!showAll)}
+              style={{ textTransform: 'none', color: '#1a237e', fontWeight: '700', ...bodyFont }}>
+              {showAll ? 'Show less ↑' : `Show ${answeredQuestions.length - 3} more ↓`}
+            </Button>
+          )}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
 function DiveDeeperChat({ section }) {
   const starterMessage = section?.starter_prompt ||
     "Hi! I'm your AI tutor for this lesson. What would you like to understand better? 🤖";
@@ -102,14 +248,14 @@ function DiveDeeperChat({ section }) {
     setInput('');
     setLoading(true);
     try {
-      const response = await fetch('https://eduplatform-api-pol1.onrender.com/api/ai/chat', {
+      const response = await fetch(`${API}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-  ai_context: section?.ai_context || '',
-  messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
-  mode: 'dive_deeper'
-})
+          ai_context: section?.ai_context || '',
+          messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+          mode: 'dive_deeper'
+        })
       });
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply || "I'm sorry, I couldn't generate a response. Please try again." }]);
@@ -195,6 +341,7 @@ function Lessons() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
   const student_id = user?.id;
+  const student_name = user?.name || user?.email || 'Student';
   const contentRef = useRef(null);
 
   const isMobile = useMediaQuery('(max-width:768px)');
@@ -202,23 +349,22 @@ function Lessons() {
   const bodyFont = { fontFamily: "'Inter', sans-serif" };
 
   useEffect(() => {
-    axios.get(`https://eduplatform-api-pol1.onrender.com/api/lessons/${course_id}`)
+    axios.get(`${API}/api/lessons/${course_id}`)
       .then(res => { setLessons(res.data); if (res.data.length > 0) setSelectedLesson(res.data[0]); })
       .catch(err => console.log(err));
-    axios.get(`https://eduplatform-api-pol1.onrender.com/api/progress/${student_id}/${course_id}`)
+    axios.get(`${API}/api/progress/${student_id}/${course_id}`)
       .then(res => setProgress(res.data))
       .catch(err => console.log(err));
   }, [course_id]);
 
   useEffect(() => {
     if (selectedLesson) {
-      axios.get(`https://eduplatform-api-pol1.onrender.com/api/sections/${selectedLesson.id}`)
+      axios.get(`${API}/api/sections/${selectedLesson.id}`)
         .then(res => { setSections(res.data); if (res.data.length > 0) setSelectedSection(res.data[0]); else setSelectedSection(null); })
         .catch(err => console.log(err));
     }
   }, [selectedLesson]);
 
-  // Prevent body scroll when mobile sidebar is open
   useEffect(() => {
     if (isMobile) {
       document.body.style.overflow = sidebarOpen ? 'hidden' : '';
@@ -230,11 +376,11 @@ function Lessons() {
 
   const handleComplete = async () => {
     try {
-      await axios.post('https://eduplatform-api-pol1.onrender.com/api/progress/complete', {
+      await axios.post(`${API}/api/progress/complete`, {
         student_id, lesson_id: selectedLesson.id, course_id: parseInt(course_id)
       });
       setMessage('Lesson marked as complete! 🎉');
-      const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/progress/${student_id}/${course_id}`);
+      const res = await axios.get(`${API}/api/progress/${student_id}/${course_id}`);
       setProgress(res.data);
     } catch { setMessage('Error marking lesson complete.'); }
   };
@@ -259,17 +405,8 @@ function Lessons() {
     }
   };
 
-  // ── Sidebar content ──
   const sidebarContent = (
-    <Box style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: '#1a237e',
-      color: 'white',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto', // sidebar itself scrolls
-    }}>
+    <Box style={{ width: '100%', height: '100%', backgroundColor: '#1a237e', color: 'white', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
       <Box style={{ padding: '20px', paddingBottom: '10px' }}>
         <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/courses')}
@@ -282,7 +419,6 @@ function Lessons() {
             </IconButton>
           )}
         </Box>
-
         <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '8px', letterSpacing: '0.5px', ...bodyFont }}>PROGRESS</Typography>
         <LinearProgress variant="determinate" value={progress.percentage || 0}
           style={{ marginBottom: '6px', borderRadius: '5px', height: '8px' }}
@@ -292,17 +428,11 @@ function Lessons() {
         <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', marginBottom: '16px' }} />
         <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '10px', letterSpacing: '0.5px', ...bodyFont }}>LESSONS</Typography>
       </Box>
-
       <Box style={{ flex: 1, padding: '0 20px', overflowY: 'auto' }}>
         {lessons.map((lesson, index) => (
           <Box key={lesson.id}
             onClick={() => { setSelectedLesson(lesson); setMessage(''); if (isMobile) setSidebarOpen(false); }}
-            style={{
-              padding: '10px 12px', borderRadius: '10px', marginBottom: '8px', cursor: 'pointer',
-              backgroundColor: selectedLesson?.id === lesson.id ? 'rgba(255,255,255,0.2)' : 'transparent',
-              borderLeft: `3px solid ${isCompleted(lesson.id) ? '#4caf50' : 'rgba(255,255,255,0.3)'}`,
-              transition: 'background 0.2s'
-            }}>
+            style={{ padding: '10px 12px', borderRadius: '10px', marginBottom: '8px', cursor: 'pointer', backgroundColor: selectedLesson?.id === lesson.id ? 'rgba(255,255,255,0.2)' : 'transparent', borderLeft: `3px solid ${isCompleted(lesson.id) ? '#4caf50' : 'rgba(255,255,255,0.3)'}`, transition: 'background 0.2s' }}>
             <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {isCompleted(lesson.id)
                 ? <CheckCircleIcon style={{ fontSize: '18px', color: '#4caf50', flexShrink: 0 }} />
@@ -311,7 +441,6 @@ function Lessons() {
             </Box>
           </Box>
         ))}
-
         {selectedLesson && sections.length > 0 && (
           <>
             <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', margin: '16px 0' }} />
@@ -319,12 +448,7 @@ function Lessons() {
             {sections.map(section => (
               <Box key={section.id}
                 onClick={() => { setSelectedSection(section); if (isMobile) setSidebarOpen(false); }}
-                style={{
-                  padding: '10px 12px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer',
-                  backgroundColor: selectedSection?.id === section.id ? 'rgba(255,255,255,0.2)' : 'transparent',
-                  borderLeft: `3px solid ${getSectionColor(section.type)}`,
-                  transition: 'background 0.2s'
-                }}>
+                style={{ padding: '10px 12px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer', backgroundColor: selectedSection?.id === section.id ? 'rgba(255,255,255,0.2)' : 'transparent', borderLeft: `3px solid ${getSectionColor(section.type)}`, transition: 'background 0.2s' }}>
                 <Typography variant="body2" style={{ fontWeight: '700', fontSize: '12px', ...fontStyle }}>{getSectionLabel(section.type)}</Typography>
                 <Typography variant="caption" style={{ opacity: 0.7, ...bodyFont }}>{section.title}</Typography>
               </Box>
@@ -337,41 +461,24 @@ function Lessons() {
   );
 
   return (
-    // Outer container — full viewport height, no scroll
-<Box style={{ display: 'flex', minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
-      {/* ── DESKTOP sidebar: fixed, doesn't scroll with content ── */}
+    <Box style={{ display: 'flex', minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
       {!isMobile && (
-        <Box style={{
-  width: '280px',
-  minWidth: '280px',
-  flexShrink: 0,
-}}>
+        <Box style={{ width: '280px', minWidth: '280px', flexShrink: 0 }}>
           {sidebarContent}
         </Box>
       )}
-
-      {/* ── MOBILE sidebar: fixed overlay, only sidebar scrolls ── */}
       {isMobile && sidebarOpen && (
         <Box style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200, display: 'flex' }}>
-          {/* Sidebar panel — scrolls independently */}
           <Box style={{ width: '300px', maxWidth: '85vw', height: '100vh', overflow: 'hidden', flexShrink: 0 }}>
             {sidebarContent}
           </Box>
-          {/* Dark overlay — clicking closes sidebar */}
           <Box onClick={() => setSidebarOpen(false)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         </Box>
       )}
 
-      {/* ── Main content: only this scrolls ── */}
       <Box ref={contentRef} style={{ flex: 1, minWidth: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-
-        {/* Mobile top bar */}
         {isMobile && (
-          <Box style={{
-            background: '#1a237e', padding: '14px 20px',
-            display: 'flex', alignItems: 'center', gap: '12px',
-            position: 'sticky', top: 0, zIndex: 100, flexShrink: 0
-          }}>
+          <Box style={{ background: '#1a237e', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>
             <IconButton onClick={() => setSidebarOpen(true)}
               style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }} size="small">
               <MenuIcon />
@@ -403,7 +510,6 @@ function Lessons() {
                         {renderContent(selectedSection.content)}
                       </Box>
                     )}
-
                     {selectedSection.video_url && (() => {
                       const embedUrl = getYouTubeEmbedUrl(selectedSection.video_url);
                       return embedUrl ? (
@@ -418,7 +524,6 @@ function Lessons() {
                         </Box>
                       ) : null;
                     })()}
-
                     {selectedSection.website_url && (
                       <Box style={{ marginBottom: '24px' }}>
                         <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '12px', color: '#0288d1', ...fontStyle }}>🌐 Additional Resource</Typography>
@@ -429,7 +534,6 @@ function Lessons() {
                         </Box>
                       </Box>
                     )}
-
                     {selectedSection.type === 'quiz' && (
                       <Button variant="contained"
                         onClick={() => navigate(`/courses/${course_id}/lessons/${selectedLesson.id}/quiz`)}
@@ -437,6 +541,17 @@ function Lessons() {
                         Take Quiz 🎯
                       </Button>
                     )}
+
+                    {/* ── Q&A Section (appears on every non-dive_deeper section) ── */}
+                    <QASection
+                      lessonId={selectedLesson?.id}
+                      sectionId={selectedSection?.id}
+                      studentId={student_id}
+                      studentName={student_name}
+                      bodyFont={bodyFont}
+                      fontStyle={fontStyle}
+                      isMobile={isMobile}
+                    />
                   </>
                 )}
 
@@ -444,79 +559,33 @@ function Lessons() {
                   <Typography style={{ color: '#4caf50', marginTop: '16px', fontWeight: '700', ...bodyFont }}>{message}</Typography>
                 )}
 
-                {/* ── Navigation Buttons ── */}
-                <Box style={{
-                  marginTop: '28px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '10px',
-                  alignItems: 'center'
-                }}>
-                  {/* Previous Lesson */}
+                <Box style={{ marginTop: '28px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
                   {!isFirstLesson && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<ArrowBackIosNewIcon style={{ fontSize: '12px' }} />}
+                    <Button variant="outlined" size="small" startIcon={<ArrowBackIosNewIcon style={{ fontSize: '12px' }} />}
                       onClick={handlePrevLesson}
-                      style={{
-                        borderColor: '#e0e0e0', color: '#666',
-                        padding: '7px 16px', borderRadius: '8px',
-                        fontSize: '13px', fontWeight: '600',
-                        textTransform: 'none', ...bodyFont
-                      }}>
+                      style={{ borderColor: '#e0e0e0', color: '#666', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '600', textTransform: 'none', ...bodyFont }}>
                       Previous
                     </Button>
                   )}
-
-                  {/* Mark Complete */}
                   {!isCompleted(selectedLesson?.id) ? (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={handleComplete}
-                      style={{
-                        backgroundColor: '#4caf50',
-                        padding: '7px 16px', borderRadius: '8px',
-                        fontSize: '13px', fontWeight: '700',
-                        textTransform: 'none', boxShadow: 'none', ...bodyFont
-                      }}>
+                    <Button variant="contained" size="small" onClick={handleComplete}
+                      style={{ backgroundColor: '#4caf50', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
                       ✅ Mark Complete
                     </Button>
                   ) : (
-                    <Chip icon={<CheckCircleIcon style={{ fontSize: '16px' }} />}
-                      label="Completed!" color="success"
-                      size="small"
-                      style={{ fontSize: '13px', fontWeight: '700' }} />
+                    <Chip icon={<CheckCircleIcon style={{ fontSize: '16px' }} />} label="Completed!" color="success" size="small" style={{ fontSize: '13px', fontWeight: '700' }} />
                   )}
-
-                  {/* Next Lesson */}
                   {!isLastLesson && (
-                    <Button
-                      variant="contained"
-                      size="small"
-                      endIcon={<ArrowForwardIcon style={{ fontSize: '14px' }} />}
+                    <Button variant="contained" size="small" endIcon={<ArrowForwardIcon style={{ fontSize: '14px' }} />}
                       onClick={handleNextLesson}
-                      style={{
-                        backgroundColor: '#1a237e',
-                        padding: '7px 16px', borderRadius: '8px',
-                        fontSize: '13px', fontWeight: '700',
-                        textTransform: 'none', boxShadow: 'none', ...bodyFont
-                      }}>
+                      style={{ backgroundColor: '#1a237e', padding: '7px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
                       Next Lesson
                     </Button>
                   )}
-
-                  {/* Course complete badge */}
                   {isLastLesson && isCompleted(selectedLesson?.id) && (
-                    <Chip
-                      label="🎓 Course Complete!"
-                      size="small"
-                      style={{ backgroundColor: '#1a237e', color: 'white', fontSize: '13px', fontWeight: '700' }}
-                    />
+                    <Chip label="🎓 Course Complete!" size="small" style={{ backgroundColor: '#1a237e', color: 'white', fontSize: '13px', fontWeight: '700' }} />
                   )}
                 </Box>
-
               </CardContent>
             </Card>
           ) : (
