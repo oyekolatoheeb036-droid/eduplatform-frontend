@@ -24,6 +24,76 @@ const sectionTypes = [
   { type: 'dive_deeper', label: '🤖 Dive Deeper (AI)', color: '#9c27b0' },
 ];
 
+const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
+const bodyFont = { fontFamily: "'Inter', sans-serif" };
+
+// ── Dive Deeper form fields (outside component to prevent re-render bug) ──
+const DiveDeeperFields = ({ data, setData, isMobile }) => (
+  <Box>
+    <Box style={{
+      display: 'flex', alignItems: 'flex-start', gap: '14px',
+      backgroundColor: '#f3e5f5', border: '1px solid #9c27b0',
+      borderRadius: '12px', padding: '16px', marginBottom: '20px', marginTop: '8px'
+    }}>
+      <AutoAwesomeIcon style={{ color: '#9c27b0', marginTop: '2px', flexShrink: 0 }} />
+      <Box>
+        <Typography style={{ fontWeight: '700', color: '#6a1b9a', marginBottom: '4px', ...fontStyle }}>
+          AI Tutor Section
+        </Typography>
+        <Typography variant="body2" style={{ color: '#7b1fa2', lineHeight: '1.6', ...bodyFont }}>
+          Students will chat with an AI tutor scoped to this lesson.
+        </Typography>
+      </Box>
+    </Box>
+    <TextField fullWidth multiline rows={isMobile ? 4 : 5}
+      label="Lesson Topic Context (for the AI)"
+      value={data.ai_context}
+      onChange={e => setData({ ...data, ai_context: e.target.value })}
+      margin="normal" variant="outlined"
+      placeholder="e.g. This lesson covers quadratic equations for JSS3 students..."
+      helperText="The AI will use this to stay on topic."
+      InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
+    <TextField fullWidth
+      label="Starter Message (what students see first)"
+      value={data.starter_prompt}
+      onChange={e => setData({ ...data, starter_prompt: e.target.value })}
+      margin="normal" variant="outlined"
+      placeholder="e.g. Hi! I'm your AI tutor. Ask me anything about this lesson 🧮"
+      helperText="This message appears when the student opens the Dive Deeper section."
+      InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
+  </Box>
+);
+
+// ── Regular section form fields (outside component to prevent re-render bug) ──
+const RegularFields = ({ data, setData }) => (
+  <Box>
+    <MathEditor
+      label="Content (with Math Support)"
+      value={data.content}
+      onChange={content => setData({ ...data, content })}
+    />
+    <TextField fullWidth label="YouTube Video URL (optional)"
+      value={data.video_url}
+      onChange={e => setData({ ...data, video_url: e.target.value })}
+      margin="normal" variant="outlined"
+      placeholder="https://www.youtube.com/watch?v=..."
+      InputProps={{
+        startAdornment: <VideoIcon style={{ marginRight: '10px', color: '#ff0000' }} />,
+        style: { borderRadius: '10px', ...bodyFont }
+      }} />
+    <TextField fullWidth label="Google Docs Embed URL (optional)"
+      value={data.website_url}
+      onChange={e => setData({ ...data, website_url: e.target.value })}
+      margin="normal" variant="outlined"
+      placeholder="https://docs.google.com/document/d/.../pub?embedded=true"
+      helperText="In Google Docs: File → Share → Publish to web → Embed → copy the src URL from the iframe code"
+      InputProps={{
+        startAdornment: <WebIcon style={{ marginRight: '10px', color: '#0288d1' }} />,
+        style: { borderRadius: '10px', ...bodyFont }
+      }} />
+  </Box>
+);
+
 function LessonBuilder() {
   const { lesson_id, course_id } = useParams();
   const navigate = useNavigate();
@@ -49,8 +119,6 @@ function LessonBuilder() {
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
 
-  const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
-  const bodyFont = { fontFamily: "'Inter', sans-serif" };
   const mainPadding = isMobile ? '24px 20px' : isTablet ? '36px 32px' : '50px 48px';
 
   useEffect(() => {
@@ -104,7 +172,6 @@ function LessonBuilder() {
     } catch (err) { console.log(err); }
   };
 
-  // Open edit dialog with section data pre-filled
   const handleOpenEdit = (section) => {
     setEditingSection(section);
     setEditData({
@@ -141,73 +208,6 @@ function LessonBuilder() {
 
   const getSectionColor = (type) => sectionTypes.find(s => s.type === type)?.color || '#666';
   const getSectionLabel = (type) => sectionTypes.find(s => s.type === type)?.label || type;
-
-  // ── Dive Deeper form fields ──
-  const DiveDeeperFields = ({ data, setData }) => (
-    <Box>
-      <Box style={{
-        display: 'flex', alignItems: 'flex-start', gap: '14px',
-        backgroundColor: '#f3e5f5', border: '1px solid #9c27b0',
-        borderRadius: '12px', padding: '16px', marginBottom: '20px', marginTop: '8px'
-      }}>
-        <AutoAwesomeIcon style={{ color: '#9c27b0', marginTop: '2px', flexShrink: 0 }} />
-        <Box>
-          <Typography style={{ fontWeight: '700', color: '#6a1b9a', marginBottom: '4px', ...fontStyle }}>
-            AI Tutor Section
-          </Typography>
-          <Typography variant="body2" style={{ color: '#7b1fa2', lineHeight: '1.6', ...bodyFont }}>
-            Students will chat with an AI tutor scoped to this lesson.
-          </Typography>
-        </Box>
-      </Box>
-      <TextField fullWidth multiline rows={isMobile ? 4 : 5}
-        label="Lesson Topic Context (for the AI)"
-        value={data.ai_context}
-        onChange={e => setData({ ...data, ai_context: e.target.value })}
-        margin="normal" variant="outlined"
-        placeholder="e.g. This lesson covers quadratic equations for JSS3 students..."
-        helperText="The AI will use this to stay on topic."
-        InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
-      <TextField fullWidth
-        label="Starter Message (what students see first)"
-        value={data.starter_prompt}
-        onChange={e => setData({ ...data, starter_prompt: e.target.value })}
-        margin="normal" variant="outlined"
-        placeholder="e.g. Hi! I'm your AI tutor. Ask me anything about this lesson 🧮"
-        helperText="This message appears when the student opens the Dive Deeper section."
-        InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
-    </Box>
-  );
-
-  // ── Regular section form fields ──
-  const RegularFields = ({ data, setData }) => (
-    <Box>
-      <MathEditor
-        label="Content (with Math Support)"
-        value={data.content}
-        onChange={content => setData({ ...data, content })}
-      />
-      <TextField fullWidth label="YouTube Video URL (optional)"
-        value={data.video_url}
-        onChange={e => setData({ ...data, video_url: e.target.value })}
-        margin="normal" variant="outlined"
-        placeholder="https://www.youtube.com/watch?v=..."
-        InputProps={{
-          startAdornment: <VideoIcon style={{ marginRight: '10px', color: '#ff0000' }} />,
-          style: { borderRadius: '10px', ...bodyFont }
-        }} />
-      <TextField fullWidth label="Google Docs Embed URL (optional)"
-        value={data.website_url}
-        onChange={e => setData({ ...data, website_url: e.target.value })}
-        margin="normal" variant="outlined"
-        placeholder="https://docs.google.com/document/d/.../pub?embedded=true"
-        helperText="In Google Docs: File → Share → Publish to web → Embed → copy the src URL from the iframe code"
-        InputProps={{
-          startAdornment: <WebIcon style={{ marginRight: '10px', color: '#0288d1' }} />,
-          style: { borderRadius: '10px', ...bodyFont }
-        }} />
-    </Box>
-  );
 
   const sidebar = (
     <Box style={{
@@ -352,7 +352,7 @@ function LessonBuilder() {
                   margin="normal" variant="outlined"
                   InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
                 {addingSection === 'dive_deeper'
-                  ? <DiveDeeperFields data={newSection} setData={setNewSection} />
+                  ? <DiveDeeperFields data={newSection} setData={setNewSection} isMobile={isMobile} />
                   : <RegularFields data={newSection} setData={setNewSection} />
                 }
                 <Box style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
@@ -389,7 +389,6 @@ function LessonBuilder() {
                         {section.title}
                       </Typography>
                     </Box>
-                    {/* Edit + Delete buttons */}
                     <Box style={{ display: 'flex', gap: '8px' }}>
                       <IconButton size="small" onClick={() => handleOpenEdit(section)}
                         style={{ backgroundColor: '#e3f2fd', color: '#1a237e' }} aria-label="Edit section">
@@ -437,9 +436,8 @@ function LessonBuilder() {
             onChange={e => setEditData({ ...editData, title: e.target.value })}
             margin="normal" variant="outlined"
             InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
-
           {editingSection?.type === 'dive_deeper'
-            ? <DiveDeeperFields data={editData} setData={setEditData} />
+            ? <DiveDeeperFields data={editData} setData={setEditData} isMobile={isMobile} />
             : <RegularFields data={editData} setData={setEditData} />
           }
         </DialogContent>
