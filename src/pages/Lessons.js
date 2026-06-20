@@ -81,7 +81,7 @@ function renderContent(content) {
   });
 }
 
-// ── Q&A Component (outside to prevent re-render bug) ──
+// ── Q&A Component — students only see their OWN questions ──
 const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, fontStyle, isMobile }) => {
   const [questions, setQuestions] = useState([]);
   const [questionText, setQuestionText] = useState('');
@@ -89,13 +89,17 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
   const [submitted, setSubmitted] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  useEffect(() => {
-    if (sectionId) {
-      axios.get(`${API}/api/questions/section/${sectionId}`)
+  const fetchMyQuestions = () => {
+    if (sectionId && studentId) {
+      axios.get(`${API}/api/questions/section/${sectionId}/student/${studentId}`)
         .then(res => setQuestions(res.data))
         .catch(err => console.log(err));
     }
-  }, [sectionId]);
+  };
+
+  useEffect(() => {
+    fetchMyQuestions();
+  }, [sectionId, studentId]);
 
   const handleSubmit = async () => {
     if (!questionText.trim()) return;
@@ -110,9 +114,7 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
       });
       setQuestionText('');
       setSubmitted(true);
-      // Refresh questions
-      const res = await axios.get(`${API}/api/questions/section/${sectionId}`);
-      setQuestions(res.data);
+      fetchMyQuestions();
       setTimeout(() => setSubmitted(false), 3000);
     } catch (err) {
       console.log(err);
@@ -121,8 +123,7 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
     }
   };
 
-  const answeredQuestions = questions.filter(q => q.answer_text);
-  const displayQuestions = showAll ? answeredQuestions : answeredQuestions.slice(0, 3);
+  const displayQuestions = showAll ? questions : questions.slice(0, 3);
 
   return (
     <Box style={{ marginTop: '32px', borderTop: '1px solid #f0f0f0', paddingTop: '28px' }}>
@@ -142,80 +143,78 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
       </Box>
 
       {/* Question input */}
-      <Box style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '24px' }}>
+      <Box style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '16px' }}>
         <TextField
-          fullWidth
-          multiline
-          maxRows={4}
+          fullWidth multiline maxRows={4}
           placeholder="What would you like to ask about this section?"
           value={questionText}
           onChange={e => setQuestionText(e.target.value)}
-          variant="outlined"
-          size="small"
+          variant="outlined" size="small"
           InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }}
         />
-        <IconButton
-          onClick={handleSubmit}
-          disabled={!questionText.trim() || submitting}
-          style={{
-            backgroundColor: questionText.trim() && !submitting ? '#1a237e' : '#e0e0e0',
-            color: 'white', width: '42px', height: '42px', flexShrink: 0
-          }}>
+        <IconButton onClick={handleSubmit} disabled={!questionText.trim() || submitting}
+          style={{ backgroundColor: questionText.trim() && !submitting ? '#1a237e' : '#e0e0e0', color: 'white', width: '42px', height: '42px', flexShrink: 0 }}>
           {submitting ? <CircularProgress size={18} style={{ color: 'white' }} /> : <SendIcon style={{ fontSize: '18px' }} />}
         </IconButton>
       </Box>
 
       {submitted && (
-        <Alert severity="success" style={{ marginBottom: '20px', borderRadius: '10px' }}>
+        <Alert severity="success" style={{ marginBottom: '16px', borderRadius: '10px' }}>
           Question submitted! Your teacher will answer soon. 🎉
         </Alert>
       )}
 
-      {/* Answered questions */}
-      {answeredQuestions.length > 0 && (
+      {/* Student's own questions */}
+      {questions.length > 0 && (
         <Box>
           <Typography style={{ fontWeight: '700', fontSize: '14px', color: '#666', marginBottom: '12px', ...bodyFont }}>
-            💬 {answeredQuestions.length} Answered Question{answeredQuestions.length !== 1 ? 's' : ''}
+            📋 Your Questions ({questions.length})
           </Typography>
           {displayQuestions.map(q => (
-            <Box key={q.id} style={{
-              backgroundColor: '#fafafa', border: '1px solid #f0f0f0',
-              borderRadius: '14px', padding: '16px', marginBottom: '12px'
-            }}>
+            <Box key={q.id} style={{ backgroundColor: '#fafafa', border: '1px solid #f0f0f0', borderRadius: '14px', padding: '16px', marginBottom: '12px' }}>
               {/* Student question */}
-              <Box style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
+              <Box style={{ display: 'flex', gap: '10px', marginBottom: q.answer_text ? '12px' : '0' }}>
                 <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <PersonIcon style={{ color: '#1a237e', fontSize: '16px' }} />
                 </Box>
-                <Box>
-                  <Typography variant="caption" style={{ fontWeight: '700', color: '#1a237e', ...bodyFont }}>
-                    {q.student_name}
-                  </Typography>
+                <Box style={{ flex: 1 }}>
+                  <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" style={{ fontWeight: '700', color: '#1a237e', ...bodyFont }}>
+                      You
+                    </Typography>
+                    {!q.answer_text && (
+                      <Chip label="⏳ Awaiting reply" size="small"
+                        style={{ fontSize: '10px', backgroundColor: '#fff3e0', color: '#ff6f00', fontWeight: '700', height: '20px' }} />
+                    )}
+                  </Box>
                   <Typography variant="body2" style={{ color: '#333', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>
                     {q.question_text}
                   </Typography>
                 </Box>
               </Box>
+
               {/* Teacher answer */}
-              <Box style={{ display: 'flex', gap: '10px', backgroundColor: '#e8f5e9', borderRadius: '10px', padding: '12px' }}>
-                <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Typography style={{ color: 'white', fontSize: '12px', fontWeight: '800' }}>T</Typography>
+              {q.answer_text && (
+                <Box style={{ display: 'flex', gap: '10px', backgroundColor: '#e8f5e9', borderRadius: '10px', padding: '12px' }}>
+                  <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Typography style={{ color: 'white', fontSize: '12px', fontWeight: '800' }}>T</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" style={{ fontWeight: '700', color: '#2e7d32', ...bodyFont }}>
+                      Teacher
+                    </Typography>
+                    <Typography variant="body2" style={{ color: '#1b5e20', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>
+                      {q.answer_text}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box>
-                  <Typography variant="caption" style={{ fontWeight: '700', color: '#2e7d32', ...bodyFont }}>
-                    Teacher
-                  </Typography>
-                  <Typography variant="body2" style={{ color: '#1b5e20', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>
-                    {q.answer_text}
-                  </Typography>
-                </Box>
-              </Box>
+              )}
             </Box>
           ))}
-          {answeredQuestions.length > 3 && (
+          {questions.length > 3 && (
             <Button onClick={() => setShowAll(!showAll)}
               style={{ textTransform: 'none', color: '#1a237e', fontWeight: '700', ...bodyFont }}>
-              {showAll ? 'Show less ↑' : `Show ${answeredQuestions.length - 3} more ↓`}
+              {showAll ? 'Show less ↑' : `Show ${questions.length - 3} more ↓`}
             </Button>
           )}
         </Box>
@@ -541,8 +540,6 @@ function Lessons() {
                         Take Quiz 🎯
                       </Button>
                     )}
-
-                    {/* ── Q&A Section (appears on every non-dive_deeper section) ── */}
                     <QASection
                       lessonId={selectedLesson?.id}
                       sectionId={selectedSection?.id}
