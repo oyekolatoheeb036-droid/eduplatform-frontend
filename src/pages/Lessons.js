@@ -106,9 +106,10 @@ function DiveDeeperChat({ section }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ai_context: section?.ai_context || '',
-          messages: updatedMessages.map(m => ({ role: m.role, content: m.content }))
-        })
+  ai_context: section?.ai_context || '',
+  messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+  mode: 'dive_deeper'
+})
       });
       const data = await response.json();
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply || "I'm sorry, I couldn't generate a response. Please try again." }]);
