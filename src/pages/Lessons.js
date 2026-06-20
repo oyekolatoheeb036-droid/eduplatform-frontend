@@ -5,9 +5,11 @@ import { useAuth } from '../AuthContext';
 import {
   Box, Typography, Card, CardContent, Button, Divider,
   LinearProgress, Chip, TextField, IconButton, CircularProgress,
-  useMediaQuery, Dialog, DialogContent, DialogTitle
+  useMediaQuery
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -15,7 +17,6 @@ import SendIcon from '@mui/icons-material/Send';
 import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
@@ -47,20 +48,15 @@ function getYouTubeEmbedUrl(url) {
     if (shortsMatch) videoId = shortsMatch[1];
     if (videoId) return `https://www.youtube.com/embed/${videoId}`;
     return null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function renderContent(content) {
   if (!content) return null;
   return content.split('$$').map((part, index) => {
     if (index % 2 === 1) {
-      try {
-        return <BlockMath key={index} math={part} />;
-      } catch (e) {
-        return <span key={index} style={{ color: 'red' }}>Invalid equation</span>;
-      }
+      try { return <BlockMath key={index} math={part} />; }
+      catch (e) { return <span key={index} style={{ color: 'red' }}>Invalid equation</span>; }
     }
     return part.split('\n').map((line, li) => {
       const imageMatch = line.match(/^\[IMAGE:(.*)\]$/);
@@ -85,7 +81,6 @@ function renderContent(content) {
 function DiveDeeperChat({ section }) {
   const starterMessage = section?.starter_prompt ||
     "Hi! I'm your AI tutor for this lesson. What would you like to understand better? 🤖";
-
   const [messages, setMessages] = useState([{ role: 'assistant', content: starterMessage }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -116,17 +111,10 @@ function DiveDeeperChat({ section }) {
         })
       });
       const data = await response.json();
-      const reply = data.reply || "I'm sorry, I couldn't generate a response. Please try again.";
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-    } catch (err) {
+      setMessages(prev => [...prev, { role: 'assistant', content: data.reply || "I'm sorry, I couldn't generate a response. Please try again." }]);
+    } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I ran into an issue. Please check your connection and try again." }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    } finally { setLoading(false); }
   };
 
   return (
@@ -144,7 +132,6 @@ function DiveDeeperChat({ section }) {
           </Typography>
         </Box>
       </Box>
-
       <Box style={{ height: isMobile ? '320px' : '400px', overflowY: 'auto', padding: isMobile ? '16px' : '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px', background: '#fafafa' }}>
         {messages.map((msg, i) => (
           <Box key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '8px' }}>
@@ -154,9 +141,7 @@ function DiveDeeperChat({ section }) {
               </Box>
             )}
             <Box style={{ maxWidth: isMobile ? '85%' : '72%', backgroundColor: msg.role === 'user' ? '#1a237e' : 'white', color: msg.role === 'user' ? 'white' : '#0a0a0a', borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', padding: '12px 16px', border: msg.role === 'assistant' ? '1px solid #f0f0f0' : 'none', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-              <Typography variant="body2" style={{ lineHeight: '1.65', whiteSpace: 'pre-wrap', ...bodyFont }}>
-                {msg.content}
-              </Typography>
+              <Typography variant="body2" style={{ lineHeight: '1.65', whiteSpace: 'pre-wrap', ...bodyFont }}>{msg.content}</Typography>
             </Box>
             {msg.role === 'user' && (
               <Box style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -179,10 +164,10 @@ function DiveDeeperChat({ section }) {
         )}
         <div ref={bottomRef} />
       </Box>
-
       <Box style={{ padding: isMobile ? '12px 16px' : '14px 20px', background: 'white', borderTop: '1px solid #f0f0f0', display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
         <TextField fullWidth multiline maxRows={4} value={input}
-          onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
           placeholder="Ask a question about this lesson..."
           variant="outlined" size="small"
           InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }}
@@ -209,6 +194,7 @@ function Lessons() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
   const student_id = user?.id;
+  const contentRef = useRef(null);
 
   const isMobile = useMediaQuery('(max-width:768px)');
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
@@ -231,6 +217,14 @@ function Lessons() {
     }
   }, [selectedLesson]);
 
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobile) {
+      document.body.style.overflow = sidebarOpen ? 'hidden' : '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [sidebarOpen, isMobile]);
+
   const isCompleted = (lesson_id) => progress.completed_lessons?.some(p => p.lesson_id === lesson_id);
 
   const handleComplete = async () => {
@@ -241,123 +235,146 @@ function Lessons() {
       setMessage('Lesson marked as complete! 🎉');
       const res = await axios.get(`https://eduplatform-api-pol1.onrender.com/api/progress/${student_id}/${course_id}`);
       setProgress(res.data);
-    } catch (err) { setMessage('Error marking lesson complete.'); }
+    } catch { setMessage('Error marking lesson complete.'); }
   };
 
-  // ── Go to next lesson ──
+  const currentLessonIndex = lessons.findIndex(l => l.id === selectedLesson?.id);
+  const isLastLesson = currentLessonIndex === lessons.length - 1;
+  const isFirstLesson = currentLessonIndex === 0;
+
   const handleNextLesson = () => {
-    const currentIndex = lessons.findIndex(l => l.id === selectedLesson?.id);
-    if (currentIndex < lessons.length - 1) {
-      const nextLesson = lessons[currentIndex + 1];
-      setSelectedLesson(nextLesson);
+    if (!isLastLesson) {
+      setSelectedLesson(lessons[currentLessonIndex + 1]);
       setMessage('');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (contentRef.current) contentRef.current.scrollTop = 0;
     }
   };
 
-  const isLastLesson = lessons.findIndex(l => l.id === selectedLesson?.id) === lessons.length - 1;
+  const handlePrevLesson = () => {
+    if (!isFirstLesson) {
+      setSelectedLesson(lessons[currentLessonIndex - 1]);
+      setMessage('');
+      if (contentRef.current) contentRef.current.scrollTop = 0;
+    }
+  };
 
-  const lessonsSidebar = (
+  // ── Sidebar content ──
+  const sidebarContent = (
     <Box style={{
-      width: isMobile ? '100%' : '280px',
-      minWidth: isMobile ? '100%' : '280px',
+      width: '100%',
+      height: '100%',
       backgroundColor: '#1a237e',
       color: 'white',
-      padding: '20px',
-      overflowY: 'auto',
-      flexShrink: 0,
       display: 'flex',
       flexDirection: 'column',
-      height: isMobile ? '100%' : 'auto',
-      minHeight: isMobile ? '100vh' : 'auto',
+      overflowY: 'auto', // sidebar itself scrolls
     }}>
-      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/courses')}
-          style={{ color: 'white', textTransform: 'none', fontWeight: '700', padding: 0, ...bodyFont }}>
-          Courses
-        </Button>
-        {isMobile && (
-          <IconButton onClick={() => setSidebarOpen(false)} style={{ color: 'white' }}>
-            <CloseIcon />
-          </IconButton>
-        )}
+      <Box style={{ padding: '20px', paddingBottom: '10px' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/courses')}
+            style={{ color: 'white', textTransform: 'none', fontWeight: '700', padding: 0, ...bodyFont }}>
+            Courses
+          </Button>
+          {isMobile && (
+            <IconButton onClick={() => setSidebarOpen(false)} style={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          )}
+        </Box>
+
+        <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '8px', letterSpacing: '0.5px', ...bodyFont }}>PROGRESS</Typography>
+        <LinearProgress variant="determinate" value={progress.percentage || 0}
+          style={{ marginBottom: '6px', borderRadius: '5px', height: '8px' }}
+          sx={{ backgroundColor: 'rgba(255,255,255,0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#4caf50' } }}
+        />
+        <Typography variant="body2" style={{ marginBottom: '16px', opacity: 0.8, ...bodyFont }}>{progress.percentage || 0}% Complete</Typography>
+        <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', marginBottom: '16px' }} />
+        <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '10px', letterSpacing: '0.5px', ...bodyFont }}>LESSONS</Typography>
       </Box>
 
-      <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '8px', letterSpacing: '0.5px', ...bodyFont }}>PROGRESS</Typography>
-      <LinearProgress variant="determinate" value={progress.percentage || 0}
-        style={{ marginBottom: '6px', borderRadius: '5px', height: '8px' }}
-        sx={{ backgroundColor: 'rgba(255,255,255,0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#4caf50' } }}
-      />
-      <Typography variant="body2" style={{ marginBottom: '20px', opacity: 0.8, ...bodyFont }}>{progress.percentage || 0}% Complete</Typography>
-
-      <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', marginBottom: '16px' }} />
-
-      <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '10px', letterSpacing: '0.5px', ...bodyFont }}>LESSONS</Typography>
-      {lessons.map((lesson, index) => (
-        <Box key={lesson.id}
-          onClick={() => { setSelectedLesson(lesson); setMessage(''); if (isMobile) setSidebarOpen(false); }}
-          style={{
-            padding: '10px 12px', borderRadius: '10px', marginBottom: '8px', cursor: 'pointer',
-            backgroundColor: selectedLesson?.id === lesson.id ? 'rgba(255,255,255,0.2)' : 'transparent',
-            borderLeft: `3px solid ${isCompleted(lesson.id) ? '#4caf50' : 'rgba(255,255,255,0.3)'}`,
-            transition: 'background 0.2s'
-          }}>
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {isCompleted(lesson.id)
-              ? <CheckCircleIcon style={{ fontSize: '18px', color: '#4caf50', flexShrink: 0 }} />
-              : <PlayCircleFilledIcon style={{ fontSize: '18px', flexShrink: 0 }} />}
-            <Typography variant="body2" style={{ fontWeight: '700', ...fontStyle }}>{index + 1}. {lesson.title}</Typography>
-          </Box>
-        </Box>
-      ))}
-
-      {selectedLesson && sections.length > 0 && (
-        <>
-          <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', margin: '16px 0' }} />
-          <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '10px', letterSpacing: '0.5px', ...bodyFont }}>SECTIONS</Typography>
-          {sections.map(section => (
-            <Box key={section.id}
-              onClick={() => { setSelectedSection(section); if (isMobile) setSidebarOpen(false); }}
-              style={{
-                padding: '10px 12px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer',
-                backgroundColor: selectedSection?.id === section.id ? 'rgba(255,255,255,0.2)' : 'transparent',
-                borderLeft: `3px solid ${getSectionColor(section.type)}`,
-                transition: 'background 0.2s'
-              }}>
-              <Typography variant="body2" style={{ fontWeight: '700', fontSize: '12px', ...fontStyle }}>{getSectionLabel(section.type)}</Typography>
-              <Typography variant="caption" style={{ opacity: 0.7, ...bodyFont }}>{section.title}</Typography>
+      <Box style={{ flex: 1, padding: '0 20px', overflowY: 'auto' }}>
+        {lessons.map((lesson, index) => (
+          <Box key={lesson.id}
+            onClick={() => { setSelectedLesson(lesson); setMessage(''); if (isMobile) setSidebarOpen(false); }}
+            style={{
+              padding: '10px 12px', borderRadius: '10px', marginBottom: '8px', cursor: 'pointer',
+              backgroundColor: selectedLesson?.id === lesson.id ? 'rgba(255,255,255,0.2)' : 'transparent',
+              borderLeft: `3px solid ${isCompleted(lesson.id) ? '#4caf50' : 'rgba(255,255,255,0.3)'}`,
+              transition: 'background 0.2s'
+            }}>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {isCompleted(lesson.id)
+                ? <CheckCircleIcon style={{ fontSize: '18px', color: '#4caf50', flexShrink: 0 }} />
+                : <PlayCircleFilledIcon style={{ fontSize: '18px', flexShrink: 0 }} />}
+              <Typography variant="body2" style={{ fontWeight: '700', ...fontStyle }}>{index + 1}. {lesson.title}</Typography>
             </Box>
-          ))}
-        </>
-      )}
+          </Box>
+        ))}
+
+        {selectedLesson && sections.length > 0 && (
+          <>
+            <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', margin: '16px 0' }} />
+            <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '10px', letterSpacing: '0.5px', ...bodyFont }}>SECTIONS</Typography>
+            {sections.map(section => (
+              <Box key={section.id}
+                onClick={() => { setSelectedSection(section); if (isMobile) setSidebarOpen(false); }}
+                style={{
+                  padding: '10px 12px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer',
+                  backgroundColor: selectedSection?.id === section.id ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  borderLeft: `3px solid ${getSectionColor(section.type)}`,
+                  transition: 'background 0.2s'
+                }}>
+                <Typography variant="body2" style={{ fontWeight: '700', fontSize: '12px', ...fontStyle }}>{getSectionLabel(section.type)}</Typography>
+                <Typography variant="caption" style={{ opacity: 0.7, ...bodyFont }}>{section.title}</Typography>
+              </Box>
+            ))}
+          </>
+        )}
+        <Box style={{ height: '20px' }} />
+      </Box>
     </Box>
   );
 
   return (
-    <Box style={{ display: 'flex', minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
+    // Outer container — full viewport height, no scroll
+    <Box style={{ display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden', background: '#fafafa', ...bodyFont }}>
 
-      {/* Sidebar — fixed overlay on mobile, static on desktop */}
-      {isMobile ? (
-        <>
-          {sidebarOpen && (
-            <Box style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200, display: 'flex' }}>
-              <Box style={{ width: '300px', maxWidth: '85vw', overflowY: 'auto', height: '100vh' }}>
-                {lessonsSidebar}
-              </Box>
-              <Box onClick={() => setSidebarOpen(false)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-            </Box>
-          )}
-        </>
-      ) : lessonsSidebar}
+      {/* ── DESKTOP sidebar: fixed, doesn't scroll with content ── */}
+      {!isMobile && (
+        <Box style={{
+          width: '280px',
+          minWidth: '280px',
+          height: '100%',
+          position: 'sticky',
+          top: 0,
+          flexShrink: 0,
+          overflow: 'hidden',
+        }}>
+          {sidebarContent}
+        </Box>
+      )}
 
-      <Box style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+      {/* ── MOBILE sidebar: fixed overlay, only sidebar scrolls ── */}
+      {isMobile && sidebarOpen && (
+        <Box style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1200, display: 'flex' }}>
+          {/* Sidebar panel — scrolls independently */}
+          <Box style={{ width: '300px', maxWidth: '85vw', height: '100vh', overflow: 'hidden', flexShrink: 0 }}>
+            {sidebarContent}
+          </Box>
+          {/* Dark overlay — clicking closes sidebar */}
+          <Box onClick={() => setSidebarOpen(false)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+        </Box>
+      )}
+
+      {/* ── Main content: only this scrolls ── */}
+      <Box ref={contentRef} style={{ flex: 1, minWidth: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
 
         {/* Mobile top bar */}
         {isMobile && (
           <Box style={{
             background: '#1a237e', padding: '14px 20px',
             display: 'flex', alignItems: 'center', gap: '12px',
-            position: 'sticky', top: 0, zIndex: 100
+            position: 'sticky', top: 0, zIndex: 100, flexShrink: 0
           }}>
             <IconButton onClick={() => setSidebarOpen(true)}
               style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }} size="small">
@@ -395,17 +412,12 @@ function Lessons() {
                       const embedUrl = getYouTubeEmbedUrl(selectedSection.video_url);
                       return embedUrl ? (
                         <Box style={{ marginBottom: '24px' }}>
-                          <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '12px', color: '#ff0000', ...fontStyle }}>
-                            🎥 Video Lesson
-                          </Typography>
+                          <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '12px', color: '#ff0000', ...fontStyle }}>🎥 Video Lesson</Typography>
                           <Box style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
-                            <iframe
-                              src={embedUrl}
+                            <iframe src={embedUrl}
                               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                              allowFullScreen
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              title="Video Lesson"
-                            />
+                              allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              title="Video Lesson" />
                           </Box>
                         </Box>
                       ) : null;
@@ -413,16 +425,11 @@ function Lessons() {
 
                     {selectedSection.website_url && (
                       <Box style={{ marginBottom: '24px' }}>
-                        <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '12px', color: '#0288d1', ...fontStyle }}>
-                          🌐 Additional Resource
-                        </Typography>
+                        <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '12px', color: '#0288d1', ...fontStyle }}>🌐 Additional Resource</Typography>
                         <Box style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid #e3f2fd', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                          <iframe
-                            src={selectedSection.website_url}
+                          <iframe src={selectedSection.website_url}
                             style={{ width: '100%', height: isMobile ? '400px' : '600px', border: 'none', display: 'block' }}
-                            title="Resource"
-                            allowFullScreen
-                          />
+                            title="Resource" allowFullScreen />
                         </Box>
                       </Box>
                     )}
@@ -441,45 +448,75 @@ function Lessons() {
                   <Typography style={{ color: '#4caf50', marginTop: '16px', fontWeight: '700', ...bodyFont }}>{message}</Typography>
                 )}
 
-                {/* ── Mark Complete + Next Lesson buttons ── */}
+                {/* ── Navigation Buttons ── */}
                 <Box style={{
-                  marginTop: '32px',
+                  marginTop: '28px',
                   display: 'flex',
                   flexWrap: 'wrap',
-                  gap: '12px',
+                  gap: '10px',
                   alignItems: 'center'
                 }}>
-                  {!isCompleted(selectedLesson?.id) ? (
-                    <Button variant="contained" onClick={handleComplete}
-                      style={{ backgroundColor: '#4caf50', padding: '12px 24px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
-                      ✅ Mark Lesson as Complete
-                    </Button>
-                  ) : (
-                    <Chip icon={<CheckCircleIcon />} label="Lesson Completed!"
-                      color="success" style={{ fontSize: '15px', padding: '10px', fontWeight: '700' }} />
-                  )}
-
-                  {/* Next Lesson button — shows when not the last lesson */}
-                  {!isLastLesson && (
+                  {/* Previous Lesson */}
+                  {!isFirstLesson && (
                     <Button
                       variant="outlined"
-                      endIcon={<ArrowForwardIcon />}
+                      size="small"
+                      startIcon={<ArrowBackIosNewIcon style={{ fontSize: '12px' }} />}
+                      onClick={handlePrevLesson}
+                      style={{
+                        borderColor: '#e0e0e0', color: '#666',
+                        padding: '7px 16px', borderRadius: '8px',
+                        fontSize: '13px', fontWeight: '600',
+                        textTransform: 'none', ...bodyFont
+                      }}>
+                      Previous
+                    </Button>
+                  )}
+
+                  {/* Mark Complete */}
+                  {!isCompleted(selectedLesson?.id) ? (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={handleComplete}
+                      style={{
+                        backgroundColor: '#4caf50',
+                        padding: '7px 16px', borderRadius: '8px',
+                        fontSize: '13px', fontWeight: '700',
+                        textTransform: 'none', boxShadow: 'none', ...bodyFont
+                      }}>
+                      ✅ Mark Complete
+                    </Button>
+                  ) : (
+                    <Chip icon={<CheckCircleIcon style={{ fontSize: '16px' }} />}
+                      label="Completed!" color="success"
+                      size="small"
+                      style={{ fontSize: '13px', fontWeight: '700' }} />
+                  )}
+
+                  {/* Next Lesson */}
+                  {!isLastLesson && (
+                    <Button
+                      variant="contained"
+                      size="small"
+                      endIcon={<ArrowForwardIcon style={{ fontSize: '14px' }} />}
                       onClick={handleNextLesson}
                       style={{
-                        borderColor: '#1a237e', color: '#1a237e',
-                        padding: '12px 24px', borderRadius: '10px',
-                        fontSize: '15px', fontWeight: '700',
-                        textTransform: 'none', ...bodyFont
+                        backgroundColor: '#1a237e',
+                        padding: '7px 16px', borderRadius: '8px',
+                        fontSize: '13px', fontWeight: '700',
+                        textTransform: 'none', boxShadow: 'none', ...bodyFont
                       }}>
                       Next Lesson
                     </Button>
                   )}
 
-                  {/* All done message when last lesson is completed */}
+                  {/* Course complete badge */}
                   {isLastLesson && isCompleted(selectedLesson?.id) && (
                     <Chip
                       label="🎓 Course Complete!"
-                      style={{ backgroundColor: '#1a237e', color: 'white', fontSize: '15px', padding: '10px', fontWeight: '700' }}
+                      size="small"
+                      style={{ backgroundColor: '#1a237e', color: 'white', fontSize: '13px', fontWeight: '700' }}
                     />
                   )}
                 </Box>
