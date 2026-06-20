@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Box, Typography, Card, CardContent, Button, TextField,
@@ -42,7 +42,6 @@ function timeAgo(date) {
   }
 }
 
-// ── Reply Box ──
 const ReplyBox = ({ postId, studentId, studentName, onReplyAdded }) => {
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -79,7 +78,6 @@ const ReplyBox = ({ postId, studentId, studentName, onReplyAdded }) => {
   );
 };
 
-// ── Single Post Card ──
 const PostCard = ({ post, studentId, studentName, userRole, likedPosts, onLike, onDelete, isMobile }) => {
   const [replies, setReplies] = useState([]);
   const [showReplies, setShowReplies] = useState(false);
@@ -113,7 +111,6 @@ const PostCard = ({ post, studentId, studentName, userRole, likedPosts, onLike, 
   return (
     <Card elevation={0} style={{ borderRadius: '20px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginBottom: '16px', overflow: 'visible' }}>
       <CardContent style={{ padding: isMobile ? '18px' : '24px 28px' }}>
-        {/* Post header */}
         <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
           <Box style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <Avatar style={{ width: '42px', height: '42px', fontSize: '15px', fontWeight: '800', background: courseColors[colorIndex], flexShrink: 0 }}>
@@ -141,12 +138,10 @@ const PostCard = ({ post, studentId, studentName, userRole, likedPosts, onLike, 
           )}
         </Box>
 
-        {/* Post content */}
         <Typography style={{ fontSize: '15px', lineHeight: '1.7', color: '#333', marginBottom: '16px', ...bodyFont }}>
           {post.content}
         </Typography>
 
-        {/* Actions */}
         <Box style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <Button size="small" startIcon={isLiked ? <FavoriteIcon style={{ color: '#f44336' }} /> : <FavoriteBorderIcon />}
             onClick={() => onLike(post.id)}
@@ -160,7 +155,6 @@ const PostCard = ({ post, studentId, studentName, userRole, likedPosts, onLike, 
           </Button>
         </Box>
 
-        {/* Replies section */}
         {showReplies && (
           <Box style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f5f5f5' }}>
             {loadingReplies ? (
@@ -195,7 +189,7 @@ const PostCard = ({ post, studentId, studentName, userRole, likedPosts, onLike, 
                   </Box>
                 ))}
                 <ReplyBox postId={post.id} studentId={studentId} studentName={studentName}
-                  onReplyAdded={() => { fetchReplies(); }} />
+                  onReplyAdded={fetchReplies} />
               </>
             )}
           </Box>
@@ -317,7 +311,6 @@ function Community() {
   return (
     <Box style={{ background: '#fafafa', minHeight: '100vh', ...bodyFont }}>
 
-      {/* ── Hero Header ── */}
       <Box style={{ background: 'white', padding: isMobile ? '40px 20px' : '60px 80px', borderBottom: '1px solid #f0f0f0', position: 'relative', overflow: 'hidden' }}>
         <Box style={{ position: 'absolute', top: '-60px', right: '-60px', width: '320px', height: '320px', borderRadius: '50%', background: 'linear-gradient(135deg, #e8eaf6, #e3f2fd)', opacity: 0.7 }} />
         <Box style={{ position: 'absolute', bottom: '-80px', right: '250px', width: '200px', height: '200px', borderRadius: '50%', background: '#fff3e0', opacity: 0.6 }} />
@@ -335,8 +328,6 @@ function Community() {
           <Typography style={{ color: '#666', fontSize: '16px', lineHeight: '1.7', maxWidth: '540px', ...bodyFont }}>
             Share what you've learned, ask questions, and help your fellow students. This is your space to grow together.
           </Typography>
-
-          {/* Stats */}
           <Box style={{ display: 'flex', gap: '24px', marginTop: '24px', flexWrap: 'wrap' }}>
             {[
               { label: 'Posts', value: posts.length },
@@ -355,7 +346,6 @@ function Community() {
       <Box style={{ padding: isMobile ? '20px 16px' : '40px 80px', maxWidth: '1400px', margin: '0 auto' }}>
         <Box style={{ display: 'flex', gap: '28px', alignItems: 'flex-start', flexDirection: isMobile ? 'column' : 'row' }}>
 
-          {/* ── Left: Course Rooms Sidebar ── */}
           {!isMobile && (
             <Box style={{ width: '260px', flexShrink: 0, position: 'sticky', top: '84px' }}>
               <Card elevation={0} style={{ borderRadius: '20px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
@@ -394,10 +384,7 @@ function Community() {
             </Box>
           )}
 
-          {/* ── Main Feed ── */}
           <Box style={{ flex: 1, minWidth: 0 }}>
-
-            {/* Mobile tabs */}
             {isMobile && (
               <Tabs value={activeTab} onChange={handleTabChange} style={{ marginBottom: '16px' }}
                 sx={{ '& .MuiTabs-indicator': { backgroundColor: '#1a237e' }, '& .MuiTab-root': { textTransform: 'none', fontWeight: '700', fontFamily: "'Inter', sans-serif" }, '& .Mui-selected': { color: '#1a237e !important' } }}>
@@ -406,7 +393,6 @@ function Community() {
               </Tabs>
             )}
 
-            {/* Mobile course selector */}
             {isMobile && activeTab === 1 && (
               <Box style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '4px' }}>
                 {courses.map((course, i) => (
@@ -417,7 +403,6 @@ function Community() {
               </Box>
             )}
 
-            {/* Room header */}
             {(selectedCourse || activeTab === 0) && (
               <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                 <Box>
@@ -438,7 +423,6 @@ function Community() {
               </Box>
             )}
 
-            {/* ── Create Post Box ── */}
             {user ? (
               <Card elevation={0} style={{ borderRadius: '20px', border: '2px solid #e8eaf6', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginBottom: '24px' }}>
                 <CardContent style={{ padding: isMobile ? '18px' : '24px' }}>
@@ -488,7 +472,6 @@ function Community() {
               </Card>
             )}
 
-            {/* ── Posts Feed ── */}
             {loading ? (
               <Box style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
                 <CircularProgress style={{ color: '#1a237e' }} />
@@ -513,7 +496,6 @@ function Community() {
             )}
           </Box>
 
-          {/* ── Right: Enrolled Courses Quick Access ── */}
           {!isMobile && enrolledCourses.length > 0 && (
             <Box style={{ width: '220px', flexShrink: 0, position: 'sticky', top: '84px' }}>
               <Card elevation={0} style={{ borderRadius: '20px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
