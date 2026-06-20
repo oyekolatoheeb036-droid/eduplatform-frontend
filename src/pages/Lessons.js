@@ -337,19 +337,14 @@ function Lessons() {
 
   return (
     // Outer container — full viewport height, no scroll
-    <Box style={{ display: 'flex', height: 'calc(100vh - 64px)', overflow: 'hidden', background: '#fafafa', ...bodyFont }}>
-
+<Box style={{ display: 'flex', minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
       {/* ── DESKTOP sidebar: fixed, doesn't scroll with content ── */}
       {!isMobile && (
         <Box style={{
-          width: '280px',
-          minWidth: '280px',
-          height: '100%',
-          position: 'sticky',
-          top: 0,
-          flexShrink: 0,
-          overflow: 'hidden',
-        }}>
+  width: '280px',
+  minWidth: '280px',
+  flexShrink: 0,
+}}>
           {sidebarContent}
         </Box>
       )}
