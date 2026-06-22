@@ -107,6 +107,20 @@ function Register() {
             Start learning Mathematics for free today
           </Typography>
 
+          {/* ── Google Sign Up Button ── */}
+          <Button fullWidth variant="outlined"
+            href="https://eduplatform-api-pol1.onrender.com/api/auth/google"
+            style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
+            <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
+            Sign up with Google
+          </Button>
+
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+            <Divider style={{ flex: 1 }} />
+            <Typography variant="body2" style={{ color: '#999' }}>or sign up with email</Typography>
+            <Divider style={{ flex: 1 }} />
+          </Box>
+
           <TextField fullWidth label="Full Name" value={name}
             onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown}
             margin="normal" variant="outlined"
@@ -254,6 +268,7 @@ function Register() {
           <Typography variant="body1" style={{ color: '#888', marginBottom: '35px' }}>Start learning Mathematics for free today</Typography>
 
           <Button fullWidth variant="outlined"
+            href="https://eduplatform-api-pol1.onrender.com/api/auth/google"
             style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
             <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
             Sign up with Google
