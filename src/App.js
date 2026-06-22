@@ -19,6 +19,7 @@ import { useAuth } from './AuthContext';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import NairafameAI from './pages/NairafameAI';
 import Community from './pages/Community';
+import ResetPassword from './pages/ResetPassword';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -270,6 +271,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/ai-tutor" element={<NairafameAIWrapper />} />
         <Route path="/community" element={<Community />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Dashboard />
