@@ -12,11 +12,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
-
 const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
 const bodyFont = { fontFamily: "'Inter', sans-serif" };
 
-// ── Password Strength Checker ──
+// ── Outside component to prevent re-render ──
 const PasswordStrength = ({ password }) => {
   const rules = [
     { label: 'At least 6 characters', met: password.length >= 6 },
@@ -24,9 +23,7 @@ const PasswordStrength = ({ password }) => {
     { label: 'Contains lowercase letter (a-z)', met: /[a-z]/.test(password) },
     { label: 'Contains a number (0-9)', met: /[0-9]/.test(password) },
   ];
-
   if (!password) return null;
-
   return (
     <Box style={{ backgroundColor: '#f8f9ff', border: '1px solid #e8eaf6', borderRadius: '10px', padding: '12px 14px', marginTop: '8px' }}>
       <Typography style={{ fontSize: '12px', fontWeight: '700', color: '#666', marginBottom: '8px', ...bodyFont }}>
@@ -55,7 +52,6 @@ function Register() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const isMobile = useMediaQuery('(max-width:768px)');
 
   const handleRegister = async () => {
@@ -71,9 +67,7 @@ function Register() {
     setLoading(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleRegister();
-  };
+  const handleKeyDown = (e) => { if (e.key === 'Enter') handleRegister(); };
 
   const features = [
     { icon: <SchoolIcon style={{ color: '#4caf50' }} />, text: 'Structured Mathematics Lessons' },
@@ -82,26 +76,17 @@ function Register() {
     { icon: <BarChartIcon style={{ color: '#9c27b0' }} />, text: 'Track Your Progress & Earn Badges' },
   ];
 
-  const passwordField = (bgColor = '#f8f8f8') => (
-    <>
-      <TextField fullWidth label="Password"
-        type={showPassword ? 'text' : 'password'}
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        onKeyDown={handleKeyDown}
-        margin="normal" variant="outlined"
-        InputProps={{
-          style: { borderRadius: '10px', backgroundColor: bgColor, ...bodyFont },
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
-              </IconButton>
-            </InputAdornment>
-          )
-        }} />
-      <PasswordStrength password={password} />
-    </>
+  const eyeAdornment = (
+    <InputAdornment position="end">
+      <IconButton
+        onClick={() => setShowPassword(prev => !prev)}
+        edge="end"
+        size="small"
+        style={{ color: '#666' }}
+      >
+        {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+      </IconButton>
+    </InputAdornment>
   );
 
   // ── MOBILE LAYOUT ──
@@ -158,7 +143,17 @@ function Register() {
             margin="normal" variant="outlined"
             InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
 
-          {passwordField('#f8f8f8')}
+          <TextField fullWidth label="Password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            margin="normal" variant="outlined"
+            InputProps={{
+              style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont },
+              endAdornment: eyeAdornment
+            }} />
+          <PasswordStrength password={password} />
 
           {message && (
             <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', margin: '12px 0' }}>
@@ -286,7 +281,17 @@ function Register() {
             style={{ marginBottom: '5px' }}
             InputProps={{ style: { borderRadius: '10px' } }} />
 
-          {passwordField('white')}
+          <TextField fullWidth label="Password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            margin="normal" variant="outlined"
+            InputProps={{
+              style: { borderRadius: '10px' },
+              endAdornment: eyeAdornment
+            }} />
+          <PasswordStrength password={password} />
 
           {message && (
             <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', marginTop: '8px' }}>

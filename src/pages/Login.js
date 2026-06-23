@@ -144,9 +144,14 @@ function Login() {
     { icon: <BarChartIcon style={{ color: '#9c27b0' }} />, text: 'Track Your Progress & Earn Badges' },
   ];
 
-  const passwordEndAdornment = (
+  const EyeButton = () => (
     <InputAdornment position="end">
-      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+      <IconButton
+        onClick={() => setShowPassword(prev => !prev)}
+        edge="end"
+        size="small"
+        style={{ color: '#666' }}
+      >
         {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
       </IconButton>
     </InputAdornment>
@@ -208,9 +213,13 @@ function Login() {
           <TextField fullWidth label="Password"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
             margin="normal" variant="outlined"
-            InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont }, endAdornment: passwordEndAdornment }} />
+            InputProps={{
+              style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont },
+              endAdornment: <EyeButton />
+            }} />
 
           <Box style={{ textAlign: 'right', marginTop: '6px', marginBottom: '20px' }}>
             <Typography variant="body2" onClick={() => setForgotOpen(true)}
@@ -335,10 +344,14 @@ function Login() {
           <TextField fullWidth label="Password"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
             margin="normal" variant="outlined"
             style={{ marginBottom: '5px' }}
-            InputProps={{ style: { borderRadius: '10px' }, endAdornment: passwordEndAdornment }} />
+            InputProps={{
+              style: { borderRadius: '10px' },
+              endAdornment: <EyeButton />
+            }} />
 
           <Box style={{ textAlign: 'right', marginBottom: '20px' }}>
             <Typography variant="body2" onClick={() => setForgotOpen(true)}
