@@ -1,31 +1,69 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Box, Button, TextField, Typography, Divider, useMediaQuery } from '@mui/material';
+import { Box, Button, TextField, Typography, Divider, useMediaQuery, IconButton, InputAdornment } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import SchoolIcon from '@mui/icons-material/School';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+
+const API = 'https://eduplatform-api-pol1.onrender.com';
+
+const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
+const bodyFont = { fontFamily: "'Inter', sans-serif" };
+
+// ── Password Strength Checker ──
+const PasswordStrength = ({ password }) => {
+  const rules = [
+    { label: 'At least 6 characters', met: password.length >= 6 },
+    { label: 'Contains uppercase letter (A-Z)', met: /[A-Z]/.test(password) },
+    { label: 'Contains lowercase letter (a-z)', met: /[a-z]/.test(password) },
+    { label: 'Contains a number (0-9)', met: /[0-9]/.test(password) },
+  ];
+
+  if (!password) return null;
+
+  return (
+    <Box style={{ backgroundColor: '#f8f9ff', border: '1px solid #e8eaf6', borderRadius: '10px', padding: '12px 14px', marginTop: '8px' }}>
+      <Typography style={{ fontSize: '12px', fontWeight: '700', color: '#666', marginBottom: '8px', ...bodyFont }}>
+        Password requirements:
+      </Typography>
+      {rules.map((rule, i) => (
+        <Box key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: i < rules.length - 1 ? '6px' : '0' }}>
+          {rule.met
+            ? <CheckCircleIcon style={{ color: '#4caf50', fontSize: '16px', flexShrink: 0 }} />
+            : <RadioButtonUncheckedIcon style={{ color: '#ccc', fontSize: '16px', flexShrink: 0 }} />
+          }
+          <Typography style={{ fontSize: '12px', color: rule.met ? '#2e7d32' : '#999', fontWeight: rule.met ? '600' : '400', ...bodyFont }}>
+            {rule.label}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
+};
 
 function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const isMobile = useMediaQuery('(max-width:768px)');
-  const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
-  const bodyFont = { fontFamily: "'Inter', sans-serif" };
 
   const handleRegister = async () => {
     if (!name || !email || !password) { setMessage('Please fill in all fields.'); return; }
     if (password.length < 6) { setMessage('Password must be at least 6 characters.'); return; }
     setLoading(true);
     try {
-      await axios.post('https://eduplatform-api-pol1.onrender.com/api/auth/register', { name, email, password });
+      await axios.post(`${API}/api/auth/register`, { name, email, password });
       navigate('/login');
     } catch (err) {
       setMessage('Registration failed. Email may already exist.');
@@ -44,72 +82,61 @@ function Register() {
     { icon: <BarChartIcon style={{ color: '#9c27b0' }} />, text: 'Track Your Progress & Earn Badges' },
   ];
 
+  const passwordField = (bgColor = '#f8f8f8') => (
+    <>
+      <TextField fullWidth label="Password"
+        type={showPassword ? 'text' : 'password'}
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+        onKeyDown={handleKeyDown}
+        margin="normal" variant="outlined"
+        InputProps={{
+          style: { borderRadius: '10px', backgroundColor: bgColor, ...bodyFont },
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+              </IconButton>
+            </InputAdornment>
+          )
+        }} />
+      <PasswordStrength password={password} />
+    </>
+  );
+
   // ── MOBILE LAYOUT ──
   if (isMobile) {
     return (
       <Box style={{ minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
-
-        {/* Top — dark panel */}
-        <Box style={{
-          background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)',
-          padding: '36px 24px 32px',
-          color: 'white'
-        }}>
+        <Box style={{ background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)', padding: '36px 24px 32px', color: 'white' }}>
           <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
             <Box style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography style={{ color: 'white', fontWeight: '800', fontSize: '16px' }}>N</Typography>
             </Box>
-            <Typography style={{ fontWeight: '700', color: 'white', fontSize: '16px', ...fontStyle }}>
-              Nairafame Academy
-            </Typography>
+            <Typography style={{ fontWeight: '700', color: 'white', fontSize: '16px', ...fontStyle }}>Nairafame Academy</Typography>
           </Box>
-
           <Typography style={{ fontWeight: '800', lineHeight: '1.2', marginBottom: '10px', fontSize: '26px', ...fontStyle }}>
-            Your journey to
-            <span style={{ color: '#ff6f00' }}> Mathematics</span>{' '}
-            mastery starts here.
+            Your journey to <span style={{ color: '#ff6f00' }}> Mathematics</span>{' '} mastery starts here.
           </Typography>
           <Typography variant="body2" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.7', marginBottom: '20px' }}>
             Join thousands of Nigerian students learning Mathematics the right way.
           </Typography>
-
-          {/* Features — horizontal scroll */}
           <Box style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
             {features.map((feature, index) => (
-              <Box key={index} style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                borderRadius: '10px', padding: '8px 12px',
-                flexShrink: 0
-              }}>
+              <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '8px 12px', flexShrink: 0 }}>
                 {React.cloneElement(feature.icon, { style: { ...feature.icon.props.style, fontSize: '18px' } })}
-                <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>
-                  {feature.text}
-                </Typography>
+                <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>{feature.text}</Typography>
               </Box>
             ))}
           </Box>
         </Box>
 
-        {/* Bottom — form */}
-        <Box style={{
-          background: 'white',
-          borderRadius: '24px 24px 0 0',
-          marginTop: '-12px',
-          padding: '32px 24px 48px',
-          minHeight: 'calc(100vh - 220px)',
-          boxShadow: '0 -4px 20px rgba(0,0,0,0.08)'
-        }}>
-          <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '6px', ...fontStyle }}>
-            Create your account
-          </Typography>
-          <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>
-            Start learning Mathematics for free today
-          </Typography>
+        <Box style={{ background: 'white', borderRadius: '24px 24px 0 0', marginTop: '-12px', padding: '32px 24px 48px', minHeight: 'calc(100vh - 220px)', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)' }}>
+          <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '6px', ...fontStyle }}>Create your account</Typography>
+          <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>Start learning Mathematics for free today</Typography>
 
-          {/* ── Google Sign Up Button ── */}
           <Button fullWidth variant="outlined"
-            href="https://eduplatform-api-pol1.onrender.com/api/auth/google"
+            href={`${API}/api/auth/google`}
             style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
             <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
             Sign up with Google
@@ -131,11 +158,7 @@ function Register() {
             margin="normal" variant="outlined"
             InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
 
-          <TextField fullWidth label="Password" type="password" value={password}
-            onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            helperText="At least 6 characters"
-            InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
+          {passwordField('#f8f8f8')}
 
           {message && (
             <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', margin: '12px 0' }}>
@@ -144,15 +167,10 @@ function Register() {
           )}
 
           <Button fullWidth variant="contained" onClick={handleRegister} disabled={loading}
-            style={{
-              backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px',
-              fontSize: '16px', fontWeight: '700', textTransform: 'none',
-              boxShadow: '0 4px 15px rgba(26,35,126,0.25)', marginTop: '16px', marginBottom: '20px', ...bodyFont
-            }}>
+            style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', textTransform: 'none', boxShadow: '0 4px 15px rgba(26,35,126,0.25)', marginTop: '16px', marginBottom: '20px', ...bodyFont }}>
             {loading ? 'Creating Account...' : 'Create Free Account →'}
           </Button>
 
-          {/* Benefits */}
           <Box style={{ backgroundColor: '#f8fbff', border: '1px solid #e8eaf6', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px' }}>
             {['Free to start — no credit card needed', 'Access 50+ Mathematics courses', 'Track progress and earn badges'].map((item, index) => (
               <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: index < 2 ? '8px' : '0' }}>
@@ -164,12 +182,9 @@ function Register() {
 
           <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>
-              Sign In
-            </Link>
+            <Link to="/login" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Sign In</Link>
           </Typography>
 
-          {/* Testimonial */}
           <Box style={{ marginTop: '28px', background: '#f8f9ff', border: '1px solid #e8eaf6', borderRadius: '14px', padding: '18px' }}>
             <Box style={{ display: 'flex', gap: '3px', marginBottom: '8px' }}>
               {[...Array(5)].map((_, i) => <span key={i} style={{ color: '#ff6f00', fontSize: '14px' }}>★</span>)}
@@ -190,24 +205,10 @@ function Register() {
     );
   }
 
-  // ── DESKTOP LAYOUT — unchanged ──
+  // ── DESKTOP LAYOUT ──
   return (
     <Box style={{ display: 'flex', minHeight: '100vh', ...bodyFont }}>
-
-      {/* Left Side */}
-      <Box style={{
-        width: '45%',
-        background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)',
-        padding: '60px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        color: 'white',
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        overflowY: 'auto'
-      }}>
+      <Box style={{ width: '45%', background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)', padding: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'white', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <Box>
           <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '60px' }}>
             <Box style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -215,16 +216,12 @@ function Register() {
             </Box>
             <Typography variant="h6" style={{ fontWeight: '700', color: 'white', ...fontStyle }}>Nairafame Academy</Typography>
           </Box>
-
           <Typography variant="h3" style={{ fontWeight: '800', lineHeight: '1.2', marginBottom: '15px', ...fontStyle }}>
-            Your journey to
-            <span style={{ color: '#ff6f00' }}> Mathematics</span>
-            <br />mastery starts here.
+            Your journey to <span style={{ color: '#ff6f00' }}> Mathematics</span><br />mastery starts here.
           </Typography>
           <Typography variant="body1" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.8', marginBottom: '40px' }}>
             Join thousands of Nigerian students learning Mathematics the right way — structured, interactive and fun.
           </Typography>
-
           <Box style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '50px' }}>
             {features.map((feature, index) => (
               <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -236,7 +233,6 @@ function Register() {
             ))}
           </Box>
         </Box>
-
         <Box style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '25px' }}>
           <Box style={{ display: 'flex', gap: '3px', marginBottom: '12px' }}>
             {[...Array(5)].map((_, i) => <span key={i} style={{ color: '#ff6f00', fontSize: '16px' }}>★</span>)}
@@ -254,7 +250,6 @@ function Register() {
         </Box>
       </Box>
 
-      {/* Right Side — Form */}
       <Box style={{ flex: 1, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
         <Box style={{ width: '100%', maxWidth: '420px' }}>
           <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px', justifyContent: 'center' }}>
@@ -263,12 +258,11 @@ function Register() {
             </Box>
             <Typography variant="h6" style={{ fontWeight: '700', color: '#0a0a0a', ...fontStyle }}>Nairafame Academy</Typography>
           </Box>
-
           <Typography variant="h4" style={{ fontWeight: '800', color: '#0a0a0a', marginBottom: '8px', ...fontStyle }}>Create your account</Typography>
           <Typography variant="body1" style={{ color: '#888', marginBottom: '35px' }}>Start learning Mathematics for free today</Typography>
 
           <Button fullWidth variant="outlined"
-            href="https://eduplatform-api-pol1.onrender.com/api/auth/google"
+            href={`${API}/api/auth/google`}
             style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
             <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
             Sign up with Google
@@ -292,20 +286,16 @@ function Register() {
             style={{ marginBottom: '5px' }}
             InputProps={{ style: { borderRadius: '10px' } }} />
 
-          <TextField fullWidth label="Password" type="password" value={password}
-            onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            style={{ marginBottom: '20px' }}
-            InputProps={{ style: { borderRadius: '10px' } }} />
+          {passwordField('white')}
 
           {message && (
-            <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px' }}>
+            <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', marginTop: '8px' }}>
               <Typography style={{ color: '#c62828', fontSize: '14px', fontWeight: '600' }}>⚠️ {message}</Typography>
             </Box>
           )}
 
           <Button fullWidth variant="contained" onClick={handleRegister} disabled={loading}
-            style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', marginBottom: '20px', textTransform: 'none', ...bodyFont }}>
+            style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', marginBottom: '20px', marginTop: '16px', textTransform: 'none', ...bodyFont }}>
             {loading ? 'Creating Account...' : 'Create Free Account →'}
           </Button>
 

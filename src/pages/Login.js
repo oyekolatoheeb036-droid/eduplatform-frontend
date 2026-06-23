@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Button, TextField, Typography, Divider, useMediaQuery, Dialog, DialogContent, DialogTitle, IconButton, CircularProgress } from '@mui/material';
+import { Box, Button, TextField, Typography, Divider, useMediaQuery, Dialog, DialogContent, DialogTitle, IconButton, CircularProgress, InputAdornment } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import SchoolIcon from '@mui/icons-material/School';
@@ -10,10 +10,11 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LockResetIcon from '@mui/icons-material/LockReset';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 
-// ── Forgot Password Modal (works on both mobile and desktop) ──
 const ForgotPasswordModal = ({ open, onClose, bodyFont, fontStyle }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,24 +50,17 @@ const ForgotPasswordModal = ({ open, onClose, bodyFont, fontStyle }) => {
           <Box style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <LockResetIcon style={{ color: '#1a237e', fontSize: '20px' }} />
           </Box>
-          <Typography style={{ fontWeight: '800', fontSize: '17px', color: '#0a0a0a', ...fontStyle }}>
-            Forgot Password
-          </Typography>
+          <Typography style={{ fontWeight: '800', fontSize: '17px', color: '#0a0a0a', ...fontStyle }}>Forgot Password</Typography>
         </Box>
-        <IconButton onClick={handleClose} size="small">
-          <CloseIcon fontSize="small" />
-        </IconButton>
+        <IconButton onClick={handleClose} size="small"><CloseIcon fontSize="small" /></IconButton>
       </DialogTitle>
-
       <DialogContent>
         {sent ? (
           <Box style={{ textAlign: 'center', padding: '16px 0 8px' }}>
             <Box style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
               <CheckCircleIcon style={{ color: '#4caf50', fontSize: '32px' }} />
             </Box>
-            <Typography style={{ fontWeight: '800', fontSize: '18px', color: '#0a0a0a', marginBottom: '10px', ...fontStyle }}>
-              Check your email! 📧
-            </Typography>
+            <Typography style={{ fontWeight: '800', fontSize: '18px', color: '#0a0a0a', marginBottom: '10px', ...fontStyle }}>Check your email! 📧</Typography>
             <Typography variant="body2" style={{ color: '#666', lineHeight: '1.7', marginBottom: '20px', ...bodyFont }}>
               If <strong>{email}</strong> is registered, you'll receive a password reset link shortly. Check your spam folder too!
             </Typography>
@@ -80,19 +74,16 @@ const ForgotPasswordModal = ({ open, onClose, bodyFont, fontStyle }) => {
             <Typography variant="body2" style={{ color: '#666', marginBottom: '20px', lineHeight: '1.7', ...bodyFont }}>
               Enter the email address you used to register. We'll send you a link to reset your password.
             </Typography>
-
             <TextField fullWidth label="Email Address" type="email" value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
               variant="outlined"
               InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
-
             {error && (
               <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '10px 14px', marginTop: '12px' }}>
                 <Typography style={{ color: '#c62828', fontSize: '13px', fontWeight: '600' }}>⚠️ {error}</Typography>
               </Box>
             )}
-
             <Button fullWidth variant="contained" onClick={handleSubmit} disabled={loading}
               style={{ backgroundColor: '#1a237e', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', textTransform: 'none', boxShadow: '0 4px 15px rgba(26,35,126,0.25)', marginTop: '20px', marginBottom: '8px', ...bodyFont }}>
               {loading ? <CircularProgress size={20} style={{ color: 'white' }} /> : 'Send Reset Link →'}
@@ -107,6 +98,7 @@ const ForgotPasswordModal = ({ open, onClose, bodyFont, fontStyle }) => {
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -143,9 +135,7 @@ function Login() {
     setLoading(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleLogin();
-  };
+  const handleKeyDown = (e) => { if (e.key === 'Enter') handleLogin(); };
 
   const features = [
     { icon: <SchoolIcon style={{ color: '#4caf50' }} />, text: 'Structured Mathematics Lessons' },
@@ -154,11 +144,18 @@ function Login() {
     { icon: <BarChartIcon style={{ color: '#9c27b0' }} />, text: 'Track Your Progress & Earn Badges' },
   ];
 
+  const passwordEndAdornment = (
+    <InputAdornment position="end">
+      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+        {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+      </IconButton>
+    </InputAdornment>
+  );
+
   // ── MOBILE LAYOUT ──
   if (isMobile) {
     return (
       <Box style={{ minHeight: '100vh', background: '#fafafa', ...bodyFont }}>
-
         <ForgotPasswordModal open={forgotOpen} onClose={() => setForgotOpen(false)} bodyFont={bodyFont} fontStyle={fontStyle} />
 
         <Box style={{ background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)', padding: '36px 24px 32px', color: 'white' }}>
@@ -166,14 +163,10 @@ function Login() {
             <Box style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography style={{ color: 'white', fontWeight: '800', fontSize: '16px' }}>N</Typography>
             </Box>
-            <Typography style={{ fontWeight: '700', color: 'white', fontSize: '16px', ...fontStyle }}>
-              Nairafame Academy
-            </Typography>
+            <Typography style={{ fontWeight: '700', color: 'white', fontSize: '16px', ...fontStyle }}>Nairafame Academy</Typography>
           </Box>
           <Typography style={{ fontWeight: '800', lineHeight: '1.2', marginBottom: '10px', fontSize: '26px', ...fontStyle }}>
-            Welcome back to
-            <span style={{ color: '#ff6f00' }}> Nairafame</span>{' '}
-            Academy.
+            Welcome back to <span style={{ color: '#ff6f00' }}> Nairafame</span>{' '} Academy.
           </Typography>
           <Typography variant="body2" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.7', marginBottom: '20px' }}>
             Continue your Mathematics journey. Your progress, badges and courses are waiting for you!
@@ -184,21 +177,15 @@ function Login() {
                 <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {React.cloneElement(feature.icon, { style: { ...feature.icon.props.style, fontSize: '18px' } })}
                 </Box>
-                <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>
-                  {feature.text}
-                </Typography>
+                <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap' }}>{feature.text}</Typography>
               </Box>
             ))}
           </Box>
         </Box>
 
         <Box style={{ background: 'white', borderRadius: '24px 24px 0 0', marginTop: '-12px', padding: '32px 24px 48px', minHeight: 'calc(100vh - 220px)', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)' }}>
-          <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '6px', ...fontStyle }}>
-            Sign in to your account
-          </Typography>
-          <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>
-            Enter your details below to continue
-          </Typography>
+          <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '6px', ...fontStyle }}>Sign in to your account</Typography>
+          <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>Enter your details below to continue</Typography>
 
           <Button fullWidth variant="outlined"
             onClick={() => window.location.href = `${API}/api/auth/google`}
@@ -218,15 +205,15 @@ function Login() {
             margin="normal" variant="outlined"
             InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
 
-          <TextField fullWidth label="Password" type="password" value={password}
+          <TextField fullWidth label="Password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
             onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown}
             margin="normal" variant="outlined"
-            InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
+            InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont }, endAdornment: passwordEndAdornment }} />
 
-          {/* ── Forgot Password Link ── */}
           <Box style={{ textAlign: 'right', marginTop: '6px', marginBottom: '20px' }}>
-            <Typography variant="body2"
-              onClick={() => setForgotOpen(true)}
+            <Typography variant="body2" onClick={() => setForgotOpen(true)}
               style={{ color: '#1a237e', cursor: 'pointer', fontWeight: '600', display: 'inline-block' }}>
               Forgot password?
             </Typography>
@@ -245,9 +232,7 @@ function Login() {
 
           <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
             Don't have an account?{' '}
-            <Link to="/register" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>
-              Create Free Account
-            </Link>
+            <Link to="/register" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Create Free Account</Link>
           </Typography>
 
           <Box style={{ marginTop: '32px', background: '#f8f9ff', border: '1px solid #e8eaf6', borderRadius: '14px', padding: '18px' }}>
@@ -273,7 +258,6 @@ function Login() {
   // ── DESKTOP LAYOUT ──
   return (
     <Box style={{ display: 'flex', minHeight: '100vh', ...bodyFont }}>
-
       <ForgotPasswordModal open={forgotOpen} onClose={() => setForgotOpen(false)} bodyFont={bodyFont} fontStyle={fontStyle} />
 
       <Box style={{ width: '45%', background: 'linear-gradient(160deg, #0d1117 0%, #1a1f2e 100%)', padding: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'white', position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
@@ -285,9 +269,7 @@ function Login() {
             <Typography variant="h6" style={{ fontWeight: '700', color: 'white', ...fontStyle }}>Nairafame Academy</Typography>
           </Box>
           <Typography variant="h3" style={{ fontWeight: '800', lineHeight: '1.2', marginBottom: '15px', ...fontStyle }}>
-            Welcome back to
-            <span style={{ color: '#ff6f00' }}> Nairafame</span>
-            <br />Academy.
+            Welcome back to <span style={{ color: '#ff6f00' }}> Nairafame</span><br />Academy.
           </Typography>
           <Typography variant="body1" style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.8', marginBottom: '40px' }}>
             Continue your Mathematics journey. Your progress, badges and courses are waiting for you!
@@ -350,16 +332,16 @@ function Login() {
             style={{ marginBottom: '5px' }}
             InputProps={{ style: { borderRadius: '10px' } }} />
 
-          <TextField fullWidth label="Password" type="password" value={password}
+          <TextField fullWidth label="Password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
             onChange={e => setPassword(e.target.value)} onKeyDown={handleKeyDown}
             margin="normal" variant="outlined"
             style={{ marginBottom: '5px' }}
-            InputProps={{ style: { borderRadius: '10px' } }} />
+            InputProps={{ style: { borderRadius: '10px' }, endAdornment: passwordEndAdornment }} />
 
-          {/* ── Forgot Password Link ── */}
           <Box style={{ textAlign: 'right', marginBottom: '20px' }}>
-            <Typography variant="body2"
-              onClick={() => setForgotOpen(true)}
+            <Typography variant="body2" onClick={() => setForgotOpen(true)}
               style={{ color: '#1a237e', cursor: 'pointer', fontWeight: '600', display: 'inline-block' }}>
               Forgot password?
             </Typography>
@@ -378,9 +360,7 @@ function Login() {
 
           <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
             Don't have an account?{' '}
-            <Link to="/register" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>
-              Create Free Account
-            </Link>
+            <Link to="/register" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Create Free Account</Link>
           </Typography>
         </Box>
       </Box>
