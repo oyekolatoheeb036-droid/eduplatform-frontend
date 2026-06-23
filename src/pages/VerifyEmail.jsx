@@ -1,13 +1,17 @@
 // src/pages/VerifyEmail.jsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function VerifyEmail() {
   const [status, setStatus] = useState("verifying"); // verifying | success | error
   const navigate = useNavigate();
+  const hasFetched = useRef(false); // prevents double API call in React Strict Mode
 
   useEffect(() => {
+    if (hasFetched.current) return; // guard — only run once
+    hasFetched.current = true;
+
     const token = new URLSearchParams(window.location.search).get("token");
 
     if (!token) {
@@ -60,9 +64,14 @@ export default function VerifyEmail() {
             <p style={styles.text}>
               This link is invalid or has already been used.
             </p>
-            <p style={styles.subText}>Please register again to get a new link.</p>
+            <p style={styles.subText}>
+              You may already be verified — try logging in first.
+            </p>
+            <button style={styles.button} onClick={() => navigate("/login")}>
+              Try Login
+            </button>
             <button
-              style={{ ...styles.button, backgroundColor: "#c62828" }}
+              style={{ ...styles.button, backgroundColor: "#c62828", marginTop: "10px" }}
               onClick={() => navigate("/register")}
             >
               Back to Register
@@ -108,6 +117,8 @@ const styles = {
     marginBottom: "24px",
   },
   button: {
+    display: "block",
+    width: "100%",
     backgroundColor: "#1a237e",
     color: "white",
     border: "none",
