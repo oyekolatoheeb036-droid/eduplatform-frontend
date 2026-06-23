@@ -1,27 +1,29 @@
 // src/pages/VerifyEmail.jsx
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://eduplatform-api-pol1.onrender.com";
+
 export default function VerifyEmail() {
-  const [status, setStatus] = useState("verifying"); // verifying | success | error
+  const [status, setStatus] = useState("verifying");
   const navigate = useNavigate();
-  const hasFetched = useRef(false); // prevents double API call in React Strict Mode
 
   useEffect(() => {
-    if (hasFetched.current) return; // guard — only run once
-    hasFetched.current = true;
-
     const token = new URLSearchParams(window.location.search).get("token");
+
+    console.log("Token found:", token);
+    console.log("API URL:", API_URL);
 
     if (!token) {
       setStatus("error");
       return;
     }
 
-    fetch(`${import.meta.env.VITE_API_URL}/api/auth/verify?token=${token}`)
+    fetch(`${API_URL}/api/auth/verify?token=${token}`)
       .then((res) => res.json())
       .then((data) => {
+        console.log("Verify response:", data);
         if (data.message) {
           setStatus("success");
           setTimeout(() => navigate("/login"), 3000);
@@ -29,7 +31,10 @@ export default function VerifyEmail() {
           setStatus("error");
         }
       })
-      .catch(() => setStatus("error"));
+      .catch((err) => {
+        console.error("Verify fetch error:", err);
+        setStatus("error");
+      });
   }, []);
 
   return (
@@ -47,9 +52,7 @@ export default function VerifyEmail() {
           <>
             <div style={styles.iconSuccess}>✅</div>
             <h2 style={{ ...styles.title, color: "#1a237e" }}>Email Verified!</h2>
-            <p style={styles.text}>
-              Your account has been verified successfully.
-            </p>
+            <p style={styles.text}>Your account has been verified successfully.</p>
             <p style={styles.subText}>Redirecting you to login in 3 seconds...</p>
             <button style={styles.button} onClick={() => navigate("/login")}>
               Go to Login Now
@@ -61,12 +64,8 @@ export default function VerifyEmail() {
           <>
             <div style={styles.iconError}>❌</div>
             <h2 style={{ ...styles.title, color: "#c62828" }}>Verification Failed</h2>
-            <p style={styles.text}>
-              This link is invalid or has already been used.
-            </p>
-            <p style={styles.subText}>
-              You may already be verified — try logging in first.
-            </p>
+            <p style={styles.text}>This link is invalid or has already been used.</p>
+            <p style={styles.subText}>You may already be verified — try logging in first.</p>
             <button style={styles.button} onClick={() => navigate("/login")}>
               Try Login
             </button>
