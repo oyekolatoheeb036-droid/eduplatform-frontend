@@ -29,7 +29,6 @@ function Counter({ target, suffix }) {
     };
 
     const frame = requestAnimationFrame(animate);
-
     return () => cancelAnimationFrame(frame);
   }, [target]);
 
@@ -82,6 +81,63 @@ function Home() {
   const footerPadding = isMobile ? '48px 20px' : isTablet ? '56px 32px' : '60px 80px';
   const buttonStyle = isMobile ? { width: '100%', justifyContent: 'center' } : {};
 
+  const features = [
+    {
+      icon: '📚',
+      title: 'Structured Lessons',
+      description: 'Step by step lessons designed by expert mathematics teachers following Nigerian curriculum',
+      color: '#1a237e',
+      bg: 'linear-gradient(135deg, #1a237e, #283593)',
+      link: '/courses',
+      label: 'Browse Courses →'
+    },
+    {
+      icon: '🔢',
+      title: 'Math Equation Support',
+      description: 'Beautiful rendering of complex mathematical equations, formulas and graphs',
+      color: '#0288d1',
+      bg: 'linear-gradient(135deg, #0277bd, #0288d1)',
+      link: '/courses',
+      label: 'See Examples →'
+    },
+    {
+      icon: '📝',
+      title: 'Auto-Graded Quizzes',
+      description: 'Test your understanding with instant feedback and detailed explanations',
+      color: '#2e7d32',
+      bg: 'linear-gradient(135deg, #2e7d32, #4caf50)',
+      link: '/courses',
+      label: 'Take a Quiz →'
+    },
+    {
+      icon: '📊',
+      title: 'Progress Tracking',
+      description: 'Track your learning progress and see how far you have come in each course',
+      color: '#e65100',
+      bg: 'linear-gradient(135deg, #e65100, #ff6f00)',
+      link: '/dashboard',
+      label: 'View Dashboard →'
+    },
+    {
+      icon: '🏆',
+      title: 'Badges & Rewards',
+      description: 'Earn badges and rewards as you complete lessons and pass quizzes',
+      color: '#6a1b9a',
+      bg: 'linear-gradient(135deg, #6a1b9a, #9c27b0)',
+      link: '/badges',
+      label: 'View Badges →'
+    },
+    {
+      icon: '🤖',
+      title: 'Nairafame AI Tutor',
+      description: 'Chat with your personal AI tutor for step-by-step help in Mathematics and Science. Powered by advanced AI.',
+      color: '#c62828',
+      bg: 'linear-gradient(135deg, #c62828, #f44336)',
+      link: '/ai-tutor',
+      label: 'Try AI Tutor →'
+    },
+  ];
+
   return (
     <Box style={{ overflowX: 'hidden', ...bodyFont }}>
 
@@ -99,14 +155,9 @@ function Home() {
       }}>
         <Box style={{ maxWidth: isTablet ? '100%' : '580px', width: '100%' }}>
           <Box style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            backgroundColor: '#fff3e0',
-            border: '1px solid #ff6f00',
-            borderRadius: '30px',
-            padding: '8px 20px',
-            marginBottom: '30px'
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            backgroundColor: '#fff3e0', border: '1px solid #ff6f00',
+            borderRadius: '30px', padding: '8px 20px', marginBottom: '30px'
           }}>
             <span>🇳🇬</span>
             <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '600', ...bodyFont }}>
@@ -117,42 +168,25 @@ function Home() {
           <Typography variant="h2" style={{
             fontWeight: '800', marginBottom: '20px',
             fontSize: isMobile ? '36px' : isTablet ? '44px' : '52px',
-            lineHeight: '1.15',
-            color: '#0a0a0a', ...fontStyle
+            lineHeight: '1.15', color: '#0a0a0a', ...fontStyle
           }}>
             Learn{' '}
             <TypingText texts={['Mathematics', 'Algebra', 'Calculus', 'Statistics', 'Geometry']} />
             {' '}the right way.
           </Typography>
 
-          <Typography variant="h6" style={{
-            marginBottom: '40px', color: '#555',
-            lineHeight: '1.8', ...bodyFont, fontWeight: '400'
-          }}>
+          <Typography variant="h6" style={{ marginBottom: '40px', color: '#555', lineHeight: '1.8', ...bodyFont, fontWeight: '400' }}>
             Structured lessons, interactive quizzes, and expert teachers helping Nigerian students pass WAEC, JAMB and build real STEM skills.
           </Typography>
 
           <Box style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '40px', width: '100%' }}>
             <Button variant="contained"
               onClick={() => setOpenModal(true)}
-              style={{
-                backgroundColor: '#1a237e', color: 'white',
-                padding: '16px 40px', fontSize: '16px',
-                borderRadius: '8px', fontWeight: '700',
-                boxShadow: '0 4px 15px rgba(26,35,126,0.3)',
-                ...bodyFont,
-                ...buttonStyle
-              }}>
+              style={{ backgroundColor: '#1a237e', color: 'white', padding: '16px 40px', fontSize: '16px', borderRadius: '8px', fontWeight: '700', boxShadow: '0 4px 15px rgba(26,35,126,0.3)', ...bodyFont, ...buttonStyle }}>
               Start Learning Free →
             </Button>
             <Button variant="outlined" component={Link} to="/courses"
-              style={{
-                borderColor: '#1a237e', color: '#1a237e',
-                padding: '16px 40px', fontSize: '16px',
-                borderRadius: '8px', fontWeight: '600',
-                ...bodyFont,
-                ...buttonStyle
-              }}>
+              style={{ borderColor: '#1a237e', color: '#1a237e', padding: '16px 40px', fontSize: '16px', borderRadius: '8px', fontWeight: '600', ...bodyFont, ...buttonStyle }}>
               Browse Courses
             </Button>
           </Box>
@@ -162,41 +196,22 @@ function Home() {
           </Typography>
         </Box>
 
-        {/* Hero Image / Dashboard Preview */}
+        {/* Hero Dashboard Preview */}
         <Box style={{
-          flex: 1,
-          minWidth: 0,
-          width: '100%',
-          maxWidth: isTablet ? '100%' : '550px',
+          flex: 1, minWidth: 0, width: '100%', maxWidth: isTablet ? '100%' : '550px',
           background: 'linear-gradient(135deg, #1a237e, #0288d1)',
           borderRadius: isMobile ? '14px' : '20px',
           padding: isMobile ? '12px' : '30px',
           boxShadow: isMobile ? '0 12px 32px rgba(26,35,126,0.18)' : '0 20px 60px rgba(26,35,126,0.2)'
         }}>
-          <Box style={{
-            background: 'white',
-            borderRadius: isMobile ? '10px' : '12px',
-            padding: isMobile ? '12px' : '20px',
-            marginBottom: isMobile ? '10px' : '15px'
-          }}>
-            <Typography variant="h6" style={{
-              fontWeight: '700',
-              color: '#1a237e',
-              marginBottom: '4px',
-              fontSize: isMobile ? '16px' : undefined,
-              ...fontStyle
-            }}>
+          <Box style={{ background: 'white', borderRadius: isMobile ? '10px' : '12px', padding: isMobile ? '12px' : '20px', marginBottom: isMobile ? '10px' : '15px' }}>
+            <Typography variant="h6" style={{ fontWeight: '700', color: '#1a237e', marginBottom: '4px', fontSize: isMobile ? '16px' : undefined, ...fontStyle }}>
               Welcome back, Amaka! 👋
             </Typography>
             <Typography variant="body2" style={{ color: '#666', fontSize: isMobile ? '12px' : undefined }}>
               Continue your learning journey
             </Typography>
-            <Box style={{
-              marginTop: isMobile ? '10px' : '15px',
-              background: '#f5f5f5',
-              borderRadius: '8px',
-              padding: isMobile ? '8px' : '10px'
-            }}>
+            <Box style={{ marginTop: isMobile ? '10px' : '15px', background: '#f5f5f5', borderRadius: '8px', padding: isMobile ? '8px' : '10px' }}>
               <Typography variant="body2" style={{ color: '#333', marginBottom: '5px', fontSize: isMobile ? '12px' : undefined }}>Course Progress</Typography>
               <Box style={{ background: '#e0e0e0', borderRadius: '5px', height: isMobile ? '6px' : '8px' }}>
                 <Box style={{ background: 'linear-gradient(90deg, #1a237e, #0288d1)', borderRadius: '5px', height: '100%', width: '65%' }} />
@@ -212,24 +227,9 @@ function Home() {
               { label: 'Day Streak', value: '7🔥', color: '#f44336' },
             ].map((item, index) => (
               <Grid item xs={6} key={index}>
-                <Box style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  borderRadius: isMobile ? '8px' : '10px',
-                  padding: isMobile ? '9px 6px' : '15px',
-                  textAlign: 'center'
-                }}>
-                  <Typography variant="h5" style={{
-                    fontWeight: '800',
-                    color: 'white',
-                    fontSize: isMobile ? '18px' : undefined,
-                    ...fontStyle
-                  }}>{item.value}</Typography>
-                  <Typography variant="caption" style={{
-                    color: 'rgba(255,255,255,0.8)',
-                    fontSize: isMobile ? '10px' : undefined,
-                    lineHeight: 1.2,
-                    display: 'block'
-                  }}>{item.label}</Typography>
+                <Box style={{ background: 'rgba(255,255,255,0.15)', borderRadius: isMobile ? '8px' : '10px', padding: isMobile ? '9px 6px' : '15px', textAlign: 'center' }}>
+                  <Typography variant="h5" style={{ fontWeight: '800', color: 'white', fontSize: isMobile ? '18px' : undefined, ...fontStyle }}>{item.value}</Typography>
+                  <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.8)', fontSize: isMobile ? '10px' : undefined, lineHeight: 1.2, display: 'block' }}>{item.label}</Typography>
                 </Box>
               </Grid>
             ))}
@@ -260,8 +260,8 @@ function Home() {
         </Grid>
       </Box>
 
-      {/* Features Section */}
-      <Box style={{ padding: sectionPadding, background: '#fafafa' }}>
+      {/* ── FEATURES SECTION — 3D Cards ── */}
+      <Box style={{ padding: sectionPadding, background: '#f0f2f8' }}>
         <Box style={{ maxWidth: '600px', marginBottom: '60px' }}>
           <Typography variant="body1" style={{ color: '#ff6f00', fontWeight: '700', marginBottom: '10px', ...bodyFont }}>
             WHY NAIRAFAME ACADEMY
@@ -270,39 +270,98 @@ function Home() {
             Everything you need to master Mathematics
           </Typography>
         </Box>
+
         <Grid container spacing={4}>
-          {[
-            { icon: '📚', title: 'Structured Lessons', description: 'Step by step lessons designed by expert mathematics teachers following Nigerian curriculum', color: '#1a237e', link: '/courses' },
-            { icon: '🔢', title: 'Math Equation Support', description: 'Beautiful rendering of complex mathematical equations, formulas and graphs', color: '#0288d1', link: '/courses' },
-            { icon: '📝', title: 'Auto-Graded Quizzes', description: 'Test your understanding with instant feedback and detailed explanations', color: '#4caf50', link: '/courses' },
-            { icon: '📊', title: 'Progress Tracking', description: 'Track your learning progress and see how far you have come in each course', color: '#ff6f00', link: '/dashboard' },
-            { icon: '🏆', title: 'Badges & Rewards', description: 'Earn badges and rewards as you complete lessons and pass quizzes', color: '#9c27b0', link: '/badges' },
-{ icon: '🤖', title: 'Nairafame AI Tutor', description: 'Chat with your personal AI tutor for step-by-step help in Mathematics and Science. Powered by advanced AI.', color: '#f44336', link: '/ai-tutor' },          ].map((feature, index) => (
+          {features.map((feature, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card elevation={hoveredFeature === index ? 8 : 0}
-                component={Link} to={feature.link}
-                onMouseEnter={() => setHoveredFeature(index)}
-                onMouseLeave={() => setHoveredFeature(null)}
-                style={{
-                  borderRadius: '16px', height: '100%',
-                  border: hoveredFeature === index ? `2px solid ${feature.color}` : '2px solid #f0f0f0',
-                  transform: hoveredFeature === index ? 'translateY(-8px)' : 'translateY(0)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer', textDecoration: 'none',
-                  background: 'white'
-                }}>
-                <CardContent style={{ padding: '35px' }}>
-                  <Typography style={{ fontSize: '45px', marginBottom: '20px' }}>
-                    {feature.icon}
-                  </Typography>
-                  <Typography variant="h6" style={{ fontWeight: '700', marginBottom: '12px', color: '#0a0a0a', ...fontStyle }}>
-                    {feature.title}
-                  </Typography>
-                  <Typography variant="body2" style={{ color: '#666', lineHeight: '1.7', ...bodyFont }}>
-                    {feature.description}
-                  </Typography>
-                </CardContent>
-              </Card>
+              <Link to={feature.link} style={{ textDecoration: 'none' }}>
+                <Box
+                  onMouseEnter={() => setHoveredFeature(index)}
+                  onMouseLeave={() => setHoveredFeature(null)}
+                  style={{
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    height: '100%',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    transform: hoveredFeature === index
+                      ? 'translateY(-12px) rotateX(2deg) rotateY(-2deg) scale(1.02)'
+                      : 'translateY(0) rotateX(0) rotateY(0) scale(1)',
+                    boxShadow: hoveredFeature === index
+                      ? `0 24px 60px rgba(0,0,0,0.2), 0 8px 20px ${feature.color}44, inset 0 1px 0 rgba(255,255,255,0.15)`
+                      : '0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
+                    background: 'white',
+                    position: 'relative',
+                    transformStyle: 'preserve-3d',
+                  }}>
+
+                  {/* Top colored bar */}
+                  <Box style={{
+                    height: '6px',
+                    background: feature.bg,
+                  }} />
+
+                  {/* Card body */}
+                  <Box style={{ padding: isMobile ? '24px 20px' : '32px 28px' }}>
+
+                    {/* Icon circle */}
+                    <Box style={{
+                      width: '64px', height: '64px',
+                      borderRadius: '16px',
+                      background: `${feature.color}14`,
+                      border: `2px solid ${feature.color}22`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      marginBottom: '20px',
+                      fontSize: '30px',
+                      boxShadow: `0 4px 14px ${feature.color}22`,
+                    }}>
+                      {feature.icon}
+                    </Box>
+
+                    <Typography variant="h6" style={{
+                      fontWeight: '800', marginBottom: '10px',
+                      color: '#0a0a0a', fontSize: '17px', ...fontStyle
+                    }}>
+                      {feature.title}
+                    </Typography>
+
+                    <Typography variant="body2" style={{
+                      color: '#777', lineHeight: '1.75',
+                      marginBottom: '24px', ...bodyFont
+                    }}>
+                      {feature.description}
+                    </Typography>
+
+                    {/* Link button */}
+                    <Box style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      color: feature.color, fontWeight: '700', fontSize: '13px',
+                      padding: '8px 16px', borderRadius: '30px',
+                      backgroundColor: `${feature.color}12`,
+                      border: `1.5px solid ${feature.color}30`,
+                      transition: 'all 0.2s',
+                      ...bodyFont,
+                      ...(hoveredFeature === index ? {
+                        backgroundColor: feature.color,
+                        color: 'white',
+                        borderColor: feature.color,
+                      } : {})
+                    }}>
+                      {feature.label}
+                    </Box>
+                  </Box>
+
+                  {/* Shine effect on hover */}
+                  {hoveredFeature === index && (
+                    <Box style={{
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%)',
+                      borderRadius: '20px',
+                      pointerEvents: 'none',
+                    }} />
+                  )}
+                </Box>
+              </Link>
             </Grid>
           ))}
         </Grid>
@@ -370,8 +429,7 @@ function Home() {
               <Card elevation={0} style={{
                 borderRadius: '16px', height: '100%',
                 border: '2px solid #f0f0f0', background: 'white',
-                transition: 'transform 0.3s',
-                padding: '10px'
+                transition: 'transform 0.3s', padding: '10px'
               }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -406,16 +464,8 @@ function Home() {
       </Box>
 
       {/* CTA Section */}
-      <Box style={{
-        background: '#0a0a0a',
-        padding: sectionPadding, textAlign: 'center', color: 'white'
-      }}>
-        <Typography variant="h2" style={{
-          fontWeight: '800',
-          marginBottom: '20px',
-          fontSize: isMobile ? '32px' : isTablet ? '42px' : undefined,
-          ...fontStyle
-        }}>
+      <Box style={{ background: '#0a0a0a', padding: sectionPadding, textAlign: 'center', color: 'white' }}>
+        <Typography variant="h2" style={{ fontWeight: '800', marginBottom: '20px', fontSize: isMobile ? '32px' : isTablet ? '42px' : undefined, ...fontStyle }}>
           Ready to excel in Mathematics? 🎓
         </Typography>
         <Typography variant="h6" style={{ marginBottom: '40px', color: 'rgba(255,255,255,0.7)', maxWidth: '500px', margin: '0 auto 40px', ...bodyFont }}>
@@ -424,22 +474,11 @@ function Home() {
         <Box style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
           <Button variant="contained"
             onClick={() => setOpenModal(true)}
-            style={{
-              backgroundColor: '#ff6f00', color: 'white',
-              padding: '18px 50px', fontSize: '18px',
-              borderRadius: '8px', fontWeight: '700',
-              ...bodyFont,
-              ...buttonStyle
-            }}>
+            style={{ backgroundColor: '#ff6f00', color: 'white', padding: '18px 50px', fontSize: '18px', borderRadius: '8px', fontWeight: '700', ...bodyFont, ...buttonStyle }}>
             Get Started Free →
           </Button>
           <Button variant="outlined" component={Link} to="/courses"
-            style={{
-              borderColor: 'rgba(255,255,255,0.3)', color: 'white',
-              padding: '18px 50px', fontSize: '18px',
-              borderRadius: '8px', ...bodyFont,
-              ...buttonStyle
-            }}>
+            style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', padding: '18px 50px', fontSize: '18px', borderRadius: '8px', ...bodyFont, ...buttonStyle }}>
             Browse Courses
           </Button>
         </Box>
@@ -471,17 +510,17 @@ function Home() {
           </Grid>
           <Grid item xs={6} sm={2}>
             <Typography variant="body1" style={{ fontWeight: '700', marginBottom: '15px', ...fontStyle }}>Company</Typography>
-           {[
-  { label: 'About', path: '/' },
-  { label: 'Contact', path: '/' },
-  { label: 'Privacy Policy', path: '/privacy' },
-].map(item => (
-  <Box key={item.label} style={{ marginBottom: '10px' }}>
-    <Link to={item.path} style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', ...bodyFont }}>
-      <Typography variant="body2">{item.label}</Typography>
-    </Link>
-  </Box>
-))}
+            {[
+              { label: 'About', path: '/' },
+              { label: 'Contact', path: '/' },
+              { label: 'Privacy Policy', path: '/privacy' },
+            ].map(item => (
+              <Box key={item.label} style={{ marginBottom: '10px' }}>
+                <Link to={item.path} style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', ...bodyFont }}>
+                  <Typography variant="body2">{item.label}</Typography>
+                </Link>
+              </Box>
+            ))}
           </Grid>
           <Grid item xs={12} sm={4}>
             <Typography variant="body1" style={{ fontWeight: '700', marginBottom: '15px', ...fontStyle }}>
@@ -508,8 +547,7 @@ function Home() {
           transform: 'translate(-50%, -50%)',
           background: 'white', borderRadius: '20px',
           padding: '40px', width: '90%', maxWidth: '450px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
+          maxHeight: '90vh', overflowY: 'auto',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
         }}>
           <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
