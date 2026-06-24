@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Grid, Button, Chip, Alert } from '@mui/material';
+import { Box, Typography, Grid, Button, Chip, Alert, useMediaQuery, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import PeopleIcon from '@mui/icons-material/People';
@@ -28,6 +28,14 @@ function Courses() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const student_id = user?.id;
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+
+  const horizontalPadding = isMobile ? '16px' : isTablet ? '32px' : '60px';
+  const headerVerticalPadding = isMobile ? '30px' : '50px';
+  const contentVerticalPadding = isMobile ? '24px' : '40px';
 
   useEffect(() => {
     axios.get('https://eduplatform-api-pol1.onrender.com/api/courses')
@@ -79,7 +87,8 @@ function Courses() {
 
       {/* Header */}
       <Box style={{
-        background: 'white', padding: '60px 80px',
+        background: 'white',
+        padding: `${headerVerticalPadding} ${horizontalPadding}`,
         borderBottom: '1px solid #f0f0f0',
         position: 'relative', overflow: 'hidden'
       }}>
@@ -91,7 +100,7 @@ function Courses() {
           <Box style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             backgroundColor: '#fff3e0', border: '1px solid #ff6f00',
-            borderRadius: '30px', padding: '6px 16px', marginBottom: '20px'
+            borderRadius: '30px', padding: '6px 16px', marginBottom: '16px'
           }}>
             <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '600' }}>
               🇳🇬 Designed for Nigerian Students
@@ -100,7 +109,8 @@ function Courses() {
 
           <Typography style={{
             fontWeight: '800', marginBottom: '10px', color: '#0a0a0a',
-            fontFamily: "'Space Grotesk', sans-serif", fontSize: '42px',
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontSize: isMobile ? '26px' : isTablet ? '32px' : '42px',
             lineHeight: '1.2'
           }}>
             Find Your Perfect{' '}
@@ -112,7 +122,7 @@ function Courses() {
             Course
           </Typography>
 
-          <Typography variant="h6" style={{ color: '#666', marginBottom: '30px', fontWeight: '400' }}>
+          <Typography variant="h6" style={{ color: '#666', marginBottom: '24px', fontWeight: '400', fontSize: isMobile ? '14px' : '16px' }}>
             Expert-led courses helping Nigerian students pass WAEC, JAMB and build real STEM skills
           </Typography>
 
@@ -139,8 +149,10 @@ function Courses() {
             <Button variant="contained"
               style={{
                 backgroundColor: '#1a237e', borderRadius: '10px',
-                padding: '10px 16px', fontWeight: '700',
-                textTransform: 'none', fontSize: '15px',
+                padding: isMobile ? '8px 12px' : '10px 16px',
+                fontWeight: '700',
+                textTransform: 'none',
+                fontSize: isMobile ? '13px' : '15px',
                 flexShrink: 0, whiteSpace: 'nowrap',
                 boxShadow: 'none'
               }}>
@@ -149,7 +161,7 @@ function Courses() {
           </Box>
 
           {/* Quick Tags */}
-          <Box style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
+          <Box style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
             {['Algebra', 'Calculus', 'WAEC Maths', 'JAMB Prep', 'Statistics', 'Geometry'].map(tag => (
               <Chip key={tag} label={tag}
                 onClick={() => handleSearch(tag)}
@@ -157,7 +169,8 @@ function Courses() {
                   cursor: 'pointer', backgroundColor: search === tag ? '#1a237e' : '#f5f5f5',
                   color: search === tag ? 'white' : '#333',
                   border: '1px solid #e0e0e0', fontWeight: '500',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
+                  fontSize: isMobile ? '12px' : '13px'
                 }}
               />
             ))}
@@ -166,16 +179,16 @@ function Courses() {
       </Box>
 
       {/* Content */}
-      <Box style={{ padding: '50px 80px' }}>
+      <Box style={{ padding: `${contentVerticalPadding} ${horizontalPadding}` }}>
         {message && (
           <Alert severity={messageType} style={{ marginBottom: '25px', borderRadius: '10px' }} onClose={() => setMessage('')}>
             {message}
           </Alert>
         )}
 
-        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <Box>
-            <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '24px', fontFamily: "'Space Grotesk', sans-serif" }}>
+            <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: isMobile ? '18px' : '24px', fontFamily: "'Space Grotesk', sans-serif" }}>
               {filtered.length} Course{filtered.length !== 1 ? 's' : ''} Available
             </Typography>
             <Typography variant="body2" style={{ color: '#999', marginTop: '4px' }}>
@@ -185,7 +198,7 @@ function Courses() {
         </Box>
 
         {filtered.length === 0 ? (
-          <Box style={{ textAlign: 'center', padding: '80px' }}>
+          <Box style={{ textAlign: 'center', padding: isMobile ? '40px 16px' : '80px' }}>
             <Typography style={{ fontSize: '60px', marginBottom: '20px' }}>🔍</Typography>
             <Typography variant="h5" style={{ color: '#333', marginBottom: '10px', fontWeight: '700' }}>
               No courses found
@@ -195,7 +208,7 @@ function Courses() {
             </Typography>
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={isMobile ? 2 : 3}>
             {filtered.map((course, index) => {
               const colorScheme = courseColors[index % courseColors.length];
               return (
@@ -220,18 +233,17 @@ function Courses() {
                     {/* Course Banner */}
                     <Box style={{
                       background: colorScheme.bg,
-                      padding: '30px 25px',
-                      position: 'relative', minHeight: '140px',
+                      padding: '24px 20px',
+                      position: 'relative', minHeight: '130px',
                       display: 'flex', flexDirection: 'column',
                       justifyContent: 'space-between'
                     }}>
-                      {/* Top row */}
                       <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <Box style={{
-                          width: '50px', height: '50px', borderRadius: '12px',
+                          width: '46px', height: '46px', borderRadius: '12px',
                           background: 'rgba(255,255,255,0.15)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '24px'
+                          fontSize: '22px'
                         }}>
                           {colorScheme.emoji}
                         </Box>
@@ -241,7 +253,6 @@ function Courses() {
                         )}
                       </Box>
 
-                      {/* Course title on banner */}
                       <Box>
                         <Chip label="Mathematics" size="small"
                           style={{
@@ -251,7 +262,7 @@ function Courses() {
                           }} />
                         <Typography style={{
                           color: 'white', fontWeight: '800',
-                          fontSize: '18px', lineHeight: '1.3',
+                          fontSize: '17px', lineHeight: '1.3',
                           fontFamily: "'Space Grotesk', sans-serif"
                         }}>
                           {course.title}
@@ -260,9 +271,9 @@ function Courses() {
                     </Box>
 
                     {/* Card Body */}
-                    <Box style={{ padding: '20px 25px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <Box style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                       <Typography variant="body2" style={{
-                        color: '#666', marginBottom: '15px',
+                        color: '#666', marginBottom: '12px',
                         lineHeight: '1.6', flex: 1
                       }}>
                         {course.description || 'Learn mathematics with structured lessons and interactive quizzes designed for Nigerian students.'}
@@ -271,8 +282,8 @@ function Courses() {
                       {/* Course Stats */}
                       <Box style={{
                         display: 'grid', gridTemplateColumns: '1fr 1fr',
-                        gap: '8px', marginBottom: '20px',
-                        padding: '12px', background: '#fafafa',
+                        gap: '8px', marginBottom: '14px',
+                        padding: '10px', background: '#fafafa',
                         borderRadius: '10px'
                       }}>
                         <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -294,7 +305,7 @@ function Courses() {
                       </Box>
 
                       {/* Instructor */}
-                      <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                         <Box style={{
                           width: '28px', height: '28px', borderRadius: '50%',
                           background: colorScheme.bg,
@@ -310,7 +321,7 @@ function Courses() {
                       {/* Free Badge */}
                       <Box style={{
                         display: 'flex', alignItems: 'center',
-                        justifyContent: 'space-between', marginBottom: '15px'
+                        justifyContent: 'space-between', marginBottom: '12px'
                       }}>
                         <Box>
                           <Typography style={{ fontWeight: '800', color: '#4caf50', fontSize: '20px' }}>
@@ -330,7 +341,7 @@ function Courses() {
                           onClick={() => navigate(`/courses/${course.id}/lessons`)}
                           style={{
                             background: colorScheme.bg,
-                            borderRadius: '10px', padding: '12px',
+                            borderRadius: '10px', padding: '11px',
                             fontWeight: '700', textTransform: 'none',
                             fontSize: '15px', boxShadow: 'none'
                           }}>
@@ -342,7 +353,7 @@ function Courses() {
                             onClick={() => handleEnroll(course.id)}
                             style={{
                               background: colorScheme.bg,
-                              borderRadius: '10px', padding: '12px',
+                              borderRadius: '10px', padding: '11px',
                               fontWeight: '700', textTransform: 'none',
                               fontSize: '15px', boxShadow: 'none'
                             }}>
@@ -352,7 +363,7 @@ function Courses() {
                             onClick={() => navigate(`/courses/${course.id}/lessons`)}
                             style={{
                               borderColor: '#e0e0e0', color: '#666',
-                              borderRadius: '10px', padding: '10px',
+                              borderRadius: '10px', padding: '9px',
                               fontWeight: '600', textTransform: 'none'
                             }}>
                             Preview Course
