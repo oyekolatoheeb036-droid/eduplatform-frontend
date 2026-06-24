@@ -18,6 +18,7 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
 import MathEditor from '../components/MathEditor';
+import QuizFields from '../components/QuizFields';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 
@@ -414,8 +415,10 @@ function LessonBuilder() {
                   margin="normal" variant="outlined"
                   InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
                 {addingSection === 'dive_deeper'
-                  ? <DiveDeeperFields data={newSection} setData={setNewSection} isMobile={isMobile} />
-                  : <RegularFields data={newSection} setData={setNewSection} />}
+  ? <DiveDeeperFields data={newSection} setData={setNewSection} isMobile={isMobile} />
+  : addingSection === 'quiz'
+  ? <QuizFields lessonId={parseInt(lesson_id)} courseId={parseInt(course_id)} onSaved={() => { setAddingSection(null); setMessage('Quiz saved! ✅'); }} />
+  : <RegularFields data={newSection} setData={setNewSection} />}
                 <Box style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
                   <Button variant="contained" onClick={handleAddSection}
                     style={{ backgroundColor: getSectionColor(addingSection), padding: '10px 28px', borderRadius: '10px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
@@ -494,8 +497,10 @@ function LessonBuilder() {
             margin="normal" variant="outlined"
             InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
           {editingSection?.type === 'dive_deeper'
-            ? <DiveDeeperFields data={editData} setData={setEditData} isMobile={isMobile} />
-            : <RegularFields data={editData} setData={setEditData} />}
+  ? <DiveDeeperFields data={editData} setData={setEditData} isMobile={isMobile} />
+  : editingSection?.type === 'quiz'
+  ? <QuizFields lessonId={parseInt(lesson_id)} courseId={parseInt(course_id)} onSaved={() => setEditDialogOpen(false)} />
+  : <RegularFields data={editData} setData={setEditData} />}
         </DialogContent>
         <DialogActions style={{ padding: '16px 24px', borderTop: '1px solid #f0f0f0', gap: '10px' }}>
           <Button onClick={() => setEditDialogOpen(false)} style={{ color: '#666', textTransform: 'none', ...bodyFont }}>Cancel</Button>
