@@ -24,8 +24,8 @@ function CourseLessons() {
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
-  const [newLesson, setNewLesson] = useState({ title: '' });
-  const [editLesson, setEditLesson] = useState({ title: '' });
+  const [newLesson, setNewLesson] = useState({ title: '', duration: '' });
+  const [editLesson, setEditLesson] = useState({ title: '', duration: '' });
 
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
@@ -65,12 +65,13 @@ function CourseLessons() {
         course_id: parseInt(course_id),
         title: newLesson.title,
         content: '',
+        duration: parseFloat(newLesson.duration) || 0,
         order_number: lessons.length + 1
       });
       setMessageType('success');
       setMessage('Lesson created successfully! 🎉');
       setOpenAddDialog(false);
-      setNewLesson({ title: '' });
+      setNewLesson({ title: '', duration: '' });
       fetchLessons();
     } catch (err) {
       setMessageType('error');
@@ -84,7 +85,7 @@ function CourseLessons() {
         title: editLesson.title,
         content: selectedLesson.content,
         video_url: selectedLesson.video_url,
-        duration: selectedLesson.duration,
+        duration: parseFloat(editLesson.duration) || 0,
         order_number: selectedLesson.order_number
       });
       setMessageType('success');
@@ -121,88 +122,30 @@ function CourseLessons() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Decorative circles */}
-        <Box style={{
-          position: 'absolute',
-          top: '-70px',
-          right: '-80px',
-          width: isMobile ? '220px' : '320px',
-          height: isMobile ? '220px' : '320px',
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, #e8eaf6, #e3f2fd)',
-          opacity: 0.7
-        }} />
-        <Box style={{
-          position: 'absolute',
-          bottom: '-90px',
-          right: isMobile ? '-30px' : '250px',
-          width: isMobile ? '150px' : '200px',
-          height: isMobile ? '150px' : '200px',
-          borderRadius: '50%',
-          background: '#fff3e0',
-          opacity: 0.6
-        }} />
+        <Box style={{ position: 'absolute', top: '-70px', right: '-80px', width: isMobile ? '220px' : '320px', height: isMobile ? '220px' : '320px', borderRadius: '50%', background: 'linear-gradient(135deg, #e8eaf6, #e3f2fd)', opacity: 0.7 }} />
+        <Box style={{ position: 'absolute', bottom: '-90px', right: isMobile ? '-30px' : '250px', width: isMobile ? '150px' : '200px', height: isMobile ? '150px' : '200px', borderRadius: '50%', background: '#fff3e0', opacity: 0.6 }} />
 
         <Box style={{ position: 'relative', maxWidth: '780px' }}>
-          {/* Back button */}
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/teacher')}
-            style={{
-              color: '#1a237e',
-              textTransform: 'none',
-              fontWeight: '700',
-              marginBottom: '16px',
-              padding: '0',
-              ...bodyFont
-            }}
-          >
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/teacher')}
+            style={{ color: '#1a237e', textTransform: 'none', fontWeight: '700', marginBottom: '16px', padding: '0', ...bodyFont }}>
             Back to Dashboard
           </Button>
 
-          {/* Pill badge */}
-          <Box style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            backgroundColor: '#fff3e0',
-            border: '1px solid #ff6f00',
-            borderRadius: '30px',
-            padding: '6px 16px',
-            marginBottom: '20px',
-            marginLeft: isMobile ? '0' : '16px'
-          }}>
-            <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '700', ...bodyFont }}>
-              COURSE CONTENT
-            </Typography>
+          <Box style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#fff3e0', border: '1px solid #ff6f00', borderRadius: '30px', padding: '6px 16px', marginBottom: '20px', marginLeft: isMobile ? '0' : '16px' }}>
+            <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '700', ...bodyFont }}>COURSE CONTENT</Typography>
           </Box>
 
-          <Typography style={{
-            fontWeight: '800',
-            marginBottom: '12px',
-            color: '#0a0a0a',
-            fontSize: isMobile ? '28px' : '42px',
-            lineHeight: '1.15',
-            ...fontStyle
-          }}>
+          <Typography style={{ fontWeight: '800', marginBottom: '12px', color: '#0a0a0a', fontSize: isMobile ? '28px' : '42px', lineHeight: '1.15', ...fontStyle }}>
             {course?.title ? (
               <>
                 {course.title.split(' ').slice(0, -1).join(' ')}{' '}
-                <span style={{
-                  background: 'linear-gradient(135deg, #1a237e, #0288d1)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
+                <span style={{ background: 'linear-gradient(135deg, #1a237e, #0288d1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   {course.title.split(' ').slice(-1)[0]}
                 </span>
               </>
             ) : (
-              <>
-                Course{' '}
-                <span style={{
-                  background: 'linear-gradient(135deg, #1a237e, #0288d1)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}>
+              <>Course{' '}
+                <span style={{ background: 'linear-gradient(135deg, #1a237e, #0288d1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Lessons
                 </span>{' '}📚
               </>
@@ -210,13 +153,7 @@ function CourseLessons() {
           </Typography>
 
           {course?.description && (
-            <Typography variant="h6" style={{
-              color: '#666',
-              fontWeight: '400',
-              lineHeight: '1.6',
-              maxWidth: '680px',
-              ...bodyFont
-            }}>
+            <Typography variant="h6" style={{ color: '#666', fontWeight: '400', lineHeight: '1.6', maxWidth: '680px', ...bodyFont }}>
               {course.description}
             </Typography>
           )}
@@ -225,145 +162,58 @@ function CourseLessons() {
 
       {/* ── Page body ── */}
       <Box style={{ padding: pagePadding }}>
-
         {message && (
           <Alert severity={messageType} style={{ marginBottom: '24px', borderRadius: '10px' }} onClose={() => setMessage('')}>
             {message}
           </Alert>
         )}
 
-        {/* Add Lesson Button */}
-        <Button
-          variant="contained"
-          startIcon={<AddCircleIcon />}
-          onClick={() => setOpenAddDialog(true)}
-          style={{
-            backgroundColor: '#1a237e',
-            padding: isMobile ? '10px 20px' : '12px 28px',
-            borderRadius: '10px',
-            marginBottom: '32px',
-            fontSize: '15px',
-            fontWeight: '700',
-            textTransform: 'none',
-            boxShadow: 'none',
-            ...bodyFont
-          }}
-        >
+        <Button variant="contained" startIcon={<AddCircleIcon />} onClick={() => setOpenAddDialog(true)}
+          style={{ backgroundColor: '#1a237e', padding: isMobile ? '10px 20px' : '12px 28px', borderRadius: '10px', marginBottom: '32px', fontSize: '15px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
           Add New Lesson
         </Button>
 
-        {/* Empty state */}
         {lessons.length === 0 ? (
-          <Card elevation={0} style={{
-            borderRadius: '20px',
-            textAlign: 'center',
-            padding: isMobile ? '40px 20px' : '60px',
-            border: '1px solid #f0f0f0',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
-          }}>
-            <Typography variant="h5" style={{ color: '#999', marginBottom: '10px', fontWeight: '700', ...fontStyle }}>
-              No lessons yet!
-            </Typography>
-            <Typography style={{ color: '#bbb', ...bodyFont }}>
-              Click Add New Lesson to create your first lesson.
-            </Typography>
+          <Card elevation={0} style={{ borderRadius: '20px', textAlign: 'center', padding: isMobile ? '40px 20px' : '60px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+            <Typography variant="h5" style={{ color: '#999', marginBottom: '10px', fontWeight: '700', ...fontStyle }}>No lessons yet!</Typography>
+            <Typography style={{ color: '#bbb', ...bodyFont }}>Click Add New Lesson to create your first lesson.</Typography>
           </Card>
         ) : (
           lessons.map((lesson, index) => (
-            <Card key={lesson.id} elevation={0} style={{
-              borderRadius: '18px',
-              marginBottom: '14px',
-              border: '1px solid #f0f0f0',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
-            }}>
-              <CardContent style={{
-                padding: isMobile ? '16px' : '22px 28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: isMobile ? 'wrap' : 'nowrap',
-                gap: '12px'
-              }}>
-                {/* Left: icon + title */}
+            <Card key={lesson.id} elevation={0} style={{ borderRadius: '18px', marginBottom: '14px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+              <CardContent style={{ padding: isMobile ? '16px' : '22px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: isMobile ? 'wrap' : 'nowrap', gap: '12px' }}>
                 <Box style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
-                  <Box style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #1a237e, #0288d1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    flexShrink: 0
-                  }}>
+                  <Box style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
                     <PlayCircleFilledIcon />
                   </Box>
                   <Box style={{ minWidth: 0 }}>
-                    <Chip
-                      label={`Lesson ${index + 1}`}
-                      size="small"
-                      style={{
-                        marginBottom: '6px',
-                        fontWeight: '700',
-                        backgroundColor: '#e3f2fd',
-                        color: '#1a237e',
-                        ...bodyFont
-                      }}
-                    />
-                    <Typography style={{
-                      fontWeight: '800',
-                      fontSize: isMobile ? '15px' : '17px',
-                      color: '#0a0a0a',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      ...fontStyle
-                    }}>
+                    <Chip label={`Lesson ${index + 1}`} size="small"
+                      style={{ marginBottom: '6px', fontWeight: '700', backgroundColor: '#e3f2fd', color: '#1a237e', ...bodyFont }} />
+                    <Typography style={{ fontWeight: '800', fontSize: isMobile ? '15px' : '17px', color: '#0a0a0a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', ...fontStyle }}>
                       {lesson.title}
                     </Typography>
+                    {lesson.duration > 0 && (
+                      <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
+                        ⏱ {lesson.duration} hrs
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
 
-                {/* Right: action buttons */}
-                <Box style={{
-                  display: 'flex',
-                  gap: '10px',
-                  alignItems: 'center',
-                  flexShrink: 0,
-                  width: isMobile ? '100%' : 'auto',
-                  justifyContent: isMobile ? 'flex-end' : 'flex-start'
-                }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<BuildIcon />}
+                <Box style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0, width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'flex-end' : 'flex-start' }}>
+                  <Button variant="contained" startIcon={<BuildIcon />}
                     onClick={() => navigate(`/courses/${course_id}/lessons/${lesson.id}/builder`)}
-                    style={{
-                      backgroundColor: '#ff6f00',
-                      borderRadius: '10px',
-                      padding: '8px 18px',
-                      fontWeight: '700',
-                      textTransform: 'none',
-                      boxShadow: 'none',
-                      ...bodyFont
-                    }}
-                  >
+                    style={{ backgroundColor: '#ff6f00', borderRadius: '10px', padding: '8px 18px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
                     Build
                   </Button>
-                  <IconButton
-                    size="small"
-                    onClick={() => { setSelectedLesson(lesson); setEditLesson({ title: lesson.title }); setOpenEditDialog(true); }}
-                    style={{ backgroundColor: '#e3f2fd', color: '#1a237e' }}
-                    aria-label="Edit lesson"
-                  >
+                  <IconButton size="small"
+                    onClick={() => { setSelectedLesson(lesson); setEditLesson({ title: lesson.title, duration: lesson.duration || '' }); setOpenEditDialog(true); }}
+                    style={{ backgroundColor: '#e3f2fd', color: '#1a237e' }} aria-label="Edit lesson">
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton
-                    size="small"
+                  <IconButton size="small"
                     onClick={() => { setSelectedLesson(lesson); setOpenDeleteDialog(true); }}
-                    style={{ backgroundColor: '#ffebee', color: '#f44336' }}
-                    aria-label="Delete lesson"
-                  >
+                    style={{ backgroundColor: '#ffebee', color: '#f44336' }} aria-label="Delete lesson">
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Box>
@@ -375,20 +225,19 @@ function CourseLessons() {
 
       {/* ── Add Lesson Dialog ── */}
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle style={{ color: '#0a0a0a', fontWeight: '800', ...fontStyle }}>
-          Add New Lesson
-        </DialogTitle>
+        <DialogTitle style={{ color: '#0a0a0a', fontWeight: '800', ...fontStyle }}>Add New Lesson</DialogTitle>
         <DialogContent style={{ padding: '24px' }}>
-          <TextField
-            fullWidth
-            label="Lesson Title"
-            value={newLesson.title}
+          <TextField fullWidth label="Lesson Title" value={newLesson.title}
             onChange={e => setNewLesson({ ...newLesson, title: e.target.value })}
-            margin="normal"
-            variant="outlined"
+            margin="normal" variant="outlined"
             placeholder="e.g. Introduction to Algebra"
-            InputProps={{ style: { borderRadius: '10px', ...bodyFont } }}
-          />
+            InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
+          <TextField fullWidth label="Duration (in hours)" value={newLesson.duration}
+            onChange={e => setNewLesson({ ...newLesson, duration: e.target.value })}
+            margin="normal" variant="outlined" type="number"
+            placeholder="e.g. 1.5"
+            helperText="How long will this lesson take? (e.g. 1, 1.5, 2)"
+            InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
         </DialogContent>
         <DialogActions style={{ padding: '20px 24px' }}>
           <Button onClick={() => setOpenAddDialog(false)} style={{ color: '#666', textTransform: 'none', ...bodyFont }}>Cancel</Button>
@@ -401,22 +250,21 @@ function CourseLessons() {
 
       {/* ── Edit Lesson Dialog ── */}
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle style={{ color: '#0a0a0a', fontWeight: '800', ...fontStyle }}>
-          Edit Lesson
-        </DialogTitle>
+        <DialogTitle style={{ color: '#0a0a0a', fontWeight: '800', ...fontStyle }}>Edit Lesson</DialogTitle>
         <DialogContent style={{ padding: '24px' }}>
           <Typography variant="body1" style={{ marginBottom: '8px', color: '#333', ...bodyFont }}>
             Editing: <strong>{selectedLesson?.title}</strong>
           </Typography>
-          <TextField
-            fullWidth
-            label="Lesson Title"
-            value={editLesson.title}
+          <TextField fullWidth label="Lesson Title" value={editLesson.title}
             onChange={e => setEditLesson({ ...editLesson, title: e.target.value })}
-            margin="normal"
-            variant="outlined"
-            InputProps={{ style: { borderRadius: '10px', ...bodyFont } }}
-          />
+            margin="normal" variant="outlined"
+            InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
+          <TextField fullWidth label="Duration (in hours)" value={editLesson.duration}
+            onChange={e => setEditLesson({ ...editLesson, duration: e.target.value })}
+            margin="normal" variant="outlined" type="number"
+            placeholder="e.g. 1.5"
+            helperText="How long will this lesson take? (e.g. 1, 1.5, 2)"
+            InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
         </DialogContent>
         <DialogActions style={{ padding: '20px 24px' }}>
           <Button onClick={() => setOpenEditDialog(false)} style={{ color: '#666', textTransform: 'none', ...bodyFont }}>Cancel</Button>
@@ -429,9 +277,7 @@ function CourseLessons() {
 
       {/* ── Delete Lesson Dialog ── */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle style={{ color: '#0a0a0a', fontWeight: '800', ...fontStyle }}>
-          Delete Lesson
-        </DialogTitle>
+        <DialogTitle style={{ color: '#0a0a0a', fontWeight: '800', ...fontStyle }}>Delete Lesson</DialogTitle>
         <DialogContent style={{ padding: '24px' }}>
           <Typography variant="h6" style={{ marginBottom: '10px', fontWeight: '700', ...fontStyle }}>
             Are you sure you want to delete this lesson?
