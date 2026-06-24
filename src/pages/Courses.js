@@ -296,12 +296,10 @@ function Courses() {
                         </Box>
                         <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                           <MenuBookIcon style={{ fontSize: '14px', color: '#666' }} />
-                          <Typography variant="caption" style={{ color: '#666' }}>12 lessons</Typography>
-                        </Box>
+<Typography variant="caption" style={{ color: '#666' }}>{course.lesson_count} lessons</Typography>                        </Box>
                         <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                           <AccessTimeIcon style={{ fontSize: '14px', color: '#666' }} />
-                          <Typography variant="caption" style={{ color: '#666' }}>6 hours</Typography>
-                        </Box>
+<Typography variant="caption" style={{ color: '#666' }}>{course.total_duration} hrs</Typography>                        </Box>
                       </Box>
 
                       {/* Instructor */}
