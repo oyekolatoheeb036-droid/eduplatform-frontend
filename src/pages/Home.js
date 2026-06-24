@@ -69,7 +69,6 @@ function TypingText({ texts }) {
 
 function Home() {
   const [openModal, setOpenModal] = useState(false);
-  const [hoveredFeature, setHoveredFeature] = useState(null);
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
@@ -86,55 +85,43 @@ function Home() {
       icon: '📚',
       title: 'Structured Lessons',
       description: 'Step by step lessons designed by expert mathematics teachers following Nigerian curriculum',
-      color: '#1a237e',
-      bg: 'linear-gradient(135deg, #1a237e, #283593)',
-      link: '/courses',
-      label: 'Browse Courses →'
+      topColor: '#1a237e',
+      iconBg: 'rgba(26,35,126,0.08)',
     },
     {
       icon: '🔢',
       title: 'Math Equation Support',
       description: 'Beautiful rendering of complex mathematical equations, formulas and graphs',
-      color: '#0288d1',
-      bg: 'linear-gradient(135deg, #0277bd, #0288d1)',
-      link: '/courses',
-      label: 'See Examples →'
+      topColor: '#0288d1',
+      iconBg: 'rgba(2,136,209,0.08)',
     },
     {
       icon: '📝',
       title: 'Auto-Graded Quizzes',
       description: 'Test your understanding with instant feedback and detailed explanations',
-      color: '#2e7d32',
-      bg: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-      link: '/courses',
-      label: 'Take a Quiz →'
+      topColor: '#2e7d32',
+      iconBg: 'rgba(46,125,50,0.08)',
     },
     {
       icon: '📊',
       title: 'Progress Tracking',
       description: 'Track your learning progress and see how far you have come in each course',
-      color: '#e65100',
-      bg: 'linear-gradient(135deg, #e65100, #ff6f00)',
-      link: '/dashboard',
-      label: 'View Dashboard →'
+      topColor: '#ff6f00',
+      iconBg: 'rgba(255,111,0,0.08)',
     },
     {
       icon: '🏆',
       title: 'Badges & Rewards',
       description: 'Earn badges and rewards as you complete lessons and pass quizzes',
-      color: '#6a1b9a',
-      bg: 'linear-gradient(135deg, #6a1b9a, #9c27b0)',
-      link: '/badges',
-      label: 'View Badges →'
+      topColor: '#6a1b9a',
+      iconBg: 'rgba(106,27,154,0.08)',
     },
     {
       icon: '🤖',
       title: 'Nairafame AI Tutor',
       description: 'Chat with your personal AI tutor for step-by-step help in Mathematics and Science. Powered by advanced AI.',
-      color: '#c62828',
-      bg: 'linear-gradient(135deg, #c62828, #f44336)',
-      link: '/ai-tutor',
-      label: 'Try AI Tutor →'
+      topColor: '#c62828',
+      iconBg: 'rgba(198,40,40,0.08)',
     },
   ];
 
@@ -260,8 +247,8 @@ function Home() {
         </Grid>
       </Box>
 
-      {/* ── FEATURES SECTION — 3D Cards ── */}
-      <Box style={{ padding: sectionPadding, background: '#f0f2f8' }}>
+      {/* ── FEATURES SECTION ── */}
+      <Box style={{ padding: sectionPadding, background: '#f0f2f5' }}>
         <Box style={{ maxWidth: '600px', marginBottom: '60px' }}>
           <Typography variant="body1" style={{ color: '#ff6f00', fontWeight: '700', marginBottom: '10px', ...bodyFont }}>
             WHY NAIRAFAME ACADEMY
@@ -271,100 +258,94 @@ function Home() {
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Link to={feature.link} style={{ textDecoration: 'none' }}>
-                <Box
-                  onMouseEnter={() => setHoveredFeature(index)}
-                  onMouseLeave={() => setHoveredFeature(null)}
-                  style={{
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    height: '100%',
-                    cursor: 'pointer',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    transform: hoveredFeature === index
-                      ? 'translateY(-12px) rotateX(2deg) rotateY(-2deg) scale(1.02)'
-                      : 'translateY(0) rotateX(0) rotateY(0) scale(1)',
-                    boxShadow: hoveredFeature === index
-                      ? `0 24px 60px rgba(0,0,0,0.2), 0 8px 20px ${feature.color}44, inset 0 1px 0 rgba(255,255,255,0.15)`
-                      : '0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)',
-                    background: 'white',
-                    position: 'relative',
-                    transformStyle: 'preserve-3d',
-                  }}>
-
-                  {/* Top colored bar */}
-                  <Box style={{
-                    height: '6px',
-                    background: feature.bg,
-                  }} />
-
-                  {/* Card body */}
-                  <Box style={{ padding: isMobile ? '24px 20px' : '32px 28px' }}>
-
-                    {/* Icon circle */}
+        {isMobile ? (
+          /* ── MOBILE: original card style ── */
+          <Grid container spacing={3}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} key={index}>
+                <Box style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                }}>
+                  <Box style={{ height: '5px', background: feature.topColor }} />
+                  <Box style={{ padding: '24px 20px' }}>
                     <Box style={{
-                      width: '64px', height: '64px',
-                      borderRadius: '16px',
-                      background: `${feature.color}14`,
-                      border: `2px solid ${feature.color}22`,
+                      width: '52px', height: '52px', borderRadius: '12px',
+                      background: feature.iconBg,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: '20px',
-                      fontSize: '30px',
-                      boxShadow: `0 4px 14px ${feature.color}22`,
+                      fontSize: '26px', marginBottom: '16px',
+                    }}>
+                      {feature.icon}
+                    </Box>
+                    <Typography variant="h6" style={{ fontWeight: '800', color: '#0a0a0a', marginBottom: '8px', fontSize: '16px', ...fontStyle }}>
+                      {feature.title}
+                    </Typography>
+                    <Typography variant="body2" style={{ color: '#777', lineHeight: '1.75', ...bodyFont }}>
+                      {feature.description}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          /* ── DESKTOP: clean minimal cards matching reference image ── */
+          <Grid container spacing={3}>
+            {features.map((feature, index) => (
+              <Grid item sm={6} md={4} key={index}>
+                <Box style={{
+                  background: 'white',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06)',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}>
+                  {/* Colored top border */}
+                  <Box style={{ height: '5px', background: feature.topColor, flexShrink: 0 }} />
+
+                  {/* Card content */}
+                  <Box style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    {/* Icon */}
+                    <Box style={{
+                      width: '52px', height: '52px',
+                      borderRadius: '12px',
+                      background: feature.iconBg,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '26px',
+                      marginBottom: '24px',
                     }}>
                       {feature.icon}
                     </Box>
 
                     <Typography variant="h6" style={{
-                      fontWeight: '800', marginBottom: '10px',
-                      color: '#0a0a0a', fontSize: '17px', ...fontStyle
+                      fontWeight: '800',
+                      color: '#0d0d0d',
+                      marginBottom: '12px',
+                      fontSize: '17px',
+                      lineHeight: '1.3',
+                      ...fontStyle
                     }}>
                       {feature.title}
                     </Typography>
 
                     <Typography variant="body2" style={{
-                      color: '#777', lineHeight: '1.75',
-                      marginBottom: '24px', ...bodyFont
+                      color: '#666',
+                      lineHeight: '1.8',
+                      fontSize: '14px',
+                      ...bodyFont
                     }}>
                       {feature.description}
                     </Typography>
-
-                    {/* Link button */}
-                    <Box style={{
-                      display: 'inline-flex', alignItems: 'center', gap: '6px',
-                      color: feature.color, fontWeight: '700', fontSize: '13px',
-                      padding: '8px 16px', borderRadius: '30px',
-                      backgroundColor: `${feature.color}12`,
-                      border: `1.5px solid ${feature.color}30`,
-                      transition: 'all 0.2s',
-                      ...bodyFont,
-                      ...(hoveredFeature === index ? {
-                        backgroundColor: feature.color,
-                        color: 'white',
-                        borderColor: feature.color,
-                      } : {})
-                    }}>
-                      {feature.label}
-                    </Box>
                   </Box>
-
-                  {/* Shine effect on hover */}
-                  {hoveredFeature === index && (
-                    <Box style={{
-                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%)',
-                      borderRadius: '20px',
-                      pointerEvents: 'none',
-                    }} />
-                  )}
                 </Box>
-              </Link>
-            </Grid>
-          ))}
-        </Grid>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Box>
 
       {/* How It Works */}
