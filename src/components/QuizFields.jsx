@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, TextField, Radio, RadioGroup,
-  FormControlLabel, FormControl, Divider, IconButton, Chip, Alert
+  FormControlLabel, FormControl, Divider, IconButton, Chip, Alert, CircularProgress
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
 const bodyFont = { fontFamily: "'Inter', sans-serif" };
+const API = 'https://eduplatform-api-pol1.onrender.com';
 
 const emptyMCQ = () => ({
   section: 'A', question_type: 'mcq', question_text: '',
@@ -25,12 +26,51 @@ const emptyImage = () => ({
   marks: 10, marking_scheme: ''
 });
 
+const sectionColor = { A: '#ff6f00', B: '#0288d1', C: '#4caf50' };
+const sectionLabel = {
+  A: 'Section A — MCQ',
+  B: 'Section B — Theory (Typed)',
+  C: 'Section C — Handwritten Image'
+};
+
 function QuizFields({ lessonId, courseId, onSaved }) {
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([emptyMCQ()]);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
+
+  // Load existing quiz on mount
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        const res = await fetch(`${API}/api/quiz/lesson/${lessonId}`);
+        const data = await res.json();
+        if (data && data.title) {
+          setTitle(data.title);
+          if (data.questions && data.questions.length > 0) {
+            setQuestions(data.questions.map(q => ({
+              section: q.section,
+              question_type: q.question_type,
+              question_text: q.question_text || '',
+              option_a: q.option_a || '',
+              option_b: q.option_b || '',
+              option_c: q.option_c || '',
+              option_d: q.option_d || '',
+              correct_answer: q.correct_answer || 'A',
+              marks: q.marks || 1,
+              marking_scheme: q.marking_scheme || ''
+            })));
+          }
+        }
+      } catch (err) {
+        console.log(err);
+      }
+      setLoading(false);
+    };
+    fetchQuiz();
+  }, [lessonId]);
 
   const addQuestion = (type) => {
     if (type === 'A') setQuestions([...questions, emptyMCQ()]);
@@ -51,10 +91,9 @@ function QuizFields({ lessonId, courseId, onSaved }) {
   const handleSave = async () => {
     if (!title.trim()) { setMessageType('error'); setMessage('Please enter a quiz title.'); return; }
     if (questions.length === 0) { setMessageType('error'); setMessage('Add at least one question.'); return; }
-
     setSaving(true);
     try {
-      const res = await fetch('https://eduplatform-api-pol1.onrender.com/api/quiz/create', {
+      const res = await fetch(`${API}/api/quiz/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lesson_id: lessonId, course_id: courseId, title, questions })
@@ -75,8 +114,14 @@ function QuizFields({ lessonId, courseId, onSaved }) {
     setSaving(false);
   };
 
-  const sectionColor = { A: '#ff6f00', B: '#0288d1', C: '#4caf50' };
-  const sectionLabel = { A: 'Section A — MCQ', B: 'Section B — Theory (Typed)', C: 'Section C — Handwritten Image' };
+  if (loading) return (
+    <Box style={{ textAlign: 'center', padding: '40px' }}>
+      <CircularProgress style={{ color: '#ff6f00' }} />
+      <Typography variant="body2" style={{ marginTop: '12px', color: '#666', ...bodyFont }}>
+        Loading quiz...
+      </Typography>
+    </Box>
+  );
 
   return (
     <Box>
@@ -121,7 +166,6 @@ function QuizFields({ lessonId, courseId, onSaved }) {
             placeholder="Type your question here..."
             InputProps={{ style: { borderRadius: '10px', ...bodyFont } }} />
 
-          {/* Section A - MCQ options */}
           {q.section === 'A' && (
             <Box>
               <Box style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
@@ -150,7 +194,6 @@ function QuizFields({ lessonId, courseId, onSaved }) {
             </Box>
           )}
 
-          {/* Section B & C - marking scheme */}
           {(q.section === 'B' || q.section === 'C') && (
             <TextField fullWidth label="Marking Scheme / Model Answer"
               value={q.marking_scheme}
@@ -178,7 +221,6 @@ function QuizFields({ lessonId, courseId, onSaved }) {
         </Box>
       ))}
 
-      {/* Add question buttons */}
       <Box style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
         <Button variant="outlined" startIcon={<AddIcon />} onClick={() => addQuestion('A')}
           style={{ borderColor: '#ff6f00', color: '#ff6f00', borderRadius: '10px', textTransform: 'none', fontWeight: '700', ...bodyFont }}>
