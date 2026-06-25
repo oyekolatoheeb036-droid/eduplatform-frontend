@@ -53,10 +53,12 @@ function Quiz() {
     setAnswers(prev => ({ ...prev, [question_id]: { answer_text: value } }));
   };
 
-  const handleImageUpload = async (question_id, file) => {
-    if (!file) return;
-    setUploadingId(question_id);
-    try {
+  const handleImageUpload = async (question_id, files) => {
+  if (!files || files.length === 0) return;
+  setUploadingId(question_id);
+  try {
+    const urls = [];
+    for (const file of files) {
       const base64 = await toBase64(file);
       const res = await fetch(`${API}/api/upload/quiz-image`, {
         method: 'POST',
@@ -64,12 +66,17 @@ function Quiz() {
         body: JSON.stringify({ image: base64, folder: 'quiz_answers' })
       });
       const data = await res.json();
-      setAnswers(prev => ({ ...prev, [question_id]: { image_url: data.url } }));
-    } catch (err) {
-      console.log(err);
+      urls.push(data.url);
     }
-    setUploadingId(null);
-  };
+    setAnswers(prev => ({
+      ...prev,
+      [question_id]: { image_url: urls[0], image_urls: urls }
+    }));
+  } catch (err) {
+    console.log(err);
+  }
+  setUploadingId(null);
+};
 
   const toBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -288,9 +295,9 @@ function Quiz() {
                   {/* Section C - Image upload */}
                   {section === 'C' && (
                     <Box>
-                      <input type="file" accept="image/*" id={`upload-${question.id}`}
-                        style={{ display: 'none' }}
-                        onChange={e => handleImageUpload(question.id, e.target.files[0])} />
+                      <input type="file" accept="image/*" multiple id={`upload-${question.id}`}
+  style={{ display: 'none' }}
+  onChange={e => handleImageUpload(question.id, e.target.files)} />
                       <label htmlFor={`upload-${question.id}`}>
                         <Button variant="outlined" component="span"
                           startIcon={uploadingId === question.id ? <CircularProgress size={16} /> : <CloudUploadIcon />}
@@ -299,15 +306,17 @@ function Quiz() {
                           {uploadingId === question.id ? 'Uploading...' : 'Upload Photo'}
                         </Button>
                       </label>
-                      {answers[question.id]?.image_url && (
-                        <Box style={{ marginTop: '12px' }}>
-                          <img src={answers[question.id].image_url} alt="answer"
-                            style={{ maxWidth: '100%', borderRadius: '10px', border: '2px solid #4caf50' }} />
-                          <Typography variant="caption" style={{ color: '#4caf50', fontWeight: '600', display: 'block', marginTop: '6px', ...bodyFont }}>
-                            ✅ Photo uploaded
-                          </Typography>
-                        </Box>
-                      )}
+                     {answers[question.id]?.image_urls && (
+  <Box style={{ marginTop: '12px' }}>
+    {answers[question.id].image_urls.map((url, i) => (
+      <img key={i} src={url} alt={`answer-${i + 1}`}
+        style={{ maxWidth: '100%', borderRadius: '10px', border: '2px solid #4caf50', marginBottom: '8px', display: 'block' }} />
+    ))}
+    <Typography variant="caption" style={{ color: '#4caf50', fontWeight: '600', display: 'block', marginTop: '6px', ...bodyFont }}>
+      ✅ {answers[question.id].image_urls.length} photo{answers[question.id].image_urls.length > 1 ? 's' : ''} uploaded
+    </Typography>
+  </Box>
+)}
                     </Box>
                   )}
                 </CardContent>
