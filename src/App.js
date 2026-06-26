@@ -20,6 +20,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import NairafameAI from './pages/NairafameAI';
 import Community from './pages/Community';
 import ResetPassword from './pages/ResetPassword';
+import PendingSubmissions from './pages/PendingSubmissions';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -302,6 +303,11 @@ function App() {
             <CourseLessons />
           </ProtectedRoute>
         } />
+        <Route path="/teacher/pending" element={
+  <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+    <PendingSubmissions />
+  </ProtectedRoute>
+} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

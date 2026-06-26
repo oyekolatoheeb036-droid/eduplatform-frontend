@@ -24,6 +24,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 
 function TeacherDashboard() {
   const [courses, setCourses] = useState([]);
@@ -197,6 +198,24 @@ function TeacherDashboard() {
             }}
           >
             Create Course
+            <Button
+  variant="outlined"
+  startIcon={<AssignmentLateIcon />}
+  onClick={() => navigate('/teacher/pending')}
+  style={{
+    marginTop: '16px',
+    marginLeft: '12px',
+    borderColor: '#ff6f00',
+    color: '#ff6f00',
+    borderRadius: '10px',
+    padding: '12px 24px',
+    fontWeight: '700',
+    textTransform: 'none',
+    ...bodyFont
+  }}
+>
+  Pending Submissions
+</Button>
           </Button>
         </Box>
       </Box>
