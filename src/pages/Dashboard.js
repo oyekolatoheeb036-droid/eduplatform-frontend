@@ -51,9 +51,9 @@ function Dashboard() {
       })
       .catch(err => console.log(err));
 
-    axios.get(`https://eduplatform-api-pol1.onrender.com/api/quiz/results/${student_id}`)
-      .then(res => setQuizResults(res.data))
-      .catch(err => console.log(err));
+    axios.get(`https://eduplatform-api-pol1.onrender.com/api/quiz/my-results/${student_id}`)
+  .then(res => setQuizResults(res.data))
+  .catch(err => console.log(err));
   }, [student_id]);
 
   return (
@@ -261,39 +261,84 @@ function Dashboard() {
         )}
 
         {quizResults.length > 0 && (
-          <Box style={{ marginTop: '40px' }}>
-            <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '26px', marginBottom: '24px', ...fontStyle }}>
-              Quiz Results
-            </Typography>
-            <Grid container spacing={3}>
-              {quizResults.map(result => (
-                <Grid item xs={12} sm={6} md={4} key={result.id}>
-                  <Card elevation={0} style={{ borderRadius: '18px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                    <CardContent style={{ padding: '24px' }}>
-                      <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '10px', color: '#0a0a0a', ...fontStyle }}>
-                        {result.quiz_title}
-                      </Typography>
-                      <Typography variant="h4" style={{ fontWeight: '800', color: result.percentage >= 70 ? '#4caf50' : '#f44336', ...fontStyle }}>
-                        {result.percentage}%
-                      </Typography>
-                      <LinearProgress
-                        variant="determinate"
-                        value={result.percentage}
-                        style={{ marginTop: '10px', borderRadius: '5px', height: '8px' }}
-                        color={result.percentage >= 70 ? 'success' : 'error'}
-                      />
-                      <Chip
-                        label={result.percentage >= 70 ? 'Passed' : 'Failed'}
-                        color={result.percentage >= 70 ? 'success' : 'error'}
-                        style={{ marginTop: '12px', fontWeight: '700' }}
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
+  <Box style={{ marginTop: '40px' }}>
+    <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '26px', marginBottom: '24px', ...fontStyle }}>
+      Quiz Results
+    </Typography>
+    <Grid container spacing={3}>
+      {quizResults.map(result => {
+        const isFullyMarked = result.status === 'fully_marked';
+        const isPending = result.status === 'partially_marked' || result.status === 'submitted';
+        const totalMax = result.total_score !== null ? result.total_score : result.section_a_score + result.section_b_score;
+        return (
+          <Grid item xs={12} sm={6} md={4} key={result.id}>
+            <Card elevation={0} style={{ borderRadius: '18px', border: `1px solid ${isFullyMarked ? '#f0f0f0' : '#fff3e0'}`, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+              <CardContent style={{ padding: '24px' }}>
+                <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '10px', color: '#0a0a0a', ...fontStyle }}>
+                  {result.quiz_title}
+                </Typography>
+
+                {/* Section A */}
+                {result.section_a_score !== null && (
+                  <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section A (MCQ)</Typography>
+                    <Typography variant="body2" style={{ fontWeight: '700', color: '#ff6f00', ...bodyFont }}>
+                      {result.section_a_score} marks
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Section B */}
+                {result.section_b_score !== null && (
+                  <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section B (Theory)</Typography>
+                    <Typography variant="body2" style={{ fontWeight: '700', color: '#0288d1', ...bodyFont }}>
+                      {result.section_b_score} marks
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Section C */}
+                <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section C (Handwritten)</Typography>
+                  {result.section_c_score !== null ? (
+                    <Typography variant="body2" style={{ fontWeight: '700', color: '#4caf50', ...bodyFont }}>
+                      {result.section_c_score} marks
+                    </Typography>
+                  ) : (
+                    <Chip label="Pending" size="small"
+                      style={{ backgroundColor: '#fff3e0', color: '#ff6f00', fontWeight: '700', fontSize: '11px' }} />
+                  )}
+                </Box>
+
+                {/* Total */}
+                <Box style={{ backgroundColor: '#f5f5f5', borderRadius: '10px', padding: '12px', textAlign: 'center', marginBottom: '12px' }}>
+                  <Typography style={{ fontWeight: '800', fontSize: '28px', color: '#1a237e', ...fontStyle }}>
+                    {result.total_score ?? (result.section_a_score + result.section_b_score)}
+                  </Typography>
+                  <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
+                    {isFullyMarked ? 'Final Score' : 'Score so far (Section C pending)'}
+                  </Typography>
+                </Box>
+
+                <Chip
+                  label={isFullyMarked ? '✅ Fully Marked' : '⏳ Awaiting Section C'}
+                  style={{
+                    backgroundColor: isFullyMarked ? '#e8f5e9' : '#fff3e0',
+                    color: isFullyMarked ? '#2e7d32' : '#ff6f00',
+                    fontWeight: '700',
+                    width: '100%',
+                    borderRadius: '8px'
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        );
+      })}
+    </Grid>
+  </Box>
+)}
       </Box>
     </Box>
   );
