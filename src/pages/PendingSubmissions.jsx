@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Box, Typography, Card, CardContent, Button, TextField,
-  Chip, Alert, CircularProgress, Badge, Divider
+  Chip, Alert, CircularProgress, Divider, useMediaQuery
 } from '@mui/material';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -17,6 +17,8 @@ const bodyFont = { fontFamily: "'Inter', sans-serif" };
 function PendingSubmissions() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:900px)');
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState({});
@@ -24,6 +26,9 @@ function PendingSubmissions() {
   const [feedback, setFeedback] = useState({});
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
+
+  const headerPadding = isMobile ? '28px 20px' : isTablet ? '36px 32px' : '48px 60px';
+  const pagePadding = isMobile ? '24px 20px' : isTablet ? '32px 32px' : '40px 60px';
 
   useEffect(() => {
     fetchPending();
@@ -62,7 +67,6 @@ function PendingSubmissions() {
     setMarking(prev => ({ ...prev, [answerId]: false }));
   };
 
-  // Group by attempt
   const grouped = submissions.reduce((acc, sub) => {
     const key = `${sub.attempt_id}-${sub.student_name}-${sub.quiz_title}`;
     if (!acc[key]) acc[key] = { student_name: sub.student_name, quiz_title: sub.quiz_title, attempt_id: sub.attempt_id, answers: [] };
@@ -78,37 +82,76 @@ function PendingSubmissions() {
 
   return (
     <Box style={{ background: '#fafafa', minHeight: '100vh', ...bodyFont }}>
+
       {/* Header */}
-      <Box style={{ background: 'white', padding: '40px 60px', borderBottom: '1px solid #f0f0f0' }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/teacher')}
-          style={{ color: '#1a237e', textTransform: 'none', fontWeight: '700', marginBottom: '16px', ...bodyFont }}>
-          Back to Dashboard
-        </Button>
-        <Box style={{ display: 'inline-flex', alignItems: 'center', backgroundColor: '#fff3e0', border: '1px solid #ff6f00', borderRadius: '30px', padding: '6px 16px', marginBottom: '12px', display: 'block', width: 'fit-content' }}>
-          <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '700', ...bodyFont }}>
-            PENDING MARKING
+      <Box style={{
+        background: 'white',
+        padding: headerPadding,
+        borderBottom: '1px solid #f0f0f0',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <Box style={{
+          position: 'absolute', top: '-70px', right: '-80px',
+          width: isMobile ? '200px' : '300px', height: isMobile ? '200px' : '300px',
+          borderRadius: '50%', background: 'linear-gradient(135deg, #e8eaf6, #e3f2fd)', opacity: 0.7
+        }} />
+        <Box style={{
+          position: 'absolute', bottom: '-80px', right: isMobile ? '-30px' : '220px',
+          width: isMobile ? '140px' : '180px', height: isMobile ? '140px' : '180px',
+          borderRadius: '50%', background: '#fff3e0', opacity: 0.6
+        }} />
+
+        <Box style={{ position: 'relative' }}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/teacher')}
+            style={{ color: '#1a237e', textTransform: 'none', fontWeight: '700', marginBottom: '16px', padding: 0, ...bodyFont }}>
+            Back to Dashboard
+          </Button>
+
+          <Box style={{
+            display: 'inline-flex', alignItems: 'center', backgroundColor: '#fff3e0',
+            border: '1px solid #ff6f00', borderRadius: '30px', padding: '6px 16px',
+            marginBottom: '14px', display: 'block', width: 'fit-content'
+          }}>
+            <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '700', ...bodyFont }}>
+              PENDING MARKING
+            </Typography>
+          </Box>
+
+          <Typography style={{
+            fontWeight: '800', color: '#0a0a0a',
+            fontSize: isMobile ? '28px' : '36px',
+            lineHeight: '1.15', ...fontStyle
+          }}>
+            Section C{' '}
+            <span style={{
+              background: 'linear-gradient(135deg, #1a237e, #0288d1)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+            }}>
+              Submissions
+            </span>
+          </Typography>
+          <Typography style={{ color: '#666', marginTop: '8px', maxWidth: '560px', ...bodyFont }}>
+            Review and mark handwritten answers from your students
           </Typography>
         </Box>
-        <Typography style={{ fontWeight: '800', fontSize: '36px', color: '#0a0a0a', ...fontStyle }}>
-          Section C{' '}
-          <span style={{ background: 'linear-gradient(135deg, #1a237e, #0288d1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Submissions
-          </span>
-        </Typography>
-        <Typography style={{ color: '#666', marginTop: '8px', ...bodyFont }}>
-          Review and mark handwritten answers from your students
-        </Typography>
       </Box>
 
-      <Box style={{ padding: '40px 60px' }}>
+      {/* Content */}
+      <Box style={{ padding: pagePadding, maxWidth: '900px', margin: '0 auto' }}>
         {message && (
-          <Alert severity={messageType} style={{ marginBottom: '24px', borderRadius: '10px' }} onClose={() => setMessage('')}>
+          <Alert severity={messageType} style={{ marginBottom: '24px', borderRadius: '10px' }}
+            onClose={() => setMessage('')}>
             {message}
           </Alert>
         )}
 
         {Object.keys(grouped).length === 0 ? (
-          <Card elevation={0} style={{ borderRadius: '18px', textAlign: 'center', padding: '60px', border: '1px solid #f0f0f0' }}>
+          <Card elevation={0} style={{
+            borderRadius: '18px', textAlign: 'center',
+            padding: isMobile ? '40px 20px' : '60px',
+            border: '1px solid #f0f0f0'
+          }}>
             <CheckCircleIcon style={{ fontSize: '60px', color: '#4caf50', marginBottom: '16px' }} />
             <Typography style={{ fontWeight: '800', fontSize: '22px', color: '#333', ...fontStyle }}>
               All caught up!
@@ -119,10 +162,18 @@ function PendingSubmissions() {
           </Card>
         ) : (
           Object.values(grouped).map((group, gi) => (
-            <Card key={gi} elevation={0} style={{ borderRadius: '18px', marginBottom: '24px', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-              <CardContent style={{ padding: '28px' }}>
+            <Card key={gi} elevation={0} style={{
+              borderRadius: '18px', marginBottom: '24px',
+              border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
+            }}>
+              <CardContent style={{ padding: isMobile ? '20px' : '28px' }}>
+
                 {/* Student info */}
-                <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                <Box style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'center', marginBottom: '20px',
+                  flexWrap: 'wrap', gap: '12px'
+                }}>
                   <Box>
                     <Typography style={{ fontWeight: '800', fontSize: '18px', color: '#0a0a0a', ...fontStyle }}>
                       {group.student_name}
@@ -134,7 +185,10 @@ function PendingSubmissions() {
                   <Chip
                     icon={<HourglassEmptyIcon style={{ fontSize: '16px' }} />}
                     label={`${group.answers.length} answer${group.answers.length > 1 ? 's' : ''} pending`}
-                    style={{ backgroundColor: '#fff3e0', color: '#ff6f00', fontWeight: '700', border: '1px solid #ff6f00', ...bodyFont }}
+                    style={{
+                      backgroundColor: '#fff3e0', color: '#ff6f00',
+                      fontWeight: '700', border: '1px solid #ff6f00', ...bodyFont
+                    }}
                   />
                 </Box>
 
@@ -143,7 +197,10 @@ function PendingSubmissions() {
                 {/* Each answer */}
                 {group.answers.map((answer, ai) => (
                   <Box key={ai} style={{ marginBottom: '28px' }}>
-                    <Typography style={{ fontWeight: '700', color: '#0a0a0a', marginBottom: '12px', fontSize: '15px', ...fontStyle }}>
+                    <Typography style={{
+                      fontWeight: '700', color: '#0a0a0a',
+                      marginBottom: '12px', fontSize: '15px', ...fontStyle
+                    }}>
                       Q{ai + 1}: {answer.question_text}
                       <span style={{ color: '#4caf50', fontSize: '13px', marginLeft: '8px', fontWeight: '600' }}>
                         [Max: {answer.max_marks} marks]
@@ -155,7 +212,11 @@ function PendingSubmissions() {
                       <Box style={{ marginBottom: '16px' }}>
                         {answer.image_urls.map((url, ii) => (
                           <img key={ii} src={url} alt={`submission-${ii}`}
-                            style={{ maxWidth: '100%', borderRadius: '10px', border: '2px solid #e0e0e0', marginBottom: '8px', display: 'block', cursor: 'pointer' }}
+                            style={{
+                              maxWidth: '100%', maxHeight: '500px', objectFit: 'contain',
+                              borderRadius: '10px', border: '2px solid #e0e0e0',
+                              marginBottom: '8px', display: 'block', cursor: 'pointer'
+                            }}
                             onClick={() => window.open(url, '_blank')} />
                         ))}
                         <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
@@ -165,9 +226,12 @@ function PendingSubmissions() {
                     ) : answer.image_url ? (
                       <Box style={{ marginBottom: '16px' }}>
                         <img src={answer.image_url} alt="submission"
-                          style={{ maxWidth: '100%', borderRadius: '10px', border: '2px solid #e0e0e0', cursor: 'pointer' }}
+                          style={{
+                            maxWidth: '100%', maxHeight: '500px', objectFit: 'contain',
+                            borderRadius: '10px', border: '2px solid #e0e0e0', cursor: 'pointer'
+                          }}
                           onClick={() => window.open(answer.image_url, '_blank')} />
-                        <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
+                        <Typography variant="caption" style={{ color: '#999', display: 'block', marginTop: '6px', ...bodyFont }}>
                           Click image to open full size
                         </Typography>
                       </Box>
@@ -198,9 +262,14 @@ function PendingSubmissions() {
                         placeholder="e.g. Good working shown, but missed final step"
                         InputProps={{ style: { borderRadius: '8px', ...bodyFont } }}
                       />
-                      <Button variant="contained" onClick={() => handleMark(answer.id, answer.max_marks)}
+                      <Button variant="contained"
+                        onClick={() => handleMark(answer.id, answer.max_marks)}
                         disabled={marking[answer.id] || !scores[answer.id]}
-                        style={{ backgroundColor: '#4caf50', borderRadius: '8px', textTransform: 'none', fontWeight: '700', boxShadow: 'none', padding: '8px 20px', ...bodyFont }}>
+                        style={{
+                          backgroundColor: '#4caf50', borderRadius: '8px',
+                          textTransform: 'none', fontWeight: '700',
+                          boxShadow: 'none', padding: '8px 20px', ...bodyFont
+                        }}>
                         {marking[answer.id] ? 'Saving...' : 'Mark ✅'}
                       </Button>
                     </Box>
