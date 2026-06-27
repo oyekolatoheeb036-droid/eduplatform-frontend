@@ -31,7 +31,7 @@ function PendingSubmissions() {
 
   const fetchPending = async () => {
     try {
-      const res = await axios.get(`${API}/api/quiz/pending/2`);
+      const res = await axios.get(`${API}/api/quiz/pending/${user?.id}`);
       setSubmissions(res.data);
     } catch (err) {
       console.log(err);
