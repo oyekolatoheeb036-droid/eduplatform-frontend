@@ -1,95 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Grid, Card, CardContent, Modal, useMediaQuery } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { X, Check, Star, BookOpen, Sigma, ClipboardCheck, TrendingUp, Trophy, BotMessageSquare, CheckCircle, GraduationCap } from 'lucide-react';
 
-// 3D Tilt Hook
-function use3DTilt(intensity = 15) {
-  const ref = useRef(null);
-  const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)');
-  const [glare, setGlare] = useState({ opacity: 0, x: 50, y: 50 });
-
-  const handleMouseMove = useCallback((e) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -intensity;
-    const rotateY = ((x - centerX) / centerX) * intensity;
-    
-    setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05,1.05,1.05)`);
-    setGlare({ opacity: 0.15, x: (x / rect.width) * 100, y: (y / rect.height) * 100 });
-  }, [intensity]);
-
-  const handleMouseLeave = useCallback(() => {
-    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)');
-    setGlare({ opacity: 0, x: 50, y: 50 });
-  }, []);
-
-  return { ref, transform, glare, handleMouseMove, handleMouseLeave };
-}
-
-// Floating 3D Animation Hook
-function useFloating3D(intensity = 10, speed = 3) {
-  const [transform, setTransform] = useState('');
-  const frameRef = useRef();
-
-  useEffect(() => {
-    let startTime = performance.now();
-    const animate = (time) => {
-      const elapsed = (time - startTime) / 1000;
-      const rotateY = Math.sin(elapsed * speed * 0.3) * 2;
-      const rotateX = Math.cos(elapsed * speed * 0.2) * 1.5;
-      const translateZ = Math.sin(elapsed * speed * 0.5) * intensity;
-      const translateY = Math.sin(elapsed * speed * 0.4) * (intensity * 0.5);
-      setTransform(`perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(${translateZ}px) translateY(${translateY}px)`);
-      frameRef.current = requestAnimationFrame(animate);
-    };
-    frameRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameRef.current);
-  }, [intensity, speed]);
-
-  return transform;
-}
-
-// 3D Parallax Scroll Hook
-function useParallax3D(speed = 0.1) {
-  const [offset, setOffset] = useState(0);
-  const ref = useRef();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      const center = rect.top + rect.height / 2;
-      const windowCenter = window.innerHeight / 2;
-      setOffset((center - windowCenter) * speed);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [speed]);
-
-  return { ref, offset };
-}
-
-// Animated Counter with 3D
+// Animated Counter
 function Counter({ target, suffix }) {
   const [count, setCount] = useState(0);
-  const counterRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setIsVisible(true);
-    }, { threshold: 0.5 });
-    if (counterRef.current) observer.observe(counterRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!isVisible) return;
     const duration = 1600;
     const startTime = performance.now();
     const animate = (currentTime) => {
@@ -103,9 +21,9 @@ function Counter({ target, suffix }) {
     };
     const frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [target, isVisible]);
+  }, [target]);
 
-  return <span ref={counterRef} style={{ display: 'inline-block', transform: `translateZ(20px)` }}>{count}{suffix}</span>;
+  return <span>{count}{suffix}</span>;
 }
 
 // Typing Animation
@@ -129,252 +47,18 @@ function TypingText({ texts }) {
   }, [currentText, isDeleting, currentIndex, texts]);
 
   return (
-    <span style={{ color: '#1a237e', borderBottom: '4px solid #ff6f00', paddingBottom: '2px', display: 'inline-block', transform: 'translateZ(30px)' }}>
+    <span style={{ color: '#1a237e', borderBottom: '4px solid #ff6f00', paddingBottom: '2px' }}>
       {currentText}
     </span>
   );
 }
 
-// 3D Feature Card Component
-function FeatureCard3D({ feature, index, isMobile }) {
-  const { ref, transform, glare, handleMouseMove, handleMouseLeave } = use3DTilt(12);
-  const IconComponent = feature.icon;
-
-  return (
-    <Box
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        borderRadius: '20px',
-        overflow: 'hidden',
-        height: '100%',
-        cursor: 'pointer',
-        transform,
-        transformStyle: 'preserve-3d',
-        transition: 'transform 0.1s ease-out, box-shadow 0.3s ease',
-        boxShadow: `0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)`,
-        background: 'white',
-        position: 'relative',
-      }}
-    >
-      {/* Glare Effect */}
-      <Box style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.8) 0%, transparent 60%)`,
-        opacity: glare.opacity,
-        pointerEvents: 'none',
-        zIndex: 10,
-        borderRadius: '20px',
-      }} />
-      
-      <Box style={{ height: '6px', background: feature.bg, transform: 'translateZ(2px)' }} />
-      <Box style={{ padding: isMobile ? '24px 20px' : '32px 28px', transform: 'translateZ(10px)' }}>
-        <Box style={{
-          width: '64px',
-          height: '64px',
-          borderRadius: '16px',
-          background: `${feature.color}14`,
-          border: `2px solid ${feature.color}22`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '20px',
-          boxShadow: `0 4px 14px ${feature.color}22, 0 8px 20px rgba(0,0,0,0.1)`,
-          transform: 'translateZ(20px)',
-          transition: 'transform 0.3s ease',
-        }}>
-          <IconComponent size={28} color={feature.color} strokeWidth={1.8} />
-        </Box>
-        <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '10px', color: '#0a0a0a', fontSize: '17px', fontFamily: "'Space Grotesk', sans-serif", transform: 'translateZ(15px)' }}>{feature.title}</Typography>
-        <Typography variant="body2" style={{ color: '#777', lineHeight: '1.75', marginBottom: '24px', fontFamily: "'Inter', sans-serif", transform: 'translateZ(12px)' }}>{feature.description}</Typography>
-        <Box style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          color: feature.color,
-          fontWeight: '700',
-          fontSize: '13px',
-          padding: '8px 16px',
-          borderRadius: '30px',
-          backgroundColor: `${feature.color}12`,
-          border: `1.5px solid ${feature.color}30`,
-          transition: 'all 0.3s',
-          fontFamily: "'Inter', sans-serif",
-          transform: 'translateZ(25px)',
-          boxShadow: `0 4px 12px rgba(0,0,0,0.1)`,
-        }}>
-          {feature.label}
-        </Box>
-      </Box>
-    </Box>
-  );
-}
-
-// 3D Testimonial Card
-function TestimonialCard3D({ testimonial, isMobile }) {
-  const { ref, transform, glare, handleMouseMove, handleMouseLeave } = use3DTilt(8);
-
-  return (
-    <Card
-      ref={ref}
-      elevation={0}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        borderRadius: '16px',
-        height: '100%',
-        border: '2px solid #f0f0f0',
-        background: 'white',
-        transform,
-        transformStyle: 'preserve-3d',
-        transition: 'transform 0.1s ease-out',
-        padding: '10px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <Box style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.9) 0%, transparent 60%)`,
-        opacity: glare.opacity,
-        pointerEvents: 'none',
-        zIndex: 10,
-        borderRadius: '16px',
-      }} />
-      <CardContent style={{ padding: '30px', transform: 'translateZ(15px)' }}>
-        <Box style={{ display: 'flex', marginBottom: '20px', gap: '2px', transform: 'translateZ(20px)' }}>
-          {[...Array(testimonial.stars)].map((_, i) => (
-            <Star key={i} size={18} fill="#ff6f00" color="#ff6f00" />
-          ))}
-        </Box>
-        <Typography variant="body1" style={{ lineHeight: '1.8', marginBottom: '25px', color: '#333', fontFamily: "'Inter', sans-serif", transform: 'translateZ(15px)' }}>"{testimonial.text}"</Typography>
-        <Box style={{ display: 'flex', alignItems: 'center', gap: '12px', transform: 'translateZ(25px)' }}>
-          <Box style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1a237e, #0288d1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '20px',
-            boxShadow: '0 6px 20px rgba(26,35,126,0.3)',
-          }}>{testimonial.name[0]}</Box>
-          <Box>
-            <Typography variant="body1" style={{ fontWeight: '700', color: '#0a0a0a', fontFamily: "'Space Grotesk', sans-serif" }}>{testimonial.name}</Typography>
-            <Typography variant="body2" style={{ color: '#999', fontFamily: "'Inter', sans-serif" }}>{testimonial.role}</Typography>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
-
-// 3D Step Card
-function StepCard3D({ item, index }) {
-  const { ref, transform, glare, handleMouseMove, handleMouseLeave } = use3DTilt(10);
-
-  return (
-    <Grid item xs={12} sm={4} key={index}>
-      <Box
-        ref={ref}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          textAlign: 'center',
-          padding: '20px',
-          transform,
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.1s ease-out',
-          position: 'relative',
-          borderRadius: '20px',
-        }}
-      >
-        <Box style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.8) 0%, transparent 60%)`,
-          opacity: glare.opacity,
-          pointerEvents: 'none',
-          zIndex: 10,
-          borderRadius: '20px',
-        }} />
-        <Typography variant="h2" style={{ fontWeight: '900', color: '#f0f0f0', marginBottom: '-20px', fontFamily: "'Space Grotesk', sans-serif", transform: 'translateZ(-10px)' }}>{item.step}</Typography>
-        <Box style={{
-          width: '70px',
-          height: '70px',
-          borderRadius: '16px',
-          background: item.color,
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 20px',
-          fontSize: '28px',
-          fontWeight: 'bold',
-          boxShadow: `0 8px 25px ${item.color}44, 0 15px 40px rgba(0,0,0,0.15)`,
-          transform: 'translateZ(30px)',
-          transition: 'transform 0.3s ease',
-        }}>{index + 1}</Box>
-        <Typography variant="h5" style={{ fontWeight: '700', marginBottom: '12px', color: '#0a0a0a', fontFamily: "'Space Grotesk', sans-serif", transform: 'translateZ(20px)' }}>{item.title}</Typography>
-        <Typography variant="body1" style={{ color: '#666', lineHeight: '1.7', fontFamily: "'Inter', sans-serif", transform: 'translateZ(15px)' }}>{item.description}</Typography>
-      </Box>
-    </Grid>
-  );
-}
-
-// 3D Stat Item
-function StatItem3D({ stat, index }) {
-  const { ref, transform, handleMouseMove, handleMouseLeave } = use3DTilt(5);
-
-  return (
-    <Grid item xs={6} sm={3} key={index}>
-      <Box
-        ref={ref}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          textAlign: 'center',
-          color: 'white',
-          transform,
-          transformStyle: 'preserve-3d',
-          transition: 'transform 0.1s ease-out',
-        }}
-      >
-        <Typography variant="h3" style={{ fontWeight: '800', color: '#ff6f00', fontFamily: "'Space Grotesk', sans-serif", transform: 'translateZ(25px)' }}>
-          <Counter target={stat.target} suffix={stat.suffix} />
-        </Typography>
-        <Typography variant="body1" style={{ color: 'rgba(255,255,255,0.7)', fontFamily: "'Inter', sans-serif", transform: 'translateZ(15px)' }}>{stat.label}</Typography>
-      </Box>
-    </Grid>
-  );
-}
-
 function Home() {
   const [openModal, setOpenModal] = useState(false);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
-  
-  const floatingTransform = useFloating3D(8, 2);
-  const heroParallax = useParallax3D(0.05);
-  const statsParallax = useParallax3D(0.08);
-  const featuresParallax = useParallax3D(0.03);
-  const ctaParallax = useParallax3D(0.06);
 
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
   const bodyFont = { fontFamily: "'Inter', sans-serif" };
@@ -393,112 +77,36 @@ function Home() {
   ];
 
   return (
-    <Box style={{ overflowX: 'hidden', ...bodyFont, perspective: '1500px' }}>
+    <Box style={{ overflowX: 'hidden', ...bodyFont }}>
 
-      {/* Hero Section with 3D */}
-      <Box style={{ 
-        background: 'white', 
-        padding: isMobile ? '56px 20px 64px' : isTablet ? '80px 32px' : '100px 80px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        minHeight: isMobile ? 'auto' : '90vh', 
-        gap: isMobile ? '32px' : '40px', 
-        flexDirection: isTablet ? 'column' : 'row', 
-        flexWrap: 'wrap',
-        transformStyle: 'preserve-3d',
-      }}>
-        <Box ref={heroParallax.ref} style={{ 
-          maxWidth: isTablet ? '100%' : '580px', 
-          width: '100%',
-          transform: `translateZ(${50 + heroParallax.offset}px)`,
-          transformStyle: 'preserve-3d',
-        }}>
-          <Box style={{ 
-            display: 'inline-flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            backgroundColor: '#fff3e0', 
-            border: '1px solid #ff6f00', 
-            borderRadius: '30px', 
-            padding: '8px 20px', 
-            marginBottom: '30px',
-            transform: 'translateZ(40px)',
-            boxShadow: '0 8px 25px rgba(255,111,0,0.15)',
-          }}>
+      {/* Hero Section */}
+      <Box style={{ background: 'white', padding: isMobile ? '56px 20px 64px' : isTablet ? '80px 32px' : '100px 80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: isMobile ? 'auto' : '90vh', gap: isMobile ? '32px' : '40px', flexDirection: isTablet ? 'column' : 'row', flexWrap: 'wrap' }}>
+        <Box style={{ maxWidth: isTablet ? '100%' : '580px', width: '100%' }}>
+          <Box style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fff3e0', border: '1px solid #ff6f00', borderRadius: '30px', padding: '8px 20px', marginBottom: '30px' }}>
             <span>🇳🇬</span>
             <Typography variant="body2" style={{ color: '#ff6f00', fontWeight: '600', ...bodyFont }}>Nigeria's #1 Mathematics Learning Platform</Typography>
           </Box>
 
-          <Typography variant="h2" style={{ 
-            fontWeight: '800', 
-            marginBottom: '20px', 
-            fontSize: isMobile ? '36px' : isTablet ? '44px' : '52px', 
-            lineHeight: '1.15', 
-            color: '#0a0a0a', 
-            ...fontStyle,
-            transform: 'translateZ(60px)',
-            textShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          }}>
+          <Typography variant="h2" style={{ fontWeight: '800', marginBottom: '20px', fontSize: isMobile ? '36px' : isTablet ? '44px' : '52px', lineHeight: '1.15', color: '#0a0a0a', ...fontStyle }}>
             Learn{' '}<TypingText texts={['Mathematics', 'Algebra', 'Calculus', 'Statistics', 'Geometry']} />{' '}the right way.
           </Typography>
 
-          <Typography variant="h6" style={{ 
-            marginBottom: '40px', 
-            color: '#555', 
-            lineHeight: '1.8', 
-            ...bodyFont, 
-            fontWeight: '400',
-            transform: 'translateZ(45px)',
-          }}>
+          <Typography variant="h6" style={{ marginBottom: '40px', color: '#555', lineHeight: '1.8', ...bodyFont, fontWeight: '400' }}>
             Structured lessons, interactive quizzes, and expert teachers helping Nigerian students pass WAEC, JAMB and build real STEM skills.
           </Typography>
 
-          <Box style={{ 
-            display: 'flex', 
-            gap: '15px', 
-            flexWrap: 'wrap', 
-            marginBottom: '40px', 
-            width: '100%',
-            transform: 'translateZ(55px)',
-          }}>
+          <Box style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '40px', width: '100%' }}>
             <Button variant="contained" onClick={() => setOpenModal(true)}
-              style={{ 
-                backgroundColor: '#1a237e', 
-                color: 'white', 
-                padding: '16px 40px', 
-                fontSize: '16px', 
-                borderRadius: '8px', 
-                fontWeight: '700', 
-                boxShadow: '0 4px 15px rgba(26,35,126,0.3), 0 8px 25px rgba(26,35,126,0.2)',
-                ...bodyFont, 
-                ...buttonStyle,
-                transform: 'translateZ(20px)',
-              }}>
+              style={{ backgroundColor: '#1a237e', color: 'white', padding: '16px 40px', fontSize: '16px', borderRadius: '8px', fontWeight: '700', boxShadow: '0 4px 15px rgba(26,35,126,0.3)', ...bodyFont, ...buttonStyle }}>
               Start Learning Free →
             </Button>
             <Button variant="outlined" component={Link} to="/courses"
-              style={{ 
-                borderColor: '#1a237e', 
-                color: '#1a237e', 
-                padding: '16px 40px', 
-                fontSize: '16px', 
-                borderRadius: '8px', 
-                fontWeight: '600', 
-                ...bodyFont, 
-                ...buttonStyle,
-                transform: 'translateZ(15px)',
-              }}>
+              style={{ borderColor: '#1a237e', color: '#1a237e', padding: '16px 40px', fontSize: '16px', borderRadius: '8px', fontWeight: '600', ...bodyFont, ...buttonStyle }}>
               Browse Courses
             </Button>
           </Box>
 
-          <Box style={{ 
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            gap: '16px',
-            transform: 'translateZ(35px)',
-          }}>
+          <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
             {['Free to start', 'No credit card needed', 'Cancel anytime'].map((item, i) => (
               <Box key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <CheckCircle size={16} color="#4caf50" fill="#e8f5e9" />
@@ -508,39 +116,15 @@ function Home() {
           </Box>
         </Box>
 
-        {/* Hero Dashboard Preview with 3D Floating */}
-        <Box style={{ 
-          flex: 1, 
-          minWidth: 0, 
-          width: '100%', 
-          maxWidth: isTablet ? '100%' : '550px', 
-          background: 'linear-gradient(135deg, #1a237e, #0288d1)', 
-          borderRadius: isMobile ? '14px' : '20px', 
-          padding: isMobile ? '12px' : '30px', 
-          boxShadow: isMobile ? '0 12px 32px rgba(26,35,126,0.18)' : '0 20px 60px rgba(26,35,126,0.2), 0 40px 80px rgba(26,35,126,0.15)',
-          transform: floatingTransform,
-          transformStyle: 'preserve-3d',
-        }}>
-          <Box style={{ 
-            background: 'white', 
-            borderRadius: isMobile ? '10px' : '12px', 
-            padding: isMobile ? '12px' : '20px', 
-            marginBottom: isMobile ? '10px' : '15px',
-            transform: 'translateZ(20px)',
-            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-          }}>
+        {/* Hero Dashboard Preview */}
+        <Box style={{ flex: 1, minWidth: 0, width: '100%', maxWidth: isTablet ? '100%' : '550px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', borderRadius: isMobile ? '14px' : '20px', padding: isMobile ? '12px' : '30px', boxShadow: isMobile ? '0 12px 32px rgba(26,35,126,0.18)' : '0 20px 60px rgba(26,35,126,0.2)' }}>
+          <Box style={{ background: 'white', borderRadius: isMobile ? '10px' : '12px', padding: isMobile ? '12px' : '20px', marginBottom: isMobile ? '10px' : '15px' }}>
             <Typography variant="h6" style={{ fontWeight: '700', color: '#1a237e', marginBottom: '4px', fontSize: isMobile ? '16px' : undefined, ...fontStyle }}>Welcome back, Amaka! 👋</Typography>
             <Typography variant="body2" style={{ color: '#666', fontSize: isMobile ? '12px' : undefined }}>Continue your learning journey</Typography>
             <Box style={{ marginTop: isMobile ? '10px' : '15px', background: '#f5f5f5', borderRadius: '8px', padding: isMobile ? '8px' : '10px' }}>
               <Typography variant="body2" style={{ color: '#333', marginBottom: '5px', fontSize: isMobile ? '12px' : undefined }}>Course Progress</Typography>
-              <Box style={{ background: '#e0e0e0', borderRadius: '5px', height: isMobile ? '6px' : '8px', overflow: 'hidden' }}>
-                <Box style={{ 
-                  background: 'linear-gradient(90deg, #1a237e, #0288d1)', 
-                  borderRadius: '5px', 
-                  height: '100%', 
-                  width: '65%',
-                  boxShadow: '0 2px 8px rgba(2,136,209,0.4)',
-                }} />
+              <Box style={{ background: '#e0e0e0', borderRadius: '5px', height: isMobile ? '6px' : '8px' }}>
+                <Box style={{ background: 'linear-gradient(90deg, #1a237e, #0288d1)', borderRadius: '5px', height: '100%', width: '65%' }} />
               </Box>
               <Typography variant="body2" style={{ color: '#1a237e', fontWeight: '700', marginTop: '5px', fontSize: isMobile ? '12px' : undefined }}>65% Complete</Typography>
             </Box>
@@ -553,15 +137,7 @@ function Home() {
               { label: 'Day Streak', value: '7🔥' },
             ].map((item, index) => (
               <Grid item xs={6} key={index}>
-                <Box style={{ 
-                  background: 'rgba(255,255,255,0.15)', 
-                  borderRadius: isMobile ? '8px' : '10px', 
-                  padding: isMobile ? '9px 6px' : '15px', 
-                  textAlign: 'center',
-                  transform: `translateZ(${10 + index * 5}px)`,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  backdropFilter: 'blur(5px)',
-                }}>
+                <Box style={{ background: 'rgba(255,255,255,0.15)', borderRadius: isMobile ? '8px' : '10px', padding: isMobile ? '9px 6px' : '15px', textAlign: 'center' }}>
                   <Typography variant="h5" style={{ fontWeight: '800', color: 'white', fontSize: isMobile ? '18px' : undefined, ...fontStyle }}>{item.value}</Typography>
                   <Typography variant="caption" style={{ color: 'rgba(255,255,255,0.8)', fontSize: isMobile ? '10px' : undefined, lineHeight: 1.2, display: 'block' }}>{item.label}</Typography>
                 </Box>
@@ -571,13 +147,8 @@ function Home() {
         </Box>
       </Box>
 
-      {/* Stats Bar with 3D */}
-      <Box ref={statsParallax.ref} style={{ 
-        background: '#0a0a0a', 
-        padding: compactSectionPadding,
-        transformStyle: 'preserve-3d',
-        perspective: '1000px',
-      }}>
+      {/* Stats Bar */}
+      <Box style={{ background: '#0a0a0a', padding: compactSectionPadding }}>
         <Grid container spacing={3} justifyContent="center">
           {[
             { target: 500, suffix: '+', label: 'Students Enrolled' },
@@ -585,41 +156,55 @@ function Home() {
             { target: 50, suffix: '+', label: 'Math Courses' },
             { target: 95, suffix: '%', label: 'Pass Rate' },
           ].map((stat, index) => (
-            <StatItem3D key={index} stat={stat} index={index} />
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Features Section with 3D */}
-      <Box ref={featuresParallax.ref} style={{ 
-        padding: sectionPadding, 
-        background: '#f0f2f8',
-        transformStyle: 'preserve-3d',
-        perspective: '1200px',
-      }}>
-        <Box style={{ maxWidth: '600px', marginBottom: '60px', transform: `translateZ(${30 + featuresParallax.offset * 0.5}px)` }}>
-          <Typography variant="body1" style={{ color: '#ff6f00', fontWeight: '700', marginBottom: '10px', ...bodyFont }}>WHY NAIRAFAME ACADEMY</Typography>
-          <Typography variant="h3" style={{ fontWeight: '800', color: '#0a0a0a', lineHeight: '1.2', ...fontStyle }}>Everything you need to master Mathematics</Typography>
-        </Box>
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Link to={feature.link} style={{ textDecoration: 'none' }}>
-                <FeatureCard3D feature={feature} index={index} isMobile={isMobile} />
-              </Link>
+            <Grid item xs={6} sm={3} key={index}>
+              <Box style={{ textAlign: 'center', color: 'white' }}>
+                <Typography variant="h3" style={{ fontWeight: '800', color: '#ff6f00', ...fontStyle }}><Counter target={stat.target} suffix={stat.suffix} /></Typography>
+                <Typography variant="body1" style={{ color: 'rgba(255,255,255,0.7)', ...bodyFont }}>{stat.label}</Typography>
+              </Box>
             </Grid>
           ))}
         </Grid>
       </Box>
 
-      {/* How It Works with 3D */}
-      <Box style={{ 
-        padding: sectionPadding, 
-        background: 'white',
-        perspective: '1200px',
-        transformStyle: 'preserve-3d',
-      }}>
-        <Box style={{ textAlign: 'center', marginBottom: '60px', transform: 'translateZ(40px)' }}>
+      {/* Features Section */}
+      <Box style={{ padding: sectionPadding, background: '#f0f2f8' }}>
+        <Box style={{ maxWidth: '600px', marginBottom: '60px' }}>
+          <Typography variant="body1" style={{ color: '#ff6f00', fontWeight: '700', marginBottom: '10px', ...bodyFont }}>WHY NAIRAFAME ACADEMY</Typography>
+          <Typography variant="h3" style={{ fontWeight: '800', color: '#0a0a0a', lineHeight: '1.2', ...fontStyle }}>Everything you need to master Mathematics</Typography>
+        </Box>
+        <Grid container spacing={4}>
+          {features.map((feature, index) => {
+            const IconComponent = feature.icon;
+            return (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Link to={feature.link} style={{ textDecoration: 'none' }}>
+                  <Box onMouseEnter={() => setHoveredFeature(index)} onMouseLeave={() => setHoveredFeature(null)}
+                    style={{ borderRadius: '20px', overflow: 'hidden', height: '100%', cursor: 'pointer', transition: 'transform 0.3s ease, box-shadow 0.3s ease', transform: hoveredFeature === index ? 'translateY(-12px) rotateX(2deg) rotateY(-2deg) scale(1.02)' : 'translateY(0) rotateX(0) rotateY(0) scale(1)', boxShadow: hoveredFeature === index ? `0 24px 60px rgba(0,0,0,0.2), 0 8px 20px ${feature.color}44, inset 0 1px 0 rgba(255,255,255,0.15)` : '0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)', background: 'white', position: 'relative', transformStyle: 'preserve-3d' }}>
+                    <Box style={{ height: '6px', background: feature.bg }} />
+                    <Box style={{ padding: isMobile ? '24px 20px' : '32px 28px' }}>
+                      <Box style={{ width: '64px', height: '64px', borderRadius: '16px', background: `${feature.color}14`, border: `2px solid ${feature.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', boxShadow: `0 4px 14px ${feature.color}22` }}>
+                        <IconComponent size={28} color={feature.color} strokeWidth={1.8} />
+                      </Box>
+                      <Typography variant="h6" style={{ fontWeight: '800', marginBottom: '10px', color: '#0a0a0a', fontSize: '17px', ...fontStyle }}>{feature.title}</Typography>
+                      <Typography variant="body2" style={{ color: '#777', lineHeight: '1.75', marginBottom: '24px', ...bodyFont }}>{feature.description}</Typography>
+                      <Box style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: feature.color, fontWeight: '700', fontSize: '13px', padding: '8px 16px', borderRadius: '30px', backgroundColor: `${feature.color}12`, border: `1.5px solid ${feature.color}30`, transition: 'all 0.2s', ...bodyFont, ...(hoveredFeature === index ? { backgroundColor: feature.color, color: 'white', borderColor: feature.color } : {}) }}>
+                        {feature.label}
+                      </Box>
+                    </Box>
+                    {hoveredFeature === index && (
+                      <Box style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%)', borderRadius: '20px', pointerEvents: 'none' }} />
+                    )}
+                  </Box>
+                </Link>
+              </Grid>
+            );
+          })}
+        </Grid>
+      </Box>
+
+      {/* How It Works */}
+      <Box style={{ padding: sectionPadding, background: 'white' }}>
+        <Box style={{ textAlign: 'center', marginBottom: '60px' }}>
           <Typography variant="body1" style={{ color: '#ff6f00', fontWeight: '700', marginBottom: '10px', ...bodyFont }}>HOW IT WORKS</Typography>
           <Typography variant="h3" style={{ fontWeight: '800', color: '#0a0a0a', ...fontStyle }}>Start learning in 3 simple steps</Typography>
         </Box>
@@ -629,19 +214,21 @@ function Home() {
             { step: '02', title: 'Choose a Course', description: 'Browse our library of mathematics courses and enroll instantly.', color: '#0288d1' },
             { step: '03', title: 'Start Learning', description: 'Learn at your own pace with expert guidance and track your progress.', color: '#ff6f00' },
           ].map((item, index) => (
-            <StepCard3D key={index} item={item} index={index} />
+            <Grid item xs={12} sm={4} key={index}>
+              <Box style={{ textAlign: 'center', padding: '20px' }}>
+                <Typography variant="h2" style={{ fontWeight: '900', color: '#f0f0f0', marginBottom: '-20px', ...fontStyle }}>{item.step}</Typography>
+                <Box style={{ width: '70px', height: '70px', borderRadius: '16px', background: item.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '28px', fontWeight: 'bold', boxShadow: `0 8px 25px ${item.color}44` }}>{index + 1}</Box>
+                <Typography variant="h5" style={{ fontWeight: '700', marginBottom: '12px', color: '#0a0a0a', ...fontStyle }}>{item.title}</Typography>
+                <Typography variant="body1" style={{ color: '#666', lineHeight: '1.7', ...bodyFont }}>{item.description}</Typography>
+              </Box>
+            </Grid>
           ))}
         </Grid>
       </Box>
 
-      {/* Testimonials with 3D */}
-      <Box style={{ 
-        padding: sectionPadding, 
-        background: '#fafafa',
-        perspective: '1200px',
-        transformStyle: 'preserve-3d',
-      }}>
-        <Box style={{ textAlign: 'center', marginBottom: '60px', transform: 'translateZ(40px)' }}>
+      {/* Testimonials */}
+      <Box style={{ padding: sectionPadding, background: '#fafafa' }}>
+        <Box style={{ textAlign: 'center', marginBottom: '60px' }}>
           <Typography variant="body1" style={{ color: '#ff6f00', fontWeight: '700', marginBottom: '10px', ...bodyFont }}>STUDENT STORIES</Typography>
           <Typography variant="h3" style={{ fontWeight: '800', color: '#0a0a0a', ...fontStyle }}>What our students say</Typography>
         </Box>
@@ -652,93 +239,52 @@ function Home() {
             { name: 'Fatima B.', role: 'University Student, Kano', text: 'Finally a platform that explains Nigerian math curriculum properly. The lessons are clear and easy to follow.', stars: 5 },
           ].map((testimonial, index) => (
             <Grid item xs={12} sm={4} key={index}>
-              <TestimonialCard3D testimonial={testimonial} isMobile={isMobile} />
+              <Card elevation={0} style={{ borderRadius: '16px', height: '100%', border: '2px solid #f0f0f0', background: 'white', transition: 'transform 0.3s', padding: '10px' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                <CardContent style={{ padding: '30px' }}>
+                  <Box style={{ display: 'flex', marginBottom: '20px', gap: '2px' }}>
+                    {[...Array(testimonial.stars)].map((_, i) => (
+                      <Star key={i} size={18} fill="#ff6f00" color="#ff6f00" />
+                    ))}
+                  </Box>
+                  <Typography variant="body1" style={{ lineHeight: '1.8', marginBottom: '25px', color: '#333', ...bodyFont }}>"{testimonial.text}"</Typography>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Box style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '20px' }}>{testimonial.name[0]}</Box>
+                    <Box>
+                      <Typography variant="body1" style={{ fontWeight: '700', color: '#0a0a0a', ...fontStyle }}>{testimonial.name}</Typography>
+                      <Typography variant="body2" style={{ color: '#999', ...bodyFont }}>{testimonial.role}</Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
             </Grid>
           ))}
         </Grid>
       </Box>
 
-      {/* CTA Section with 3D */}
-      <Box ref={ctaParallax.ref} style={{ 
-        background: '#0a0a0a', 
-        padding: sectionPadding, 
-        textAlign: 'center', 
-        color: 'white',
-        perspective: '1200px',
-        transformStyle: 'preserve-3d',
-      }}>
-        <Box style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          marginBottom: '20px',
-          transform: `translateZ(${60 + ctaParallax.offset * 0.3}px)`,
-        }}>
+      {/* CTA Section */}
+      <Box style={{ background: '#0a0a0a', padding: sectionPadding, textAlign: 'center', color: 'white' }}>
+        <Box style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
           <GraduationCap size={48} color="#ff6f00" strokeWidth={1.5} />
         </Box>
-        <Typography variant="h2" style={{ 
-          fontWeight: '800', 
-          marginBottom: '20px', 
-          fontSize: isMobile ? '32px' : isTablet ? '42px' : undefined, 
-          ...fontStyle,
-          transform: `translateZ(${50 + ctaParallax.offset * 0.2}px)`,
-          textShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        }}>
+        <Typography variant="h2" style={{ fontWeight: '800', marginBottom: '20px', fontSize: isMobile ? '32px' : isTablet ? '42px' : undefined, ...fontStyle }}>
           Ready to excel in Mathematics?
         </Typography>
-        <Typography variant="h6" style={{ 
-          marginBottom: '40px', 
-          color: 'rgba(255,255,255,0.7)', 
-          maxWidth: '500px', 
-          margin: '0 auto 40px', 
-          ...bodyFont,
-          transform: `translateZ(${40 + ctaParallax.offset * 0.15}px)`,
-        }}>
+        <Typography variant="h6" style={{ marginBottom: '40px', color: 'rgba(255,255,255,0.7)', maxWidth: '500px', margin: '0 auto 40px', ...bodyFont }}>
           Join thousands of Nigerian students already learning on Nairafame Academy
         </Typography>
-        <Box style={{ 
-          display: 'flex', 
-          gap: '20px', 
-          justifyContent: 'center', 
-          flexWrap: 'wrap', 
-          marginBottom: '24px',
-          transform: `translateZ(${55 + ctaParallax.offset * 0.25}px)`,
-        }}>
+        <Box style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
           <Button variant="contained" onClick={() => setOpenModal(true)}
-            style={{ 
-              backgroundColor: '#ff6f00', 
-              color: 'white', 
-              padding: '18px 50px', 
-              fontSize: '18px', 
-              borderRadius: '8px', 
-              fontWeight: '700', 
-              ...bodyFont, 
-              ...buttonStyle,
-              boxShadow: '0 8px 30px rgba(255,111,0,0.4), 0 15px 40px rgba(255,111,0,0.2)',
-              transform: 'translateZ(25px)',
-            }}>
+            style={{ backgroundColor: '#ff6f00', color: 'white', padding: '18px 50px', fontSize: '18px', borderRadius: '8px', fontWeight: '700', ...bodyFont, ...buttonStyle }}>
             Get Started Free →
           </Button>
           <Button variant="outlined" component={Link} to="/courses"
-            style={{ 
-              borderColor: 'rgba(255,255,255,0.3)', 
-              color: 'white', 
-              padding: '18px 50px', 
-              fontSize: '18px', 
-              borderRadius: '8px', 
-              ...bodyFont, 
-              ...buttonStyle,
-              transform: 'translateZ(20px)',
-            }}>
+            style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', padding: '18px 50px', fontSize: '18px', borderRadius: '8px', ...bodyFont, ...buttonStyle }}>
             Browse Courses
           </Button>
         </Box>
-        <Box style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          flexWrap: 'wrap', 
-          gap: '20px',
-          transform: `translateZ(${35 + ctaParallax.offset * 0.1}px)`,
-        }}>
+        <Box style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
           {['Free to start', 'No credit card needed'].map((item, i) => (
             <Box key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CheckCircle size={15} color="#4caf50" fill="#1a3a1a" />
@@ -749,15 +295,9 @@ function Home() {
       </Box>
 
       {/* Footer */}
-      <Box style={{ 
-        background: '#050505', 
-        padding: footerPadding, 
-        color: 'white',
-        perspective: '800px',
-        transformStyle: 'preserve-3d',
-      }}>
+      <Box style={{ background: '#050505', padding: footerPadding, color: 'white' }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} sm={4} style={{ transform: 'translateZ(15px)' }}>
+          <Grid item xs={12} sm={4}>
             <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
               <GraduationCap size={24} color="#ff6f00" />
               <Typography variant="h6" style={{ fontWeight: '800', ...fontStyle }}>Nairafame Academy</Typography>
@@ -766,7 +306,7 @@ function Home() {
               Nigeria's most advanced online mathematics learning platform helping students pass WAEC, JAMB and build STEM skills.
             </Typography>
           </Grid>
-          <Grid item xs={6} sm={2} style={{ transform: 'translateZ(10px)' }}>
+          <Grid item xs={6} sm={2}>
             <Typography variant="body1" style={{ fontWeight: '700', marginBottom: '15px', ...fontStyle }}>Platform</Typography>
             {[{ label: 'Courses', path: '/courses' }, { label: 'Login', path: '/login' }, { label: 'Register', path: '/register' }].map(item => (
               <Box key={item.label} style={{ marginBottom: '10px' }}>
@@ -774,7 +314,7 @@ function Home() {
               </Box>
             ))}
           </Grid>
-          <Grid item xs={6} sm={2} style={{ transform: 'translateZ(10px)' }}>
+          <Grid item xs={6} sm={2}>
             <Typography variant="body1" style={{ fontWeight: '700', marginBottom: '15px', ...fontStyle }}>Company</Typography>
             {[{ label: 'About', path: '/' }, { label: 'Contact', path: '/' }, { label: 'Privacy Policy', path: '/privacy' }].map(item => (
               <Box key={item.label} style={{ marginBottom: '10px' }}>
@@ -784,86 +324,43 @@ function Home() {
               </Box>
             ))}
           </Grid>
-          <Grid item xs={12} sm={4} style={{ transform: 'translateZ(20px)' }}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="body1" style={{ fontWeight: '700', marginBottom: '15px', ...fontStyle }}>Start Learning Today</Typography>
             <Button fullWidth variant="contained" onClick={() => setOpenModal(true)}
-              style={{ 
-                backgroundColor: '#ff6f00', 
-                borderRadius: '8px', 
-                padding: '12px', 
-                ...bodyFont,
-                boxShadow: '0 6px 20px rgba(255,111,0,0.3)',
-              }}>
+              style={{ backgroundColor: '#ff6f00', borderRadius: '8px', padding: '12px', ...bodyFont }}>
               Create Free Account
             </Button>
           </Grid>
         </Grid>
-        <Box style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '40px', paddingTop: '20px', textAlign: 'center', transform: 'translateZ(5px)' }}>
+        <Box style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '40px', paddingTop: '20px', textAlign: 'center' }}>
           <Typography variant="body2" style={{ color: 'rgba(255,255,255,0.3)', ...bodyFont }}>© 2026 Nairafame Academy. All Rights Reserved.</Typography>
         </Box>
       </Box>
 
-      {/* Popup Modal with 3D */}
+      {/* Popup Modal */}
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box style={{ 
-          position: 'absolute', 
-          top: '50%', 
-          left: '50%', 
-          transform: 'translate(-50%, -50%) perspective(1000px) rotateX(2deg) scale(1)', 
-          background: 'white', 
-          borderRadius: '20px', 
-          padding: '40px', 
-          width: '90%', 
-          maxWidth: '450px', 
-          maxHeight: '90vh', 
-          overflowY: 'auto', 
-          boxShadow: '0 25px 60px rgba(0,0,0,0.4), 0 50px 100px rgba(0,0,0,0.2)',
-          transformStyle: 'preserve-3d',
-          animation: 'modalAppear 0.4s ease-out',
-          '@keyframes modalAppear': {
-            '0%': { transform: 'translate(-50%, -50%) perspective(1000px) rotateX(15deg) scale(0.9)', opacity: 0 },
-            '100%': { transform: 'translate(-50%, -50%) perspective(1000px) rotateX(2deg) scale(1)', opacity: 1 },
-          }
-        }}>
-          <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', transform: 'translateZ(30px)' }}>
+        <Box style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'white', borderRadius: '20px', padding: '40px', width: '90%', maxWidth: '450px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+          <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
             <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <GraduationCap size={26} color="#1a237e" />
               <Typography variant="h5" style={{ fontWeight: '800', color: '#0a0a0a', ...fontStyle }}>Join Nairafame Academy</Typography>
             </Box>
             <X onClick={() => setOpenModal(false)} size={22} style={{ cursor: 'pointer', color: '#666' }} />
           </Box>
-          <Box style={{ marginBottom: '25px', transform: 'translateZ(20px)' }}>
+          <Box style={{ marginBottom: '25px' }}>
             {['Free to start — no credit card needed', '50+ Mathematics courses', 'Expert Nigerian teachers', 'Track your progress and earn badges'].map((item, index) => (
               <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <Box style={{ 
-                  width: '24px', 
-                  height: '24px', 
-                  borderRadius: '50%', 
-                  background: '#1a237e', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  flexShrink: 0,
-                  boxShadow: '0 3px 10px rgba(26,35,126,0.3)',
-                }}>
+                <Box style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#1a237e', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Check size={14} color="white" strokeWidth={3} />
                 </Box>
                 <Typography variant="body2" style={{ color: '#333', ...bodyFont }}>{item}</Typography>
               </Box>
             ))}
           </Box>
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px', transform: 'translateZ(40px)' }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Button fullWidth variant="contained"
               onClick={() => { setOpenModal(false); navigate('/register'); }}
-              style={{ 
-                backgroundColor: '#1a237e', 
-                padding: '15px', 
-                borderRadius: '10px', 
-                fontSize: '16px', 
-                fontWeight: '700', 
-                ...bodyFont,
-                boxShadow: '0 6px 20px rgba(26,35,126,0.4)',
-              }}>
+              style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', ...bodyFont }}>
               Create Free Account →
             </Button>
             <Button fullWidth variant="outlined"
@@ -880,13 +377,6 @@ function Home() {
         </Box>
       </Modal>
 
-      {/* Add this to your global CSS or in a style tag in index.html */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-      `}</style>
     </Box>
   );
 }
