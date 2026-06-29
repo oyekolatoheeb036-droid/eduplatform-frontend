@@ -11,6 +11,8 @@ import QuizIcon from '@mui/icons-material/Quiz';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
@@ -22,6 +24,35 @@ const sectionLabel = {
   B: 'Section B — Theory',
   C: 'Section C — Handwritten Workings'
 };
+
+// Renders text with $$ ... $$ as block LaTeX and $ ... $ as inline LaTeX
+function renderLatex(text) {
+  if (!text) return null;
+
+  const parts = [];
+  // Split on $$...$$ first (block math)
+  const blockSplit = text.split(/(\$\$[\s\S]*?\$\$)/g);
+
+  blockSplit.forEach((chunk, i) => {
+    if (chunk.startsWith('$$') && chunk.endsWith('$$')) {
+      const math = chunk.slice(2, -2);
+      parts.push(<BlockMath key={`block-${i}`} math={math} />);
+    } else {
+      // Now split remaining text on $...$ (inline math)
+      const inlineSplit = chunk.split(/(\$[^$]*?\$)/g);
+      inlineSplit.forEach((part, j) => {
+        if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+          const math = part.slice(1, -1);
+          parts.push(<InlineMath key={`inline-${i}-${j}`} math={math} />);
+        } else {
+          parts.push(<span key={`text-${i}-${j}`}>{part}</span>);
+        }
+      });
+    }
+  });
+
+  return <>{parts}</>;
+}
 
 function Quiz() {
   const { lesson_id, course_id } = useParams();
@@ -54,29 +85,29 @@ function Quiz() {
   };
 
   const handleImageUpload = async (question_id, files) => {
-  if (!files || files.length === 0) return;
-  setUploadingId(question_id);
-  try {
-    const urls = [];
-    for (const file of files) {
-      const base64 = await toBase64(file);
-      const res = await fetch(`${API}/api/upload/quiz-image`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64, folder: 'quiz_answers' })
-      });
-      const data = await res.json();
-      urls.push(data.url);
+    if (!files || files.length === 0) return;
+    setUploadingId(question_id);
+    try {
+      const urls = [];
+      for (const file of files) {
+        const base64 = await toBase64(file);
+        const res = await fetch(`${API}/api/upload/quiz-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64, folder: 'quiz_answers' })
+        });
+        const data = await res.json();
+        urls.push(data.url);
+      }
+      setAnswers(prev => ({
+        ...prev,
+        [question_id]: { image_url: urls[0], image_urls: urls }
+      }));
+    } catch (err) {
+      console.log(err);
     }
-    setAnswers(prev => ({
-      ...prev,
-      [question_id]: { image_url: urls[0], image_urls: urls }
-    }));
-  } catch (err) {
-    console.log(err);
-  }
-  setUploadingId(null);
-};
+    setUploadingId(null);
+  };
 
   const toBase64 = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -258,8 +289,10 @@ function Quiz() {
               <Card key={question.id} elevation={0}
                 style={{ borderRadius: '14px', marginBottom: '16px', border: `1px solid ${sectionColor[section]}33`, borderLeft: `4px solid ${sectionColor[section]}` }}>
                 <CardContent style={{ padding: '24px' }}>
-                  <Typography style={{ fontWeight: '700', marginBottom: '16px', color: '#0a0a0a', fontSize: '16px', ...fontStyle }}>
-                    {index + 1}. {question.question_text}
+
+                  {/* Question text with LaTeX support */}
+                  <Typography component="div" style={{ fontWeight: '700', marginBottom: '16px', color: '#0a0a0a', fontSize: '16px', ...fontStyle }}>
+                    {index + 1}. {renderLatex(question.question_text)}
                     <span style={{ color: sectionColor[section], fontSize: '13px', marginLeft: '8px', fontWeight: '600' }}>
                       [{question.marks} mark{question.marks > 1 ? 's' : ''}]
                     </span>
@@ -274,8 +307,12 @@ function Quiz() {
                           question[`option_${opt.toLowerCase()}`] && (
                             <FormControlLabel key={opt} value={opt}
                               control={<Radio style={{ color: '#ff6f00' }} />}
-                              label={`${opt}. ${question[`option_${opt.toLowerCase()}`]}`}
-                              style={{ ...bodyFont }} />
+                              label={
+                                <span style={{ ...bodyFont }}>
+                                  {opt}. {renderLatex(question[`option_${opt.toLowerCase()}`])}
+                                </span>
+                              }
+                            />
                           )
                         ))}
                       </RadioGroup>
@@ -296,8 +333,8 @@ function Quiz() {
                   {section === 'C' && (
                     <Box>
                       <input type="file" accept="image/*" multiple id={`upload-${question.id}`}
-  style={{ display: 'none' }}
-  onChange={e => handleImageUpload(question.id, e.target.files)} />
+                        style={{ display: 'none' }}
+                        onChange={e => handleImageUpload(question.id, e.target.files)} />
                       <label htmlFor={`upload-${question.id}`}>
                         <Button variant="outlined" component="span"
                           startIcon={uploadingId === question.id ? <CircularProgress size={16} /> : <CloudUploadIcon />}
@@ -306,17 +343,17 @@ function Quiz() {
                           {uploadingId === question.id ? 'Uploading...' : 'Upload Photo'}
                         </Button>
                       </label>
-                     {answers[question.id]?.image_urls && (
-  <Box style={{ marginTop: '12px' }}>
-    {answers[question.id].image_urls.map((url, i) => (
-      <img key={i} src={url} alt={`answer-${i + 1}`}
-        style={{ maxWidth: '100%', borderRadius: '10px', border: '2px solid #4caf50', marginBottom: '8px', display: 'block' }} />
-    ))}
-    <Typography variant="caption" style={{ color: '#4caf50', fontWeight: '600', display: 'block', marginTop: '6px', ...bodyFont }}>
-      ✅ {answers[question.id].image_urls.length} photo{answers[question.id].image_urls.length > 1 ? 's' : ''} uploaded
-    </Typography>
-  </Box>
-)}
+                      {answers[question.id]?.image_urls && (
+                        <Box style={{ marginTop: '12px' }}>
+                          {answers[question.id].image_urls.map((url, i) => (
+                            <img key={i} src={url} alt={`answer-${i + 1}`}
+                              style={{ maxWidth: '100%', borderRadius: '10px', border: '2px solid #4caf50', marginBottom: '8px', display: 'block' }} />
+                          ))}
+                          <Typography variant="caption" style={{ color: '#4caf50', fontWeight: '600', display: 'block', marginTop: '6px', ...bodyFont }}>
+                            ✅ {answers[question.id].image_urls.length} photo{answers[question.id].image_urls.length > 1 ? 's' : ''} uploaded
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                   )}
                 </CardContent>
