@@ -21,6 +21,7 @@ import NairafameAI from './pages/NairafameAI';
 import Community from './pages/Community';
 import ResetPassword from './pages/ResetPassword';
 import PendingSubmissions from './pages/PendingSubmissions';
+import About from './pages/About';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -273,6 +274,7 @@ function App() {
         <Route path="/ai-tutor" element={<NairafameAIWrapper />} />
         <Route path="/community" element={<Community />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/about" element={<About />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Dashboard />

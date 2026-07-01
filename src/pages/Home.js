@@ -316,7 +316,7 @@ function Home() {
           </Grid>
           <Grid item xs={6} sm={2}>
             <Typography variant="body1" style={{ fontWeight: '700', marginBottom: '15px', ...fontStyle }}>Company</Typography>
-            {[{ label: 'About', path: '/' }, { label: 'Contact', path: '/' }, { label: 'Privacy Policy', path: '/privacy' }].map(item => (
+            {[{ label: 'About', path: '/about' }, { label: 'Contact', path: '/' }, { label: 'Privacy Policy', path: '/privacy' }].map(item => (
               <Box key={item.label} style={{ marginBottom: '10px' }}>
                 <Link to={item.path} style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', ...bodyFont }}>
                   <Typography variant="body2">{item.label}</Typography>
