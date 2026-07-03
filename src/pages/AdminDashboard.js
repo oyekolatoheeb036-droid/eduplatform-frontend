@@ -7,15 +7,16 @@ import {
   Paper, Select, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Typography, useMediaQuery
 } from '@mui/material';
-import PeopleIcon from '@mui/icons-material/People';
-import BookIcon from '@mui/icons-material/Book';
-import SchoolIcon from '@mui/icons-material/School';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import QuizIcon from '@mui/icons-material/Quiz';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import GroupIcon from '@mui/icons-material/Group';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import LocalLibraryIcon from '@mui/icons-material/LocalLibrary';
+import ArticleIcon from '@mui/icons-material/Article';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ModeEditOutlineIcon from '@mui/icons-material/ModeEditOutline';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import QuizOutlinedIcon from '@mui/icons-material/QuizOutlined';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 
@@ -109,10 +110,10 @@ function AdminDashboard() {
   };
 
   const statCards = [
-    { label: 'Total Users', value: stats.total_users, icon: <PeopleIcon />, color: '#1a237e' },
-    { label: 'Total Courses', value: stats.total_courses, icon: <BookIcon />, color: '#ff6f00' },
-    { label: 'Total Enrollments', value: stats.total_enrollments, icon: <SchoolIcon />, color: '#4caf50' },
-    { label: 'Total Lessons', value: stats.total_lessons, icon: <MenuBookIcon />, color: '#0288d1' }
+    { label: 'Total Users', value: stats.total_users, icon: <GroupIcon />, color: '#1a237e' },
+    { label: 'Total Courses', value: stats.total_courses, icon: <AutoStoriesIcon />, color: '#ff6f00' },
+    { label: 'Total Enrollments', value: stats.total_enrollments, icon: <LocalLibraryIcon />, color: '#4caf50' },
+    { label: 'Total Lessons', value: stats.total_lessons, icon: <ArticleIcon />, color: '#0288d1' }
   ];
 
   const roleColor = (role) => {
@@ -200,20 +201,20 @@ function AdminDashboard() {
                                   onClick={() => handleViewQuizResults(user)}
                                   style={{ backgroundColor: '#e8f5e9', color: '#4caf50' }}
                                   aria-label="View quiz results">
-                                  <QuizIcon fontSize="small" />
+                                  <AssessmentIcon fontSize="small" />
                                 </IconButton>
                               )}
                               <IconButton size="small"
                                 onClick={() => { setSelectedUser(user); setNewRole(user.role); setOpenEditRoleDialog(true); }}
                                 style={{ backgroundColor: '#e3f2fd', color: '#1a237e' }}
                                 aria-label="Edit role">
-                                <EditIcon fontSize="small" />
+                                <ModeEditOutlineIcon fontSize="small" />
                               </IconButton>
                               <IconButton size="small"
                                 onClick={() => { setSelectedUser(user); setOpenDeleteUserDialog(true); }}
                                 style={{ backgroundColor: '#ffebee', color: '#f44336' }}
                                 aria-label="Delete user">
-                                <DeleteIcon fontSize="small" />
+                                <DeleteOutlineIcon fontSize="small" />
                               </IconButton>
                             </Box>
                           </TableCell>
@@ -255,7 +256,7 @@ function AdminDashboard() {
                               onClick={() => { setSelectedCourse(course); setOpenDeleteCourseDialog(true); }}
                               style={{ backgroundColor: '#ffebee', color: '#f44336' }}
                               aria-label="Delete course">
-                              <DeleteIcon fontSize="small" />
+                              <DeleteOutlineIcon fontSize="small" />
                             </IconButton>
                           </TableCell>
                         </TableRow>
@@ -297,7 +298,7 @@ function AdminDashboard() {
         <DialogContent style={{ padding: '24px' }}>
           {quizAttempts.length === 0 ? (
             <Box style={{ textAlign: 'center', padding: '40px' }}>
-              <QuizIcon style={{ fontSize: '48px', color: '#ccc', marginBottom: '12px' }} />
+              <QuizOutlinedIcon style={{ fontSize: '48px', color: '#ccc', marginBottom: '12px' }} />
               <Typography style={{ color: '#999', fontWeight: '700', ...fontStyle }}>No quiz attempts yet</Typography>
             </Box>
           ) : (
@@ -307,7 +308,7 @@ function AdminDashboard() {
                   <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
                     <Typography style={{ fontWeight: '800', color: '#0a0a0a', ...fontStyle }}>{attempt.quiz_title}</Typography>
                     <Chip
-                      icon={attempt.status === 'fully_marked' ? <CheckCircleIcon style={{ fontSize: '14px' }} /> : <HourglassEmptyIcon style={{ fontSize: '14px' }} />}
+                      icon={attempt.status === 'fully_marked' ? <TaskAltIcon style={{ fontSize: '14px' }} /> : <ScheduleIcon style={{ fontSize: '14px' }} />}
                       label={attempt.status === 'fully_marked' ? 'Fully Marked' : 'Pending Section C'}
                       size="small"
                       style={{
@@ -321,7 +322,7 @@ function AdminDashboard() {
                     <Grid item xs={4}>
                       <Box style={{ textAlign: 'center', backgroundColor: '#fff3e0', borderRadius: '10px', padding: '12px' }}>
                         <Typography style={{ fontWeight: '800', fontSize: '20px', color: '#ff6f00', ...fontStyle }}>
-                          {attempt.section_a_score ?? '-'}
+                          {attempt.section_a_score ?? '—'}
                         </Typography>
                         <Typography variant="caption" style={{ color: '#666', ...bodyFont }}>Section A</Typography>
                       </Box>
@@ -329,7 +330,7 @@ function AdminDashboard() {
                     <Grid item xs={4}>
                       <Box style={{ textAlign: 'center', backgroundColor: '#e3f2fd', borderRadius: '10px', padding: '12px' }}>
                         <Typography style={{ fontWeight: '800', fontSize: '20px', color: '#0288d1', ...fontStyle }}>
-                          {attempt.section_b_score ?? '-'}
+                          {attempt.section_b_score ?? '—'}
                         </Typography>
                         <Typography variant="caption" style={{ color: '#666', ...bodyFont }}>Section B</Typography>
                       </Box>
@@ -337,7 +338,7 @@ function AdminDashboard() {
                     <Grid item xs={4}>
                       <Box style={{ textAlign: 'center', backgroundColor: '#e8f5e9', borderRadius: '10px', padding: '12px' }}>
                         <Typography style={{ fontWeight: '800', fontSize: '20px', color: '#4caf50', ...fontStyle }}>
-                          {attempt.section_c_score ?? '⏳'}
+                          {attempt.section_c_score != null ? attempt.section_c_score : '—'}
                         </Typography>
                         <Typography variant="caption" style={{ color: '#666', ...bodyFont }}>Section C</Typography>
                       </Box>
@@ -345,7 +346,7 @@ function AdminDashboard() {
                   </Grid>
                   <Box style={{ textAlign: 'center', marginTop: '12px', backgroundColor: '#f5f5f5', borderRadius: '10px', padding: '10px' }}>
                     <Typography style={{ fontWeight: '800', fontSize: '22px', color: '#1a237e', ...fontStyle }}>
-                      {attempt.total_score ?? (attempt.section_a_score + attempt.section_b_score)} / {attempt.grand_total || '?'}
+                      {attempt.total_score ?? (attempt.section_a_score + attempt.section_b_score)} / {attempt.grand_total || '—'}
                     </Typography>
                     <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>Total Score</Typography>
                   </Box>
@@ -447,7 +448,7 @@ function AllQuizAttemptsTable({ fontStyle, bodyFont, isMobile }) {
 
   if (attempts.length === 0) return (
     <Box style={{ textAlign: 'center', padding: '40px' }}>
-      <QuizIcon style={{ fontSize: '48px', color: '#ccc', marginBottom: '12px' }} />
+      <QuizOutlinedIcon style={{ fontSize: '48px', color: '#ccc', marginBottom: '12px' }} />
       <Typography style={{ color: '#999', fontWeight: '700', ...fontStyle }}>No quiz attempts yet</Typography>
     </Box>
   );
@@ -472,20 +473,21 @@ function AllQuizAttemptsTable({ fontStyle, bodyFont, isMobile }) {
               <TableCell style={{ fontWeight: '700', color: '#333', ...bodyFont }}>{attempt.student_name}</TableCell>
               <TableCell style={{ color: '#666', ...bodyFont }}>{attempt.quiz_title}</TableCell>
               <TableCell style={{ color: '#ff6f00', fontWeight: '700', ...bodyFont }}>
-                {attempt.section_a_score ?? '-'}{attempt.section_a_total ? ` / ${attempt.section_a_total}` : ''}
+                {attempt.section_a_score ?? '—'}{attempt.section_a_total ? ` / ${attempt.section_a_total}` : ''}
               </TableCell>
               <TableCell style={{ color: '#0288d1', fontWeight: '700', ...bodyFont }}>
-                {attempt.section_b_score ?? '-'}{attempt.section_b_total ? ` / ${attempt.section_b_total}` : ''}
+                {attempt.section_b_score ?? '—'}{attempt.section_b_total ? ` / ${attempt.section_b_total}` : ''}
               </TableCell>
               <TableCell style={{ color: '#4caf50', fontWeight: '700', ...bodyFont }}>
-                {attempt.section_c_score != null ? `${attempt.section_c_score}${attempt.section_c_total ? ` / ${attempt.section_c_total}` : ''}` : '⏳'}
+                {attempt.section_c_score != null ? `${attempt.section_c_score}${attempt.section_c_total ? ` / ${attempt.section_c_total}` : ''}` : '—'}
               </TableCell>
               <TableCell style={{ fontWeight: '800', color: '#1a237e', ...bodyFont }}>
                 {attempt.total_score ?? (attempt.section_a_score + attempt.section_b_score)}{attempt.grand_total ? ` / ${attempt.grand_total}` : ''}
               </TableCell>
               <TableCell>
                 <Chip
-                  label={attempt.status === 'fully_marked' ? '✅ Done' : '⏳ Pending'}
+                  icon={attempt.status === 'fully_marked' ? <TaskAltIcon style={{ fontSize: '14px' }} /> : <ScheduleIcon style={{ fontSize: '14px' }} />}
+                  label={attempt.status === 'fully_marked' ? 'Completed' : 'Pending'}
                   size="small"
                   style={{
                     backgroundColor: attempt.status === 'fully_marked' ? '#e8f5e9' : '#fff3e0',
