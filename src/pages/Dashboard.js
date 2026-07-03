@@ -224,33 +224,39 @@ function Dashboard() {
                           {result.quiz_title}
                         </Typography>
 
-                        {result.section_a_score !== null && (
-                          <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section A (MCQ)</Typography>
-                            <Typography variant="body2" style={{ fontWeight: '700', color: '#ff6f00', ...bodyFont }}>{result.section_a_score} marks</Typography>
-                          </Box>
-                        )}
+                     {result.section_a_score !== null && (
+  <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+    <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section A (MCQ)</Typography>
+    <Typography variant="body2" style={{ fontWeight: '700', color: '#ff6f00', ...bodyFont }}>
+      {result.section_a_score} / {result.section_a_total || '?'} marks
+    </Typography>
+  </Box>
+)}
 
-                        {result.section_b_score !== null && (
-                          <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section B (Theory)</Typography>
-                            <Typography variant="body2" style={{ fontWeight: '700', color: '#0288d1', ...bodyFont }}>{result.section_b_score} marks</Typography>
-                          </Box>
-                        )}
+{result.section_b_score !== null && (
+  <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+    <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section B (Theory)</Typography>
+    <Typography variant="body2" style={{ fontWeight: '700', color: '#0288d1', ...bodyFont }}>
+      {result.section_b_score} / {result.section_b_total || '?'} marks
+    </Typography>
+  </Box>
+)}
 
                         <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                           <Typography variant="body2" style={{ color: '#666', ...bodyFont }}>Section C (Handwritten)</Typography>
                           {result.section_c_score !== null ? (
-                            <Typography variant="body2" style={{ fontWeight: '700', color: '#4caf50', ...bodyFont }}>{result.section_c_score} marks</Typography>
-                          ) : (
-                            <Chip label="Pending" size="small" style={{ backgroundColor: '#fff3e0', color: '#ff6f00', fontWeight: '700', fontSize: '11px' }} />
-                          )}
+  <Typography variant="body2" style={{ fontWeight: '700', color: '#4caf50', ...bodyFont }}>
+    {result.section_c_score} / {result.section_c_total || '?'} marks
+  </Typography>
+) : (
+  <Chip label="Pending" size="small" style={{ backgroundColor: '#fff3e0', color: '#ff6f00', fontWeight: '700', fontSize: '11px' }} />
+)}
                         </Box>
 
                         <Box style={{ backgroundColor: '#f5f5f5', borderRadius: '10px', padding: '12px', textAlign: 'center', marginBottom: '12px' }}>
                           <Typography style={{ fontWeight: '800', fontSize: '28px', color: '#1a237e', ...fontStyle }}>
-                            {currentScore}{totalMarks ? ` / ${totalMarks}` : ''}
-                          </Typography>
+  {currentScore} / {result.grand_total || '?'}
+</Typography>
                           <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
                             {isFullyMarked ? 'Final Score' : 'Score so far (Section C pending)'}
                           </Typography>
