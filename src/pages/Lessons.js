@@ -18,7 +18,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import { BlockMath } from 'react-katex';
+import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
@@ -54,34 +54,261 @@ function getYouTubeEmbedUrl(url) {
   } catch { return null; }
 }
 
-function renderContent(content) {
-  if (!content) return null;
-  return content.split('$$').map((part, index) => {
-    if (index % 2 === 1) {
-      try { return <BlockMath key={index} math={part} />; }
-      catch (e) { return <span key={index} style={{ color: 'red' }}>Invalid equation</span>; }
-    }
-    return part.split('\n').map((line, li) => {
-      const imageMatch = line.match(/^\[IMAGE:(.*)\]$/);
-      if (imageMatch) {
-        return (
-          <Box key={`${index}-${li}`} style={{ margin: '12px 0' }}>
-            <img src={imageMatch[1]} alt="lesson content"
-              style={{ maxWidth: '100%', borderRadius: '10px', display: 'block', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }} />
-          </Box>
-        );
+// ── Inline renderer: bold, italic, inline math ──
+function renderInline(text) {
+  if (!text) return null;
+  const parts = [];
+  let remaining = text;
+  let keyIndex = 0;
+
+  while (remaining.length > 0) {
+    // Inline math $...$
+    const inlineMathMatch = remaining.match(/^\$([^$]+)\$/);
+    if (inlineMathMatch) {
+      try {
+        parts.push(<InlineMath key={keyIndex++} math={inlineMathMatch[1]} />);
+      } catch {
+        parts.push(<span key={keyIndex++} style={{ color: 'red' }}>Invalid math</span>);
       }
-      return (
-        <Typography key={`${index}-${li}`} variant="body1"
-          style={{ fontSize: '18px', lineHeight: '1.8', color: '#333', whiteSpace: 'pre-wrap', marginBottom: '4px' }}>
-          {line}
-        </Typography>
-      );
-    });
-  });
+      remaining = remaining.slice(inlineMathMatch[0].length);
+      continue;
+    }
+
+    // Bold **text**
+    const boldMatch = remaining.match(/^\*\*(.+?)\*\*/);
+    if (boldMatch) {
+      parts.push(<strong key={keyIndex++} style={{ fontWeight: '700' }}>{boldMatch[1]}</strong>);
+      remaining = remaining.slice(boldMatch[0].length);
+      continue;
+    }
+
+    // Italic *text*
+    const italicMatch = remaining.match(/^\*(.+?)\*/);
+    if (italicMatch) {
+      parts.push(<em key={keyIndex++}>{italicMatch[1]}</em>);
+      remaining = remaining.slice(italicMatch[0].length);
+      continue;
+    }
+
+    // Plain text
+    const nextSpecial = remaining.search(/\$|\*|\[/);
+    if (nextSpecial === -1) {
+      parts.push(<span key={keyIndex++}>{remaining}</span>);
+      remaining = '';
+    } else if (nextSpecial === 0) {
+      parts.push(<span key={keyIndex++}>{remaining[0]}</span>);
+      remaining = remaining.slice(1);
+    } else {
+      parts.push(<span key={keyIndex++}>{remaining.slice(0, nextSpecial)}</span>);
+      remaining = remaining.slice(nextSpecial);
+    }
+  }
+
+  return parts;
 }
 
-// ── Q&A Component — students only see their OWN questions ──
+// ── Main content renderer ──
+function renderContent(content) {
+  if (!content) return null;
+
+  const lines = content.split('\n');
+  const elements = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Empty line
+    if (line.trim() === '') {
+      elements.push(<Box key={`space-${i}`} style={{ height: '10px' }} />);
+      i++;
+      continue;
+    }
+
+    // Heading 1 — # Heading
+    if (line.startsWith('# ')) {
+      elements.push(
+        <Typography key={i} style={{
+          fontWeight: '800', fontSize: '24px', color: '#0a0a0a',
+          marginTop: '28px', marginBottom: '10px', lineHeight: '1.3',
+          fontFamily: "'Space Grotesk', sans-serif"
+        }}>
+          {renderInline(line.slice(2))}
+        </Typography>
+      );
+      i++;
+      continue;
+    }
+
+    // Heading 2 — ## Heading
+    if (line.startsWith('## ')) {
+      elements.push(
+        <Typography key={i} style={{
+          fontWeight: '800', fontSize: '20px', color: '#1a237e',
+          marginTop: '22px', marginBottom: '8px', lineHeight: '1.3',
+          fontFamily: "'Space Grotesk', sans-serif"
+        }}>
+          {renderInline(line.slice(3))}
+        </Typography>
+      );
+      i++;
+      continue;
+    }
+
+    // Heading 3 — ### Heading
+    if (line.startsWith('### ')) {
+      elements.push(
+        <Typography key={i} style={{
+          fontWeight: '700', fontSize: '17px', color: '#333',
+          marginTop: '18px', marginBottom: '6px', lineHeight: '1.3',
+          fontFamily: "'Space Grotesk', sans-serif"
+        }}>
+          {renderInline(line.slice(4))}
+        </Typography>
+      );
+      i++;
+      continue;
+    }
+
+    // Horizontal rule ---
+    if (line.trim() === '---') {
+      elements.push(<Divider key={i} style={{ margin: '20px 0' }} />);
+      i++;
+      continue;
+    }
+
+    // Block math $$ ... $$ on one line
+    if (line.startsWith('$$') && line.endsWith('$$') && line.length > 4) {
+      try {
+        elements.push(
+          <Box key={i} style={{ margin: '16px 0', overflowX: 'auto' }}>
+            <BlockMath math={line.slice(2, -2)} />
+          </Box>
+        );
+      } catch {
+        elements.push(<span key={i} style={{ color: 'red' }}>Invalid equation</span>);
+      }
+      i++;
+      continue;
+    }
+
+    // Block math $$ ... $$ multi-line
+    if (line.trim() === '$$') {
+      i++;
+      const mathLines = [];
+      while (i < lines.length && lines[i].trim() !== '$$') {
+        mathLines.push(lines[i]);
+        i++;
+      }
+      i++; // skip closing $$
+      try {
+        elements.push(
+          <Box key={i} style={{ margin: '16px 0', overflowX: 'auto' }}>
+            <BlockMath math={mathLines.join('\n')} />
+          </Box>
+        );
+      } catch {
+        elements.push(<span key={i} style={{ color: 'red' }}>Invalid equation</span>);
+      }
+      continue;
+    }
+
+    // Bullet list - or •
+    if (line.startsWith('- ') || line.startsWith('• ')) {
+      const bulletLines = [];
+      while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('• '))) {
+        bulletLines.push(lines[i].startsWith('- ') ? lines[i].slice(2) : lines[i].slice(2));
+        i++;
+      }
+      elements.push(
+        <Box key={`ul-${i}`} component="ul" style={{ paddingLeft: '24px', margin: '8px 0 16px 0' }}>
+          {bulletLines.map((item, idx) => (
+            <li key={idx} style={{ marginBottom: '6px' }}>
+              <Typography variant="body1" style={{
+                fontSize: '17px', lineHeight: '1.85', color: '#333',
+                fontFamily: "'Inter', sans-serif"
+              }}>
+                {renderInline(item)}
+              </Typography>
+            </li>
+          ))}
+        </Box>
+      );
+      continue;
+    }
+
+    // Numbered list 1. 2. 3.
+    if (/^\d+\.\s/.test(line)) {
+      const numberedLines = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        numberedLines.push(lines[i].replace(/^\d+\.\s/, ''));
+        i++;
+      }
+      elements.push(
+        <Box key={`ol-${i}`} component="ol" style={{ paddingLeft: '24px', margin: '8px 0 16px 0' }}>
+          {numberedLines.map((item, idx) => (
+            <li key={idx} style={{ marginBottom: '6px' }}>
+              <Typography variant="body1" style={{
+                fontSize: '17px', lineHeight: '1.85', color: '#333',
+                fontFamily: "'Inter', sans-serif"
+              }}>
+                {renderInline(item)}
+              </Typography>
+            </li>
+          ))}
+        </Box>
+      );
+      continue;
+    }
+
+    // Blockquote > text
+    if (line.startsWith('> ')) {
+      elements.push(
+        <Box key={i} style={{
+          borderLeft: '4px solid #1a237e', paddingLeft: '16px',
+          margin: '12px 0', backgroundColor: '#f5f7ff', borderRadius: '0 8px 8px 0', padding: '12px 16px'
+        }}>
+          <Typography variant="body1" style={{
+            fontSize: '17px', lineHeight: '1.85', color: '#1a237e', fontStyle: 'italic',
+            fontFamily: "'Inter', sans-serif"
+          }}>
+            {renderInline(line.slice(2))}
+          </Typography>
+        </Box>
+      );
+      i++;
+      continue;
+    }
+
+    // Image [IMAGE:url]
+    const imageMatch = line.match(/^\[IMAGE:(.*)\]$/);
+    if (imageMatch) {
+      elements.push(
+        <Box key={i} style={{ margin: '16px 0' }}>
+          <img src={imageMatch[1]} alt="lesson content"
+            style={{ maxWidth: '100%', borderRadius: '10px', display: 'block', boxShadow: '0 2px 12px rgba(0,0,0,0.1)' }} />
+        </Box>
+      );
+      i++;
+      continue;
+    }
+
+    // Regular paragraph
+    elements.push(
+      <Typography key={i} variant="body1" style={{
+        fontSize: '17px', lineHeight: '1.9', color: '#333',
+        marginBottom: '6px', fontFamily: "'Inter', sans-serif"
+      }}>
+        {renderInline(line)}
+      </Typography>
+    );
+    i++;
+  }
+
+  return elements;
+}
+
+// ── Q&A Component ──
 const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, fontStyle, isMobile }) => {
   const [questions, setQuestions] = useState([]);
   const [questionText, setQuestionText] = useState('');
@@ -97,74 +324,54 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
     }
   };
 
-  useEffect(() => {
-    fetchMyQuestions();
-  }, [sectionId, studentId]);
+  useEffect(() => { fetchMyQuestions(); }, [sectionId, studentId]);
 
   const handleSubmit = async () => {
     if (!questionText.trim()) return;
     setSubmitting(true);
     try {
       await axios.post(`${API}/api/questions`, {
-        lesson_id: lessonId,
-        section_id: sectionId,
-        student_id: studentId,
-        student_name: studentName,
+        lesson_id: lessonId, section_id: sectionId,
+        student_id: studentId, student_name: studentName,
         question_text: questionText.trim()
       });
       setQuestionText('');
       setSubmitted(true);
       fetchMyQuestions();
       setTimeout(() => setSubmitted(false), 3000);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (err) { console.log(err); }
+    finally { setSubmitting(false); }
   };
 
   const displayQuestions = showAll ? questions : questions.slice(0, 3);
 
   return (
     <Box style={{ marginTop: '32px', borderTop: '1px solid #f0f0f0', paddingTop: '28px' }}>
-      {/* Header */}
       <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
         <Box style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <QuestionAnswerIcon style={{ color: '#1a237e', fontSize: '20px' }} />
         </Box>
         <Box>
-          <Typography style={{ fontWeight: '800', fontSize: '16px', color: '#0a0a0a', ...fontStyle }}>
-            Ask a Question
-          </Typography>
-          <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>
-            Your teacher will answer below
-          </Typography>
+          <Typography style={{ fontWeight: '800', fontSize: '16px', color: '#0a0a0a', ...fontStyle }}>Ask a Question</Typography>
+          <Typography variant="caption" style={{ color: '#999', ...bodyFont }}>Your teacher will answer below</Typography>
         </Box>
       </Box>
-
-      {/* Question input */}
       <Box style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', marginBottom: '16px' }}>
-        <TextField
-          fullWidth multiline maxRows={4}
+        <TextField fullWidth multiline maxRows={4}
           placeholder="What would you like to ask about this section?"
-          value={questionText}
-          onChange={e => setQuestionText(e.target.value)}
+          value={questionText} onChange={e => setQuestionText(e.target.value)}
           variant="outlined" size="small"
-          InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }}
-        />
+          InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }} />
         <IconButton onClick={handleSubmit} disabled={!questionText.trim() || submitting}
           style={{ backgroundColor: questionText.trim() && !submitting ? '#1a237e' : '#e0e0e0', color: 'white', width: '42px', height: '42px', flexShrink: 0 }}>
           {submitting ? <CircularProgress size={18} style={{ color: 'white' }} /> : <SendIcon style={{ fontSize: '18px' }} />}
         </IconButton>
       </Box>
-
       {submitted && (
         <Alert severity="success" style={{ marginBottom: '16px', borderRadius: '10px' }}>
           Question submitted! Your teacher will answer soon. 🎉
         </Alert>
       )}
-
-      {/* Student's own questions */}
       {questions.length > 0 && (
         <Box>
           <Typography style={{ fontWeight: '700', fontSize: '14px', color: '#666', marginBottom: '12px', ...bodyFont }}>
@@ -172,16 +379,13 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
           </Typography>
           {displayQuestions.map(q => (
             <Box key={q.id} style={{ backgroundColor: '#fafafa', border: '1px solid #f0f0f0', borderRadius: '14px', padding: '16px', marginBottom: '12px' }}>
-              {/* Student question */}
               <Box style={{ display: 'flex', gap: '10px', marginBottom: q.answer_text ? '12px' : '0' }}>
                 <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#e8eaf6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <PersonIcon style={{ color: '#1a237e', fontSize: '16px' }} />
                 </Box>
                 <Box style={{ flex: 1 }}>
                   <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" style={{ fontWeight: '700', color: '#1a237e', ...bodyFont }}>
-                      You
-                    </Typography>
+                    <Typography variant="caption" style={{ fontWeight: '700', color: '#1a237e', ...bodyFont }}>You</Typography>
                     {!q.answer_text && (
                       <Chip label="⏳ Awaiting reply" size="small"
                         style={{ fontSize: '10px', backgroundColor: '#fff3e0', color: '#ff6f00', fontWeight: '700', height: '20px' }} />
@@ -192,20 +396,14 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
                   </Typography>
                 </Box>
               </Box>
-
-              {/* Teacher answer */}
               {q.answer_text && (
                 <Box style={{ display: 'flex', gap: '10px', backgroundColor: '#e8f5e9', borderRadius: '10px', padding: '12px' }}>
                   <Box style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#4caf50', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Typography style={{ color: 'white', fontSize: '12px', fontWeight: '800' }}>T</Typography>
                   </Box>
                   <Box>
-                    <Typography variant="caption" style={{ fontWeight: '700', color: '#2e7d32', ...bodyFont }}>
-                      Teacher
-                    </Typography>
-                    <Typography variant="body2" style={{ color: '#1b5e20', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>
-                      {q.answer_text}
-                    </Typography>
+                    <Typography variant="caption" style={{ fontWeight: '700', color: '#2e7d32', ...bodyFont }}>Teacher</Typography>
+                    <Typography variant="body2" style={{ color: '#1b5e20', lineHeight: '1.6', marginTop: '2px', ...bodyFont }}>{q.answer_text}</Typography>
                   </Box>
                 </Box>
               )}
@@ -223,6 +421,7 @@ const QASection = ({ lessonId, sectionId, studentId, studentName, bodyFont, font
   );
 };
 
+// ── Dive Deeper AI Chat ──
 function DiveDeeperChat({ section }) {
   const starterMessage = section?.starter_prompt ||
     "Hi! I'm your AI tutor for this lesson. What would you like to understand better? 🤖";
@@ -316,8 +515,7 @@ function DiveDeeperChat({ section }) {
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
           placeholder="Ask a question about this lesson..."
           variant="outlined" size="small"
-          InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }}
-        />
+          InputProps={{ style: { borderRadius: '12px', fontSize: '14px', ...bodyFont } }} />
         <IconButton onClick={sendMessage} disabled={!input.trim() || loading}
           style={{ backgroundColor: input.trim() && !loading ? '#9c27b0' : '#e0e0e0', color: 'white', width: '42px', height: '42px', flexShrink: 0 }}>
           {loading ? <CircularProgress size={18} style={{ color: 'white' }} /> : <SendIcon style={{ fontSize: '18px' }} />}
@@ -328,6 +526,7 @@ function DiveDeeperChat({ section }) {
   );
 }
 
+// ── Main Lessons Component ──
 function Lessons() {
   const { course_id } = useParams();
   const navigate = useNavigate();
@@ -421,8 +620,7 @@ function Lessons() {
         <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '8px', letterSpacing: '0.5px', ...bodyFont }}>PROGRESS</Typography>
         <LinearProgress variant="determinate" value={progress.percentage || 0}
           style={{ marginBottom: '6px', borderRadius: '5px', height: '8px' }}
-          sx={{ backgroundColor: 'rgba(255,255,255,0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#4caf50' } }}
-        />
+          sx={{ backgroundColor: 'rgba(255,255,255,0.2)', '& .MuiLinearProgress-bar': { backgroundColor: '#4caf50' } }} />
         <Typography variant="body2" style={{ marginBottom: '16px', opacity: 0.8, ...bodyFont }}>{progress.percentage || 0}% Complete</Typography>
         <Divider style={{ backgroundColor: 'rgba(255,255,255,0.15)', marginBottom: '16px' }} />
         <Typography style={{ fontWeight: '800', fontSize: '13px', opacity: 0.6, marginBottom: '10px', letterSpacing: '0.5px', ...bodyFont }}>LESSONS</Typography>
