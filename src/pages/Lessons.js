@@ -702,11 +702,16 @@ function Lessons() {
                   <DiveDeeperChat section={selectedSection} />
                 ) : (
                   <>
-                    {selectedSection.content && (
-                      <Box style={{ marginBottom: '24px' }}>
-                        {renderContent(selectedSection.content)}
-                      </Box>
-                    )}
+                   {selectedSection.html_content && (
+  <Box style={{ marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e0e0e0' }}>
+    <iframe
+      srcDoc={selectedSection.html_content}
+      style={{ width: '100%', height: '600px', border: 'none', display: 'block' }}
+      title="HTML Lesson Content"
+      sandbox="allow-scripts"
+    />
+  </Box>
+)}
                     {selectedSection.video_url && (() => {
                       const embedUrl = getYouTubeEmbedUrl(selectedSection.video_url);
                       return embedUrl ? (

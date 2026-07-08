@@ -19,6 +19,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import SendIcon from '@mui/icons-material/Send';
 import MathEditor from '../components/MathEditor';
 import QuizFields from '../components/QuizFields';
+import HtmlFields from '../components/HtmlFields';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 
@@ -28,6 +29,7 @@ const sectionTypes = [
   { type: 'relate', label: '🔗 Relate', color: '#4caf50' },
   { type: 'quiz', label: '📝 Quiz', color: '#ff6f00' },
   { type: 'dive_deeper', label: '🤖 Dive Deeper (AI)', color: '#9c27b0' },
+{ type: 'html_content', label: '📄 HTML Content', color: '#2e7d32' },
 ];
 
 const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
@@ -252,12 +254,14 @@ function LessonBuilder() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
   const [editData, setEditData] = useState({
-    title: '', content: '', video_url: '', website_url: '', ai_context: '', starter_prompt: ''
-  });
+  title: '', content: '', video_url: '', website_url: '', 
+  ai_context: '', starter_prompt: '', html_content: ''
+});
 
   const [newSection, setNewSection] = useState({
-    title: '', content: '', video_url: '', website_url: '', type: '', ai_context: '', starter_prompt: ''
-  });
+  title: '', content: '', video_url: '', website_url: '', type: '', 
+  ai_context: '', starter_prompt: '', html_content: ''
+});
 
   const isMobile = useMediaQuery('(max-width:600px)');
   const isTablet = useMediaQuery('(max-width:900px)');
@@ -281,19 +285,22 @@ function LessonBuilder() {
   };
 
   const handleAddSection = async () => {
-    try {
-      await axios.post(`${API}/api/sections`, {
-        lesson_id: parseInt(lesson_id), type: addingSection, title: newSection.title,
-        content: newSection.content, video_url: newSection.video_url, website_url: newSection.website_url,
-        order_number: sections.length + 1, ai_context: newSection.ai_context, starter_prompt: newSection.starter_prompt
-      });
-      setMessageType('success');
-      setMessage('Section added successfully! 🎉');
-      setNewSection({ title: '', content: '', video_url: '', website_url: '', type: '', ai_context: '', starter_prompt: '' });
-      setAddingSection(null);
-      fetchSections();
-    } catch (err) { setMessageType('error'); setMessage('Failed to add section. Try again.'); }
-  };
+  try {
+    await axios.post(`${API}/api/sections`, {
+      lesson_id: parseInt(lesson_id), type: addingSection, title: newSection.title,
+      content: newSection.content, video_url: newSection.video_url, 
+      website_url: newSection.website_url, order_number: sections.length + 1, 
+      ai_context: newSection.ai_context, starter_prompt: newSection.starter_prompt,
+      html_content: newSection.html_content
+    });
+
+    setMessageType('success');
+    setMessage('Section added successfully! 🎉');
+    setNewSection({ title: '', content: '', video_url: '', website_url: '', type: '', ai_context: '', starter_prompt: '', html_content: '' });
+    setAddingSection(null);
+    fetchSections();
+  } catch (err) { setMessageType('error'); setMessage('Failed to add section. Try again.'); }
+};
 
   const handleDeleteSection = async (id) => {
     try {
@@ -302,29 +309,31 @@ function LessonBuilder() {
     } catch (err) { console.log(err); }
   };
 
-  const handleOpenEdit = (section) => {
-    setEditingSection(section);
-    setEditData({
-      title: section.title || '', content: section.content || '',
-      video_url: section.video_url || '', website_url: section.website_url || '',
-      ai_context: section.ai_context || '', starter_prompt: section.starter_prompt || ''
-    });
-    setEditDialogOpen(true);
-  };
+ const handleOpenEdit = (section) => {
+  setEditingSection(section);
+  setEditData({
+    title: section.title || '', content: section.content || '',
+    video_url: section.video_url || '', website_url: section.website_url || '',
+    ai_context: section.ai_context || '', starter_prompt: section.starter_prompt || '',
+    html_content: section.html_content || ''
+  });
+  setEditDialogOpen(true);
+};
 
   const handleSaveEdit = async () => {
-    try {
-      await axios.put(`${API}/api/sections/${editingSection.id}`, {
-        title: editData.title, content: editData.content, video_url: editData.video_url,
-        website_url: editData.website_url, ai_context: editData.ai_context, starter_prompt: editData.starter_prompt
-      });
-      setMessageType('success');
-      setMessage('Section updated successfully! ✅');
-      setEditDialogOpen(false);
-      setEditingSection(null);
-      fetchSections();
-    } catch (err) { setMessageType('error'); setMessage('Failed to update section. Try again.'); }
-  };
+  try {
+    await axios.put(`${API}/api/sections/${editingSection.id}`, {
+      title: editData.title, content: editData.content, video_url: editData.video_url,
+      website_url: editData.website_url, ai_context: editData.ai_context, 
+      starter_prompt: editData.starter_prompt, html_content: editData.html_content
+    });
+    setMessageType('success');
+    setMessage('Section updated successfully! ✅');
+    setEditDialogOpen(false);
+    setEditingSection(null);
+    fetchSections();
+  } catch (err) { setMessageType('error'); setMessage('Failed to update section. Try again.'); }
+};
 
   const getSectionColor = (type) => sectionTypes.find(s => s.type === type)?.color || '#666';
   const getSectionLabel = (type) => sectionTypes.find(s => s.type === type)?.label || type;
@@ -418,6 +427,8 @@ function LessonBuilder() {
   ? <DiveDeeperFields data={newSection} setData={setNewSection} isMobile={isMobile} />
   : addingSection === 'quiz'
   ? <QuizFields lessonId={parseInt(lesson_id)} courseId={parseInt(course_id)} onSaved={() => { setAddingSection(null); setMessage('Quiz saved! ✅'); }} />
+  : addingSection === 'html_content'
+  ? <HtmlFields data={newSection} setData={setNewSection} />
   : <RegularFields data={newSection} setData={setNewSection} />}
                 <Box style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
                   <Button variant="contained" onClick={handleAddSection}
@@ -500,6 +511,8 @@ function LessonBuilder() {
   ? <DiveDeeperFields data={editData} setData={setEditData} isMobile={isMobile} />
   : editingSection?.type === 'quiz'
   ? <QuizFields lessonId={parseInt(lesson_id)} courseId={parseInt(course_id)} onSaved={() => setEditDialogOpen(false)} />
+  : editingSection?.type === 'html_content'
+  ? <HtmlFields data={editData} setData={setEditData} />
   : <RegularFields data={editData} setData={setEditData} />}
         </DialogContent>
         <DialogActions style={{ padding: '16px 24px', borderTop: '1px solid #f0f0f0', gap: '10px' }}>
