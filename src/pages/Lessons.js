@@ -29,6 +29,7 @@ const sectionTypes = [
   { type: 'relate', label: '🔗 Relate', color: '#4caf50' },
   { type: 'quiz', label: '📝 Quiz', color: '#ff6f00' },
   { type: 'dive_deeper', label: '🤖 Dive Deeper', color: '#9c27b0' },
+  { type: 'html_content', label: '📄 HTML Content', color: '#2e7d32' },
 ];
 
 function getSectionLabel(type) {
@@ -702,6 +703,11 @@ function Lessons() {
                   <DiveDeeperChat section={selectedSection} />
                 ) : (
                   <>
+                  {selectedSection.content && (
+                      <Box style={{ marginBottom: '24px' }}>
+                        {renderContent(selectedSection.content)}
+                      </Box>
+                    )}
                    {selectedSection.html_content && (
   <Box style={{ marginBottom: '24px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e0e0e0' }}>
     <iframe

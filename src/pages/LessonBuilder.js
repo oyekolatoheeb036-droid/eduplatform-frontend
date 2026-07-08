@@ -361,7 +361,7 @@ function LessonBuilder() {
       <Typography variant="body2" style={{ marginBottom: '10px', opacity: 0.7, fontWeight: '600', ...bodyFont }}>Add Section:</Typography>
       {sectionTypes.map(section => (
         <Button key={section.type} fullWidth variant="outlined"
-          onClick={() => { setAddingSection(section.type); setNewSection({ title: section.label, content: '', video_url: '', website_url: '', type: '', ai_context: '', starter_prompt: '' }); if (isMobile) setSidebarOpen(false); }}
+          onClick={() => { setAddingSection(section.type); setNewSection({ title: section.label, content: '', video_url: '', website_url: '', type: '', ai_context: '', starter_prompt: '', html_content: '' }); if (isMobile) setSidebarOpen(false); }}
           style={{ marginBottom: '8px', color: 'white', borderColor: addingSection === section.type ? section.color : 'rgba(255,255,255,0.2)', backgroundColor: addingSection === section.type ? section.color : 'transparent', justifyContent: 'flex-start', borderRadius: '10px', textTransform: 'none', fontWeight: '600', ...bodyFont }}>
           {section.label}
         </Button>
