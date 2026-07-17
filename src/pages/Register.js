@@ -10,6 +10,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
@@ -44,6 +45,70 @@ const PasswordStrength = ({ password }) => {
   );
 };
 
+// ── New: instructions shown after successful sign up ──
+const VerifyEmailNotice = ({ email, navigate }) => {
+  const steps = [
+    'Open your email inbox — check the address you signed up with.',
+    "Can't find it? Check your Spam or Junk folder too.",
+    'Open the email from Nairafame Academy and click the verification link inside.',
+    "You'll see a confirmation that your account is verified.",
+    'Once verified, come back here and log in.',
+  ];
+
+  return (
+    <Box style={{ textAlign: 'center' }}>
+      <Box style={{
+        width: '64px', height: '64px', borderRadius: '50%',
+        background: '#e8f5e9', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', margin: '0 auto 20px'
+      }}>
+        <MarkEmailUnreadIcon style={{ color: '#2e7d32', fontSize: '32px' }} />
+      </Box>
+
+      <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '8px', ...fontStyle }}>
+        Verify your email to continue
+      </Typography>
+      <Typography variant="body2" style={{ color: '#666', marginBottom: '24px', lineHeight: '1.6' }}>
+        We've sent a verification link to{' '}
+        <strong style={{ color: '#0a0a0a' }}>{email}</strong>.
+        You must verify your email before you can log in — this helps us keep out bots and spammers.
+      </Typography>
+
+      <Box style={{
+        textAlign: 'left', backgroundColor: '#f8f9ff', border: '1px solid #e8eaf6',
+        borderRadius: '12px', padding: '18px 20px', marginBottom: '24px'
+      }}>
+        {steps.map((step, i) => (
+          <Box key={i} style={{ display: 'flex', gap: '10px', marginBottom: i < steps.length - 1 ? '12px' : '0' }}>
+            <Box style={{
+              minWidth: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#1a237e',
+              color: 'white', fontSize: '12px', fontWeight: '700', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px'
+            }}>
+              {i + 1}
+            </Box>
+            <Typography variant="body2" style={{ color: '#444', lineHeight: '1.6', ...bodyFont }}>
+              {step}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      <Button fullWidth variant="contained" onClick={() => navigate('/login')}
+        style={{ backgroundColor: '#1a237e', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '700', textTransform: 'none', marginBottom: '14px', ...bodyFont }}>
+        I've verified — Go to Login
+      </Button>
+
+      <Typography variant="body2" style={{ color: '#999', fontSize: '13px' }}>
+        Didn't get the email? Check spam, or contact support at{' '}
+        <a href="mailto:support@nairafame.net" style={{ color: '#1a237e', fontWeight: '600', textDecoration: 'none' }}>
+          support@nairafame.net
+        </a>
+      </Typography>
+    </Box>
+  );
+};
+
 function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -51,6 +116,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false); // NEW: controls verify-notice screen
   const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width:768px)');
 
@@ -60,7 +126,7 @@ function Register() {
     setLoading(true);
     try {
       await axios.post(`${API}/api/auth/register`, { name, email, password });
-      navigate('/login');
+      setRegistered(true); // show verify-email instructions instead of redirecting
     } catch (err) {
       setMessage('Registration failed. Email may already exist.');
     }
@@ -117,84 +183,90 @@ function Register() {
         </Box>
 
         <Box style={{ background: 'white', borderRadius: '24px 24px 0 0', marginTop: '-12px', padding: '32px 24px 48px', minHeight: 'calc(100vh - 220px)', boxShadow: '0 -4px 20px rgba(0,0,0,0.08)' }}>
-          <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '6px', ...fontStyle }}>Create your account</Typography>
-          <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>Start learning Mathematics for free today</Typography>
+          {registered ? (
+            <VerifyEmailNotice email={email} navigate={navigate} />
+          ) : (
+            <>
+              <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '22px', marginBottom: '6px', ...fontStyle }}>Create your account</Typography>
+              <Typography variant="body2" style={{ color: '#888', marginBottom: '24px' }}>Start learning Mathematics for free today</Typography>
 
-          <Button fullWidth variant="outlined"
-            href={`${API}/api/auth/google`}
-            style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
-            <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
-            Sign up with Google
-          </Button>
+              <Button fullWidth variant="outlined"
+                href={`${API}/api/auth/google`}
+                style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
+                <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
+                Sign up with Google
+              </Button>
 
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-            <Divider style={{ flex: 1 }} />
-            <Typography variant="body2" style={{ color: '#999' }}>or sign up with email</Typography>
-            <Divider style={{ flex: 1 }} />
-          </Box>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                <Divider style={{ flex: 1 }} />
+                <Typography variant="body2" style={{ color: '#999' }}>or sign up with email</Typography>
+                <Divider style={{ flex: 1 }} />
+              </Box>
 
-          <TextField fullWidth label="Full Name" value={name}
-            onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
+              <TextField fullWidth label="Full Name" value={name}
+                onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown}
+                margin="normal" variant="outlined"
+                InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
 
-          <TextField fullWidth label="Email Address" type="email" value={email}
-            onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
+              <TextField fullWidth label="Email Address" type="email" value={email}
+                onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown}
+                margin="normal" variant="outlined"
+                InputProps={{ style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont } }} />
 
-          <TextField fullWidth label="Password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            InputProps={{
-              style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont },
-              endAdornment: eyeAdornment
-            }} />
-          <PasswordStrength password={password} />
+              <TextField fullWidth label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                margin="normal" variant="outlined"
+                InputProps={{
+                  style: { borderRadius: '10px', backgroundColor: '#f8f8f8', ...bodyFont },
+                  endAdornment: eyeAdornment
+                }} />
+              <PasswordStrength password={password} />
 
-          {message && (
-            <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', margin: '12px 0' }}>
-              <Typography style={{ color: '#c62828', fontSize: '14px', fontWeight: '600' }}>⚠️ {message}</Typography>
-            </Box>
+              {message && (
+                <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', margin: '12px 0' }}>
+                  <Typography style={{ color: '#c62828', fontSize: '14px', fontWeight: '600' }}>⚠️ {message}</Typography>
+                </Box>
+              )}
+
+              <Button fullWidth variant="contained" onClick={handleRegister} disabled={loading}
+                style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', textTransform: 'none', boxShadow: '0 4px 15px rgba(26,35,126,0.25)', marginTop: '16px', marginBottom: '20px', ...bodyFont }}>
+                {loading ? 'Creating Account...' : 'Create Free Account →'}
+              </Button>
+
+              <Box style={{ backgroundColor: '#f8fbff', border: '1px solid #e8eaf6', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px' }}>
+                {['Free to start — no credit card needed', 'Access 50+ Mathematics courses', 'Track progress and earn badges'].map((item, index) => (
+                  <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: index < 2 ? '8px' : '0' }}>
+                    <CheckCircleIcon style={{ color: '#4caf50', fontSize: '18px', flexShrink: 0 }} />
+                    <Typography variant="body2" style={{ color: '#444', ...bodyFont }}>{item}</Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
+                Already have an account?{' '}
+                <Link to="/login" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Sign In</Link>
+              </Typography>
+
+              <Box style={{ marginTop: '28px', background: '#f8f9ff', border: '1px solid #e8eaf6', borderRadius: '14px', padding: '18px' }}>
+                <Box style={{ display: 'flex', gap: '3px', marginBottom: '8px' }}>
+                  {[...Array(5)].map((_, i) => <span key={i} style={{ color: '#ff6f00', fontSize: '14px' }}>★</span>)}
+                </Box>
+                <Typography variant="body2" style={{ color: '#444', lineHeight: '1.7', marginBottom: '12px', fontStyle: 'italic' }}>
+                  "Nairafame Academy helped me score A1 in WAEC Mathematics. The lessons are so clear!"
+                </Typography>
+                <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Box style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>A</Box>
+                  <Box>
+                    <Typography variant="body2" style={{ color: '#0a0a0a', fontWeight: '600', fontSize: '13px' }}>Amaka O.</Typography>
+                    <Typography variant="caption" style={{ color: '#999' }}>SS3 Student, Lagos</Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </>
           )}
-
-          <Button fullWidth variant="contained" onClick={handleRegister} disabled={loading}
-            style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', textTransform: 'none', boxShadow: '0 4px 15px rgba(26,35,126,0.25)', marginTop: '16px', marginBottom: '20px', ...bodyFont }}>
-            {loading ? 'Creating Account...' : 'Create Free Account →'}
-          </Button>
-
-          <Box style={{ backgroundColor: '#f8fbff', border: '1px solid #e8eaf6', borderRadius: '12px', padding: '14px 16px', marginBottom: '20px' }}>
-            {['Free to start — no credit card needed', 'Access 50+ Mathematics courses', 'Track progress and earn badges'].map((item, index) => (
-              <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: index < 2 ? '8px' : '0' }}>
-                <CheckCircleIcon style={{ color: '#4caf50', fontSize: '18px', flexShrink: 0 }} />
-                <Typography variant="body2" style={{ color: '#444', ...bodyFont }}>{item}</Typography>
-              </Box>
-            ))}
-          </Box>
-
-          <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Sign In</Link>
-          </Typography>
-
-          <Box style={{ marginTop: '28px', background: '#f8f9ff', border: '1px solid #e8eaf6', borderRadius: '14px', padding: '18px' }}>
-            <Box style={{ display: 'flex', gap: '3px', marginBottom: '8px' }}>
-              {[...Array(5)].map((_, i) => <span key={i} style={{ color: '#ff6f00', fontSize: '14px' }}>★</span>)}
-            </Box>
-            <Typography variant="body2" style={{ color: '#444', lineHeight: '1.7', marginBottom: '12px', fontStyle: 'italic' }}>
-              "Nairafame Academy helped me score A1 in WAEC Mathematics. The lessons are so clear!"
-            </Typography>
-            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Box style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>A</Box>
-              <Box>
-                <Typography variant="body2" style={{ color: '#0a0a0a', fontWeight: '600', fontSize: '13px' }}>Amaka O.</Typography>
-                <Typography variant="caption" style={{ color: '#999' }}>SS3 Student, Lagos</Typography>
-              </Box>
-            </Box>
-          </Box>
         </Box>
       </Box>
     );
@@ -247,76 +319,90 @@ function Register() {
 
       <Box style={{ flex: 1, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
         <Box style={{ width: '100%', maxWidth: '420px' }}>
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px', justifyContent: 'center' }}>
-            <Box style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography style={{ color: 'white', fontWeight: '800', fontSize: '18px' }}>N</Typography>
-            </Box>
-            <Typography variant="h6" style={{ fontWeight: '700', color: '#0a0a0a', ...fontStyle }}>Nairafame Academy</Typography>
-          </Box>
-          <Typography variant="h4" style={{ fontWeight: '800', color: '#0a0a0a', marginBottom: '8px', ...fontStyle }}>Create your account</Typography>
-          <Typography variant="body1" style={{ color: '#888', marginBottom: '35px' }}>Start learning Mathematics for free today</Typography>
-
-          <Button fullWidth variant="outlined"
-            href={`${API}/api/auth/google`}
-            style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
-            <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
-            Sign up with Google
-          </Button>
-
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-            <Divider style={{ flex: 1 }} />
-            <Typography variant="body2" style={{ color: '#999' }}>or sign up with email</Typography>
-            <Divider style={{ flex: 1 }} />
-          </Box>
-
-          <TextField fullWidth label="Full Name" value={name}
-            onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            style={{ marginBottom: '5px' }}
-            InputProps={{ style: { borderRadius: '10px' } }} />
-
-          <TextField fullWidth label="Email Address" type="email" value={email}
-            onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            style={{ marginBottom: '5px' }}
-            InputProps={{ style: { borderRadius: '10px' } }} />
-
-          <TextField fullWidth label="Password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            onKeyDown={handleKeyDown}
-            margin="normal" variant="outlined"
-            InputProps={{
-              style: { borderRadius: '10px' },
-              endAdornment: eyeAdornment
-            }} />
-          <PasswordStrength password={password} />
-
-          {message && (
-            <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', marginTop: '8px' }}>
-              <Typography style={{ color: '#c62828', fontSize: '14px', fontWeight: '600' }}>⚠️ {message}</Typography>
-            </Box>
-          )}
-
-          <Button fullWidth variant="contained" onClick={handleRegister} disabled={loading}
-            style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', marginBottom: '20px', marginTop: '16px', textTransform: 'none', ...bodyFont }}>
-            {loading ? 'Creating Account...' : 'Create Free Account →'}
-          </Button>
-
-          <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '25px' }}>
-            {['Free to start — no credit card needed', 'Access 50+ Mathematics courses', 'Track progress and earn badges'].map((item, index) => (
-              <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircleIcon style={{ color: '#4caf50', fontSize: '18px' }} />
-                <Typography variant="body2" style={{ color: '#666' }}>{item}</Typography>
+          {registered ? (
+            <>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px', justifyContent: 'center' }}>
+                <Box style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography style={{ color: 'white', fontWeight: '800', fontSize: '18px' }}>N</Typography>
+                </Box>
+                <Typography variant="h6" style={{ fontWeight: '700', color: '#0a0a0a', ...fontStyle }}>Nairafame Academy</Typography>
               </Box>
-            ))}
-          </Box>
+              <VerifyEmailNotice email={email} navigate={navigate} />
+            </>
+          ) : (
+            <>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px', justifyContent: 'center' }}>
+                <Box style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #1a237e, #0288d1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography style={{ color: 'white', fontWeight: '800', fontSize: '18px' }}>N</Typography>
+                </Box>
+                <Typography variant="h6" style={{ fontWeight: '700', color: '#0a0a0a', ...fontStyle }}>Nairafame Academy</Typography>
+              </Box>
+              <Typography variant="h4" style={{ fontWeight: '800', color: '#0a0a0a', marginBottom: '8px', ...fontStyle }}>Create your account</Typography>
+              <Typography variant="body1" style={{ color: '#888', marginBottom: '35px' }}>Start learning Mathematics for free today</Typography>
 
-          <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Sign In</Link>
-          </Typography>
+              <Button fullWidth variant="outlined"
+                href={`${API}/api/auth/google`}
+                style={{ borderColor: '#e0e0e0', color: '#333', padding: '14px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', marginBottom: '20px', textTransform: 'none' }}>
+                <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px', marginRight: '10px' }} />
+                Sign up with Google
+              </Button>
+
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                <Divider style={{ flex: 1 }} />
+                <Typography variant="body2" style={{ color: '#999' }}>or sign up with email</Typography>
+                <Divider style={{ flex: 1 }} />
+              </Box>
+
+              <TextField fullWidth label="Full Name" value={name}
+                onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown}
+                margin="normal" variant="outlined"
+                style={{ marginBottom: '5px' }}
+                InputProps={{ style: { borderRadius: '10px' } }} />
+
+              <TextField fullWidth label="Email Address" type="email" value={email}
+                onChange={e => setEmail(e.target.value)} onKeyDown={handleKeyDown}
+                margin="normal" variant="outlined"
+                style={{ marginBottom: '5px' }}
+                InputProps={{ style: { borderRadius: '10px' } }} />
+
+              <TextField fullWidth label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                margin="normal" variant="outlined"
+                InputProps={{
+                  style: { borderRadius: '10px' },
+                  endAdornment: eyeAdornment
+                }} />
+              <PasswordStrength password={password} />
+
+              {message && (
+                <Box style={{ backgroundColor: '#ffebee', border: '1px solid #ffcdd2', borderRadius: '10px', padding: '12px 16px', marginBottom: '16px', marginTop: '8px' }}>
+                  <Typography style={{ color: '#c62828', fontSize: '14px', fontWeight: '600' }}>⚠️ {message}</Typography>
+                </Box>
+              )}
+
+              <Button fullWidth variant="contained" onClick={handleRegister} disabled={loading}
+                style={{ backgroundColor: '#1a237e', padding: '15px', borderRadius: '10px', fontSize: '16px', fontWeight: '700', marginBottom: '20px', marginTop: '16px', textTransform: 'none', ...bodyFont }}>
+                {loading ? 'Creating Account...' : 'Create Free Account →'}
+              </Button>
+
+              <Box style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '25px' }}>
+                {['Free to start — no credit card needed', 'Access 50+ Mathematics courses', 'Track progress and earn badges'].map((item, index) => (
+                  <Box key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircleIcon style={{ color: '#4caf50', fontSize: '18px' }} />
+                    <Typography variant="body2" style={{ color: '#666' }}>{item}</Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              <Typography variant="body2" style={{ textAlign: 'center', color: '#888' }}>
+                Already have an account?{' '}
+                <Link to="/login" style={{ color: '#1a237e', fontWeight: '700', textDecoration: 'none' }}>Sign In</Link>
+              </Typography>
+            </>
+          )}
         </Box>
       </Box>
     </Box>
