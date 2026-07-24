@@ -196,6 +196,7 @@ function Navbar() {
             <Link to="/" style={navStyles.navLink}>Home</Link>
             <Link to="/courses" style={navStyles.navLink}>Courses</Link>
             <Link to="/community" style={navStyles.navLink}>Community</Link>
+            <Link to="/oyekola-toheeb" style={navStyles.navLink}>Our Founder</Link>
             {user && user.role === 'student' && (
               <>
                 <Link to="/dashboard" style={navStyles.navLink}>Dashboard</Link>
