@@ -22,6 +22,7 @@ import Community from './pages/Community';
 import ResetPassword from './pages/ResetPassword';
 import PendingSubmissions from './pages/PendingSubmissions';
 import About from './pages/About';
+import Portfolio from './pages/Portfolio';
 
 function Navbar() {
   const { user, logout } = useAuth();
