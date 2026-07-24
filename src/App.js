@@ -34,6 +34,7 @@ function Navbar() {
     { label: 'Home', path: '/' },
     { label: 'Courses', path: '/courses' },
     { label: 'Community', path: '/community' },
+  { label: 'Our Founder', path: '/oyekola-toheeb' },
   ];
 
   if (!user) {
@@ -275,6 +276,7 @@ function App() {
         <Route path="/community" element={<Community />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/about" element={<About />} />
+        <Route path="/oyekola-toheeb" element={<Portfolio />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Dashboard />
