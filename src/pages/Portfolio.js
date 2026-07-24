@@ -79,6 +79,9 @@ function Portfolio() {
       const text = document.getElementById('heroProgressText');
       if (bar) bar.style.width = '85%';
       if (text) animateCounter(text, 85, '%');
+      document.querySelectorAll('.hcm-stat-val[data-count]').forEach(el => {
+        animateCounter(el, parseInt(el.dataset.count), '+');
+      });
     }, 600);
   }, []);
 
@@ -102,6 +105,7 @@ function Portfolio() {
     { icon: '💻', title: 'Software Development', color: '#1a237e', bg: 'linear-gradient(135deg,#1a237e,#283593)', items: ['Full-stack Web Development', 'React & Next.js', 'Node.js', 'REST APIs', 'Database Design', 'AI Integration', 'Payment Gateway Integration'] },
     { icon: '🛒', title: 'E-commerce Solutions', color: '#0288d1', bg: 'linear-gradient(135deg,#0277bd,#0288d1)', items: ['Custom Online Stores', 'Multi-vendor Marketplace', 'Inventory Management', 'Order Management', 'Business Analytics', 'Vendor Dashboard'] },
     { icon: '📚', title: 'Education', color: '#2e7d32', bg: 'linear-gradient(135deg,#2e7d32,#4caf50)', items: ['Founder, Nairafame Academy', 'Mathematics Teacher', 'WAEC & NECO Exam Prep', 'Curriculum Development', 'Educational Content Creation'] },
+    { icon: '🔬', title: 'Scientific & Numerical Computing', color: '#00695c', bg: 'linear-gradient(135deg,#00695c,#00897b)', items: ['Finite Volume Method (FVM)', 'Upwind Scheme Implementation', 'MUSCL Reconstruction', 'Advection-Diffusion Modeling', 'River Pollutant Transport', 'Numerical Simulation Tools'] },
     { icon: '🖥', title: 'Computer Repair', color: '#e65100', bg: 'linear-gradient(135deg,#e65100,#ff6f00)', items: ['Laptop & Desktop Repair', 'Windows Installation', 'Software Installation', 'Virus Removal', 'System Optimization', 'Hardware Upgrades', 'Data Backup & Recovery'] },
     { icon: '🎯', title: 'Business Digitalization', color: '#6a1b9a', bg: 'linear-gradient(135deg,#6a1b9a,#9c27b0)', items: ['Business Websites', 'Online Presence Setup', 'Website Maintenance', 'Technical Consulting'] },
   ];
@@ -133,7 +137,7 @@ function Portfolio() {
         .reveal-delay-4 { transition-delay:0.4s; }
         .skill-bar-fill { width:0%;transition:width 1.2s ease; }
         .grid-services { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
-        .grid-projects { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
+        .grid-projects { display:grid;grid-template-columns:repeat(2,1fr);gap:24px; }
         .grid-skills { display:grid;grid-template-columns:repeat(4,1fr);gap:24px; }
         .grid-testimonials { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
         .grid-why { display:flex;gap:60px;align-items:center;flex-wrap:wrap; }
@@ -247,7 +251,7 @@ function Portfolio() {
             <div className="hcm-progress-text" style={{ fontSize:'13px',color:'#1a237e',fontWeight:700,marginTop:'5px' }}><span id="heroProgressText">0</span> Complete</div>
           </div>
           <div className="hcm-grid" style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px' }}>
-            {[{v:'15',l:'Projects Built'},{v:'500',l:'Students Taught'},{v:'200',l:'Devices Repaired'},{v:'50',l:'Happy Clients'}].map((s,i) => (
+            {[{v:'55',l:'Projects Built'},{v:'400',l:'Students Taught'},{v:'100',l:'Devices Repaired'},{v:'30',l:'Happy Clients'}].map((s,i) => (
               <div key={i} className="hcm-stat" style={{ background:'rgba(255,255,255,0.15)',borderRadius:'10px',padding:'15px 10px',textAlign:'center' }}>
                 <div className="hcm-stat-val" data-count={s.v} style={{ ...fontStyle,fontWeight:800,color:'white',fontSize:'22px' }}>0</div>
                 <span className="hcm-stat-label" style={{ color:'rgba(255,255,255,0.8)',fontSize:'11px',lineHeight:1.2 }}>{s.l}</span>
@@ -267,6 +271,7 @@ function Portfolio() {
           <div className="reveal reveal-delay-1" style={{ fontSize:'17px',color:'#555',lineHeight:1.9,marginTop:'32px' }}>
             <p>I am a software engineer, educator, and entrepreneur passionate about using technology to solve everyday problems.</p>
             <p style={{ marginTop:'20px' }}>I founded <strong>Cartunde</strong>, a multi-vendor e-commerce platform that helps businesses sell online with ease, and <strong>Nairafame Academy</strong>, an online learning platform focused on quality mathematics education.</p>
+            <p style={{ marginTop:'20px' }}>I also developed a <strong>1D River Pollutant Transport Simulation Tool</strong> using the Finite Volume Method (FVM), implementing both Upwind and MUSCL schemes for accurate advection-diffusion modeling — a core part of my academic research in environmental engineering.</p>
             <p style={{ marginTop:'20px' }}>Beyond software development, I provide professional computer hardware and software repair services, helping individuals and businesses maintain reliable IT systems.</p>
           </div>
           <div className="reveal reveal-delay-2" style={{ marginTop:'32px',padding:'24px 28px',background:'white',borderLeft:'5px solid #ff6f00',borderRadius:'0 16px 16px 0',boxShadow:'0 4px 16px rgba(0,0,0,0.06)' }}>
@@ -327,9 +332,10 @@ function Portfolio() {
           {[
             { title:'Cartunde', desc:'A modern multi-vendor e-commerce platform where businesses can create their own online stores, manage products, accept payments, and track sales.', badge:'E-Commerce', badgeBg:'linear-gradient(135deg,#1a237e,#283593)', img:'https://picsum.photos/seed/cartunde-ecomm/600/400.jpg', tags:[{t:'React',c:'#1a237e'},{t:'Node.js',c:'#0288d1'},{t:'PostgreSQL',c:'#2e7d32'},{t:'AI',c:'#c62828'},{t:'Paystack',c:'#e65100'},{t:'Flutterwave',c:'#6a1b9a'}] },
             { title:'Nairafame Academy', desc:'An online mathematics learning platform providing interactive lessons, quizzes, and WAEC-standard examinations for Nigerian students.', badge:'Education', badgeBg:'linear-gradient(135deg,#2e7d32,#4caf50)', img:'https://picsum.photos/seed/nairafame-math/600/400.jpg', tags:[{t:'Video Lessons',c:'#1a237e'},{t:'CBT Tests',c:'#0288d1'},{t:'Progress Tracking',c:'#2e7d32'},{t:'AI Tutor',c:'#c62828'},{t:'Math Resources',c:'#e65100'}] },
+            { title:'River Pollutant Transport Model', desc:'A 1D numerical tool for simulating pollutant transport in rivers using the Finite Volume Method (FVM). Implements Upwind and MUSCL schemes for accurate advection-diffusion modeling.', badge:'Research', badgeBg:'linear-gradient(135deg,#00695c,#00897b)', img:'https://picsum.photos/seed/river-pollutant-fvm/600/400.jpg', tags:[{t:'Finite Volume Method',c:'#00695c'},{t:'Upwind Scheme',c:'#0277bd'},{t:'MUSCL Scheme',c:'#1a237e'},{t:'Advection-Diffusion',c:'#e65100'},{t:'Numerical Modeling',c:'#6a1b9a'}] },
             { title:'Computer Repair Services', desc:'Professional repair and maintenance for laptops and desktop computers, serving individuals and businesses with reliable IT support.', badge:'IT Services', badgeBg:'linear-gradient(135deg,#e65100,#ff6f00)', img:'https://picsum.photos/seed/pc-repair-oyk/600/400.jpg', tags:[{t:'Hardware Diagnostics',c:'#e65100'},{t:'Windows Install',c:'#1a237e'},{t:'SSD Upgrades',c:'#0288d1'},{t:'Data Recovery',c:'#2e7d32'}] },
           ].map((proj, i) => (
-            <div key={i} className={`reveal reveal-delay-${i+1}`}
+            <div key={i} className={`reveal reveal-delay-${(i % 3) + 1}`}
               style={{ background:'white',borderRadius:'20px',overflow:'hidden',border:'2px solid #f0f0f0',height:'100%',display:'flex',flexDirection:'column',transition:'transform 0.3s, box-shadow 0.3s' }}
               onMouseOver={(e) => { e.currentTarget.style.transform='translateY(-6px)'; e.currentTarget.style.boxShadow='0 16px 48px rgba(0,0,0,0.12)'; }}
               onMouseOut={(e) => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
@@ -404,7 +410,7 @@ function Portfolio() {
               <div data-count="3" style={{ ...fontStyle,fontWeight:800,fontSize:'48px',position:'relative',zIndex:1 }}>0</div>
               <div style={{ fontSize:'15px',color:'rgba(255,255,255,0.8)',marginBottom:'24px',position:'relative',zIndex:1 }}>Years of Experience</div>
               <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'16px',position:'relative',zIndex:1 }}>
-                {[{v:'15',l:'Projects'},{v:'500',l:'Students'},{v:'200',l:'Repairs'},{v:'50',l:'Clients'}].map((s,i) => (
+                {[{v:'55',l:'Projects'},{v:'400',l:'Students'},{v:'100',l:'Repairs'},{v:'30',l:'Clients'}].map((s,i) => (
                   <div key={i} style={{ background:'rgba(255,255,255,0.12)',borderRadius:'12px',padding:'16px',textAlign:'center' }}>
                     <div data-count={s.v} style={{ ...fontStyle,fontWeight:800,fontSize:'24px' }}>0</div>
                     <div style={{ fontSize:'12px',color:'rgba(255,255,255,0.7)',marginTop:'2px' }}>{s.l}</div>
