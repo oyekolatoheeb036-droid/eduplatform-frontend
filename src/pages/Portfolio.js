@@ -138,9 +138,61 @@ function Portfolio() {
         .reveal-delay-3 { transition-delay:0.3s; }
         .reveal-delay-4 { transition-delay:0.4s; }
         .skill-bar-fill { width:0%;transition:width 1.2s ease; }
+
+        /* GRID CONTAINERS */
+        .grid-services { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
+        .grid-projects { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
+        .grid-skills { display:grid;grid-template-columns:repeat(4,1fr);gap:24px; }
+        .grid-testimonials { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
+        .grid-why { display:flex;gap:60px;align-items:center;flex-wrap:wrap; }
+        .grid-footer { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px; }
+        .grid-hero { display:flex;align-items:center;justify-content:space-between;min-height:90vh;gap:40px;flex-wrap:wrap; }
+        .hero-buttons { display:flex;gap:14px;flex-wrap:wrap;margin-bottom:32px; }
+        .hero-tags { display:flex;flex-wrap:wrap;gap:16px; }
+        .contact-links { display:flex;justify-content:center;flex-wrap:wrap;gap:16px;margin-bottom:40px; }
+        .contact-cta-row { display:flex;justify-content:center;gap:16px;flex-wrap:wrap; }
+
+        /* SERVICE LIST ITEMS */
+        .svc-list { list-style:none;display:flex;flex-direction:column;gap:8px; }
+        .svc-list li { font-size:14px;color:#777;display:flex;align-items:flex-start;gap:8px;line-height:1.5; }
+        .svc-list li span { flex:1;min-width:0;word-wrap:break-word;overflow-wrap:break-word; }
+
+        /* PROJECT TAGS */
+        .proj-tags { display:flex;flex-wrap:wrap;gap:6px; }
+
+        /* MOBILE FIXES */
+        @media (max-width:1024px) {
+          .grid-services { grid-template-columns:repeat(2,1fr) !important; }
+          .grid-projects { grid-template-columns:repeat(2,1fr) !important; }
+          .grid-skills { grid-template-columns:repeat(2,1fr) !important; }
+          .port-nav-inner { padding:0 32px !important; }
+          .section-pad { padding-left:32px !important;padding-right:32px !important; }
+          .hero-pad { padding-left:32px !important;padding-right:32px !important; }
+          .footer-pad { padding-left:32px !important;padding-right:32px !important; }
+        }
+
         @media (max-width:768px) {
-          .port-nav-inner { padding:0 20px; }
-          .port-nav-links { display:none; }
+          .port-nav-inner { padding:0 20px !important; }
+          .port-nav-links { display:none !important; }
+          .grid-hero { flex-direction:column !important;min-height:auto !important; }
+          .hero-pad { padding:120px 20px 64px !important; }
+          .section-pad { padding:64px 20px !important; }
+          .footer-pad { padding:48px 20px !important; }
+          .grid-services { grid-template-columns:1fr !important; }
+          .grid-projects { grid-template-columns:1fr !important; }
+          .grid-skills { grid-template-columns:1fr !important; }
+          .grid-testimonials { grid-template-columns:1fr !important; }
+          .grid-why { flex-direction:column !important; }
+          .hero-buttons { flex-direction:column !important; }
+          .hero-buttons button { width:100% !important;justify-content:center !important; }
+          .contact-cta-row { flex-direction:column !important;align-items:center !important; }
+          .contact-cta-row button { width:100% !important;max-width:320px !important;justify-content:center !important; }
+          .grid-footer { flex-direction:column !important;text-align:center !important; }
+          .section-title-m { font-size:28px !important; }
+        }
+
+        @media (max-width:520px) {
+          .grid-skills { grid-template-columns:1fr !important; }
         }
       `}</style>
 
@@ -161,25 +213,25 @@ function Portfolio() {
       </nav>
 
       {/* HERO */}
-      <section style={{ background:'white',padding:'140px 80px 100px',display:'flex',alignItems:'center',justifyContent:'space-between',minHeight:'90vh',gap:'40px',flexWrap:'wrap' }}>
+      <section className="grid-hero hero-pad" style={{ background:'white',padding:'140px 80px 100px' }}>
         <div style={{ maxWidth:'580px',width:'100%' }}>
           <div style={{ display:'inline-flex',alignItems:'center',gap:'8px',background:'#fff3e0',border:'1px solid #ff6f00',borderRadius:'30px',padding:'8px 20px',marginBottom:'30px' }}>
             <span>🇳🇬</span>
             <span style={{ color:'#ff6f00',fontWeight:600,fontSize:'13px' }}>Technology Entrepreneur & Educator</span>
           </div>
-          <h1 style={{ fontWeight:800,fontSize:'52px',lineHeight:1.1,color:'#0a0a0a',marginBottom:'16px',...fontStyle }}>Oyekola Toheeb</h1>
+          <h1 className="section-title-m" style={{ fontWeight:800,fontSize:'52px',lineHeight:1.1,color:'#0a0a0a',marginBottom:'16px',...fontStyle }}>Oyekola Toheeb</h1>
           <div style={{ fontSize:'18px',fontWeight:500,color:'#555',marginBottom:'8px',minHeight:'28px' }}>
             <span style={{ color:'#1a237e',borderBottom:'4px solid #ff6f00',paddingBottom:'2px' }}>{typingText}</span>
           </div>
           <p style={{ fontSize:'17px',color:'#555',lineHeight:1.8,marginBottom:'36px',maxWidth:'520px' }}>
             I build software that solves real-world problems, empower students through technology-driven education, and provide reliable computer repair and IT solutions.
           </p>
-          <div style={{ display:'flex',gap:'14px',flexWrap:'wrap',marginBottom:'32px' }}>
+          <div className="hero-buttons">
             <button onClick={() => document.getElementById('projects').scrollIntoView({behavior:'smooth'})} style={{ background:'#1a237e',color:'white',padding:'15px 36px',fontSize:'15px',fontWeight:700,borderRadius:'8px',border:'none',cursor:'pointer',boxShadow:'0 4px 15px rgba(26,35,126,0.3)',display:'inline-flex',alignItems:'center',gap:'8px',...bodyFont }}>View My Projects →</button>
             <button onClick={() => document.getElementById('contact').scrollIntoView({behavior:'smooth'})} style={{ background:'transparent',color:'#1a237e',padding:'15px 36px',fontSize:'15px',fontWeight:600,borderRadius:'8px',border:'2px solid #1a237e',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:'8px',...bodyFont }}>Hire Me</button>
             <button style={{ background:'transparent',color:'#ff6f00',padding:'15px 36px',fontSize:'15px',fontWeight:600,borderRadius:'8px',border:'2px solid #ff6f00',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:'8px',...bodyFont }}>⬇ Download CV</button>
           </div>
-          <div style={{ display:'flex',flexWrap:'wrap',gap:'16px' }}>
+          <div className="hero-tags">
             {['Founder of Cartunde', 'Founder of Nairafame Academy', '3+ Years Experience'].map((t,i) => (
               <span key={i} style={{ display:'flex',alignItems:'center',gap:'6px',fontSize:'13px',color:'#999' }}>✅ {t}</span>
             ))}
@@ -208,11 +260,11 @@ function Portfolio() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" style={{ padding:'100px 80px',background:'#f0f2f8' }}>
+      <section id="about" className="section-pad" style={{ padding:'100px 80px',background:'#f0f2f8' }}>
         <div style={{ maxWidth:'800px' }}>
           <div className="reveal">
             <div style={{ color:'#ff6f00',fontWeight:700,fontSize:'14px',marginBottom:'10px',letterSpacing:'0.5px' }}>ABOUT ME</div>
-            <h2 style={{ fontWeight:800,color:'#0a0a0a',lineHeight:1.2,fontSize:'36px',...fontStyle }}>Building solutions at the intersection of technology and education</h2>
+            <h2 className="section-title-m" style={{ fontWeight:800,color:'#0a0a0a',lineHeight:1.2,fontSize:'36px',...fontStyle }}>Building solutions at the intersection of technology and education</h2>
           </div>
           <div className="reveal reveal-delay-1" style={{ fontSize:'17px',color:'#555',lineHeight:1.9,marginTop:'32px' }}>
             <p>I am a software engineer, educator, and entrepreneur passionate about using technology to solve everyday problems.</p>
@@ -227,12 +279,12 @@ function Portfolio() {
       </section>
 
       {/* SERVICES */}
-      <section id="services" style={{ padding:'100px 80px',background:'white' }}>
+      <section id="services" className="section-pad" style={{ padding:'100px 80px',background:'white' }}>
         <div className="reveal" style={{ maxWidth:'500px',marginBottom:'60px' }}>
           <div style={{ color:'#ff6f00',fontWeight:700,fontSize:'14px',marginBottom:'10px' }}>WHAT I DO</div>
-          <h2 style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>Everything you need in one place</h2>
+          <h2 className="section-title-m" style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>Everything you need in one place</h2>
         </div>
-        <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'24px' }}>
+        <div className="grid-services">
           {services.map((svc, i) => (
             <div key={i} className={`reveal reveal-delay-${(i % 3) + 1}`}
               onMouseEnter={(e) => hoverService(e, svc.color)} onMouseLeave={unhoverService}
@@ -243,10 +295,11 @@ function Portfolio() {
               <div style={{ padding:'32px 28px' }}>
                 <div style={{ width:'64px',height:'64px',borderRadius:'16px',background:`${svc.color}14`,border:`2px solid ${svc.color}22`,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'20px',fontSize:'28px',boxShadow:`0 4px 14px ${svc.color}22` }}>{svc.icon}</div>
                 <div style={{ ...fontStyle,fontWeight:800,fontSize:'17px',color:'#0a0a0a',marginBottom:'14px' }}>{svc.title}</div>
-                <ul style={{ listStyle:'none',display:'flex',flexDirection:'column',gap:'8px' }}>
+                <ul className="svc-list">
                   {svc.items.map((item, j) => (
-                    <li key={j} style={{ fontSize:'14px',color:'#777',display:'flex',alignItems:'center',gap:'8px',lineHeight:1.5 }}>
-                      <span style={{ color:svc.color,fontWeight:700,fontSize:'12px' }}>✓</span> {item}
+                    <li key={j}>
+                      <span style={{ color:svc.color,fontWeight:700,fontSize:'12px',flexShrink:0,marginTop:'3px' }}>✓</span>
+                      <span>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -268,12 +321,12 @@ function Portfolio() {
       </section>
 
       {/* PROJECTS */}
-      <section id="projects" style={{ padding:'100px 80px',background:'#f0f2f8' }}>
+      <section id="projects" className="section-pad" style={{ padding:'100px 80px',background:'#f0f2f8' }}>
         <div className="reveal" style={{ maxWidth:'500px',marginBottom:'60px' }}>
           <div style={{ color:'#ff6f00',fontWeight:700,fontSize:'14px',marginBottom:'10px' }}>FEATURED PROJECTS</div>
-          <h2 style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>Things I've built</h2>
+          <h2 className="section-title-m" style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>Things I've built</h2>
         </div>
-        <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'24px' }}>
+        <div className="grid-projects">
           {[
             { title:'Cartunde', desc:'A modern multi-vendor e-commerce platform where businesses can create their own online stores, manage products, accept payments, and track sales.', badge:'E-Commerce', badgeBg:'linear-gradient(135deg,#1a237e,#283593)', img:'https://picsum.photos/seed/cartunde-ecomm/600/400.jpg', tags:[{t:'React',c:'#1a237e'},{t:'Node.js',c:'#0288d1'},{t:'PostgreSQL',c:'#2e7d32'},{t:'AI',c:'#c62828'},{t:'Paystack',c:'#e65100'},{t:'Flutterwave',c:'#6a1b9a'}] },
             { title:'Nairafame Academy', desc:'An online mathematics learning platform providing interactive lessons, quizzes, and WAEC-standard examinations for Nigerian students.', badge:'Education', badgeBg:'linear-gradient(135deg,#2e7d32,#4caf50)', img:'https://picsum.photos/seed/nairafame-math/600/400.jpg', tags:[{t:'Video Lessons',c:'#1a237e'},{t:'CBT Tests',c:'#0288d1'},{t:'Progress Tracking',c:'#2e7d32'},{t:'AI Tutor',c:'#c62828'},{t:'Math Resources',c:'#e65100'}] },
@@ -291,7 +344,7 @@ function Portfolio() {
               <div style={{ padding:'28px',flex:1,display:'flex',flexDirection:'column' }}>
                 <h3 style={{ ...fontStyle,fontWeight:800,fontSize:'20px',color:'#0a0a0a',marginBottom:'10px' }}>{proj.title}</h3>
                 <p style={{ fontSize:'14px',color:'#777',lineHeight:1.75,marginBottom:'20px',flex:1 }}>{proj.desc}</p>
-                <div style={{ display:'flex',flexWrap:'wrap',gap:'6px' }}>
+                <div className="proj-tags">
                   {proj.tags.map((tag, j) => (
                     <span key={j} style={{ padding:'5px 12px',borderRadius:'30px',fontSize:'12px',fontWeight:600,border:`1.5px solid ${tag.c}30`,color:tag.c,background:`${tag.c}08` }}>{tag.t}</span>
                   ))}
@@ -305,12 +358,12 @@ function Portfolio() {
       </section>
 
       {/* SKILLS */}
-      <section id="skills" style={{ padding:'100px 80px',background:'white' }}>
+      <section id="skills" className="section-pad" style={{ padding:'100px 80px',background:'white' }}>
         <div className="reveal" style={{ maxWidth:'500px',marginBottom:'60px' }}>
           <div style={{ color:'#ff6f00',fontWeight:700,fontSize:'14px',marginBottom:'10px' }}>MY SKILLS</div>
-          <h2 style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>Technologies & tools I work with</h2>
+          <h2 className="section-title-m" style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>Technologies & tools I work with</h2>
         </div>
-        <div style={{ display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'24px' }}>
+        <div className="grid-skills">
           {skillCategories.map((cat, i) => (
             <div key={i} className={`reveal reveal-delay-${i+1}`}
               style={{ background:'white',borderRadius:'20px',padding:'28px',border:'2px solid #f0f0f0',transition:'transform 0.3s, box-shadow 0.3s' }}
@@ -320,9 +373,9 @@ function Portfolio() {
               <div style={{ ...fontStyle,fontWeight:700,fontSize:'16px',color:'#0a0a0a',marginBottom:'16px' }}>{cat.title}</div>
               <div style={{ display:'flex',flexDirection:'column',gap:'10px' }}>
                 {cat.skills.map((sk, j) => (
-                  <div key={j} style={{ display:'flex',alignItems:'center',justifyContent:'space-between' }}>
-                    <span style={{ fontSize:'14px',color:'#555',fontWeight:500 }}>{sk.name}</span>
-                    <div style={{ width:'80px',height:'6px',background:'#e8e8e8',borderRadius:'3px',overflow:'hidden' }}>
+                  <div key={j} style={{ display:'flex',alignItems:'center',justifyContent:'space-between',gap:'8px' }}>
+                    <span style={{ fontSize:'14px',color:'#555',fontWeight:500,flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{sk.name}</span>
+                    <div style={{ width:'80px',height:'6px',background:'#e8e8e8',borderRadius:'3px',overflow:'hidden',flexShrink:0 }}>
                       <div className="skill-bar-fill" data-width={`${sk.level}%`} style={{ height:'100%',borderRadius:'3px',background:`linear-gradient(90deg,${cat.color},${cat.color}cc)` }}></div>
                     </div>
                   </div>
@@ -334,16 +387,16 @@ function Portfolio() {
       </section>
 
       {/* WHY WORK WITH ME */}
-      <section style={{ padding:'100px 80px',background:'#f0f2f8' }}>
-        <div style={{ display:'flex',gap:'60px',alignItems:'center',flexWrap:'wrap' }}>
+      <section className="section-pad" style={{ padding:'100px 80px',background:'#f0f2f8' }}>
+        <div className="grid-why">
           <div className="reveal" style={{ flex:1,minWidth:'300px' }}>
             <div style={{ color:'#ff6f00',fontWeight:700,fontSize:'14px',marginBottom:'10px' }}>WHY WORK WITH ME</div>
-            <h2 style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>You get more than just a developer</h2>
+            <h2 className="section-title-m" style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>You get more than just a developer</h2>
             <ul style={{ listStyle:'none',marginTop:'32px',display:'flex',flexDirection:'column',gap:'18px' }}>
               {['Deliver clean, scalable solutions','Strong analytical and problem-solving skills','Excellent communication','Passion for education and technology','Reliable technical support'].map((item, i) => (
                 <li key={i} style={{ display:'flex',alignItems:'flex-start',gap:'14px',fontSize:'16px',color:'#555',lineHeight:1.6 }}>
                   <div style={{ width:'28px',height:'28px',borderRadius:'50%',background:'#2e7d32',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',color:'white',fontWeight:700,fontSize:'14px' }}>✓</div>
-                  {item}
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
@@ -367,12 +420,12 @@ function Portfolio() {
       </section>
 
       {/* TESTIMONIALS */}
-      <section id="testimonials" style={{ padding:'100px 80px',background:'#fafafa' }}>
+      <section id="testimonials" className="section-pad" style={{ padding:'100px 80px',background:'#fafafa' }}>
         <div className="reveal" style={{ textAlign:'center',marginBottom:'60px' }}>
           <div style={{ color:'#ff6f00',fontWeight:700,fontSize:'14px',marginBottom:'10px' }}>TESTIMONIALS</div>
-          <h2 style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>What people say about me</h2>
+          <h2 className="section-title-m" style={{ fontWeight:800,color:'#0a0a0a',fontSize:'36px',...fontStyle }}>What people say about me</h2>
         </div>
-        <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'24px' }}>
+        <div className="grid-testimonials">
           {[
             { name:'Adebayo K.', role:'Business Owner, Lagos', text:'"Toheeb built our e-commerce platform from scratch. His attention to detail and understanding of business needs made the entire process smooth. Our sales increased by 40% in the first month."', color:'#1a237e' },
             { name:'Fatima M.', role:'SS3 Student, Kano', text:'"Nairafame Academy changed how I see mathematics. The lessons are clear, the quizzes help me practice, and I went from failing to scoring B3 in WAEC. Best platform!"', color:'#2e7d32' },
@@ -396,11 +449,11 @@ function Portfolio() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" style={{ background:'#0a0a0a',padding:'100px 80px',textAlign:'center',color:'white' }}>
+      <section id="contact" className="section-pad" style={{ background:'#0a0a0a',padding:'100px 80px',textAlign:'center',color:'white' }}>
         <div className="reveal" style={{ fontSize:'48px',marginBottom:'20px' }}>📨</div>
         <h2 className="reveal reveal-delay-1" style={{ fontWeight:800,fontSize:'42px',color:'white',marginBottom:'16px',...fontStyle }}>Let's work together.</h2>
         <p className="reveal reveal-delay-2" style={{ color:'rgba(255,255,255,0.7)',fontSize:'17px',maxWidth:'500px',margin:'0 auto 40px',lineHeight:1.7 }}>Whether you need a software solution, an e-commerce store, IT support, or mathematics tutoring — I'm ready to help.</p>
-        <div className="reveal reveal-delay-3" style={{ display:'flex',justifyContent:'center',flexWrap:'wrap',gap:'16px',marginBottom:'40px' }}>
+        <div className="contact-links reveal reveal-delay-3">
           {[
             { label:'📧 Email', href:'mailto:oyekolatoheeb@email.com' },
             { label:'📱 WhatsApp', href:'https://wa.me/234XXXXXXXXXX' },
@@ -415,23 +468,21 @@ function Portfolio() {
             </a>
           ))}
         </div>
-        <div className="reveal reveal-delay-4" style={{ display:'flex',justifyContent:'center',gap:'16px',flexWrap:'wrap' }}>
+        <div className="contact-cta-row reveal reveal-delay-4">
           <button onClick={() => window.open('https://wa.me/234XXXXXXXXXX','_blank')} style={{ background:'#ff6f00',color:'white',padding:'18px 48px',fontSize:'17px',fontWeight:700,borderRadius:'8px',border:'none',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:'8px',boxShadow:'0 4px 15px rgba(255,111,0,0.3)',...bodyFont }}>Start a Conversation →</button>
           <button style={{ background:'transparent',color:'white',padding:'18px 48px',fontSize:'17px',fontWeight:600,borderRadius:'8px',border:'2px solid rgba(255,255,255,0.3)',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:'8px',...bodyFont }}>⬇ Download CV</button>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background:'#050505',padding:'60px 80px',color:'white' }}>
-        <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'20px' }}>
-          <div style={{ display:'flex',alignItems:'center',gap:'10px' }}>
-            <span style={{ color:'#ff6f00' }}>🎓</span>
-            <span style={{ ...fontStyle,fontWeight:800,fontSize:'16px' }}>Oyekola<span style={{ color:'#ff6f00' }}>Toheeb</span></span>
-          </div>
-          <span style={{ fontSize:'13px',color:'rgba(255,255,255,0.4)' }}>Software Engineer • Educator • Entrepreneur</span>
+      <footer className="footer-pad grid-footer" style={{ background:'#050505',padding:'60px 80px',color:'white' }}>
+        <div style={{ display:'flex',alignItems:'center',gap:'10px' }}>
+          <span style={{ color:'#ff6f00' }}>🎓</span>
+          <span style={{ ...fontStyle,fontWeight:800,fontSize:'16px' }}>Oyekola<span style={{ color:'#ff6f00' }}>Toheeb</span></span>
         </div>
-        <hr style={{ border:'none',borderTop:'1px solid rgba(255,255,255,0.08)',margin:'24px 0 20px' }} />
-        <div style={{ textAlign:'center',fontSize:'13px',color:'rgba(255,255,255,0.3)' }}>© 2025 Oyekola Toheeb. All Rights Reserved. • Built with ❤️ on Nairafame Academy</div>
+        <span style={{ fontSize:'13px',color:'rgba(255,255,255,0.4)' }}>Software Engineer • Educator • Entrepreneur</span>
+        <hr style={{ border:'none',borderTop:'1px solid rgba(255,255,255,0.08)',width:'100%',margin:'0' }} />
+        <div style={{ width:'100%',textAlign:'center',fontSize:'13px',color:'rgba(255,255,255,0.3)' }}>© 2025 Oyekola Toheeb. All Rights Reserved. • Built with ❤️ on Nairafame Academy</div>
       </footer>
 
     </div>
