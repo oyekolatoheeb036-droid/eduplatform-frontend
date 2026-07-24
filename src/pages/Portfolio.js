@@ -17,7 +17,6 @@ function Portfolio() {
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
   const bodyFont = { fontFamily: "'Inter', sans-serif" };
 
-  // Typing Animation
   useEffect(() => {
     const type = () => {
       const current = typingTexts[textIndexRef.current];
@@ -42,7 +41,6 @@ function Portfolio() {
     return () => clearTimeout(timeout);
   }, []);
 
-  // Counter Animation
   const animateCounter = (el, target, suffix = '') => {
     const duration = 1600;
     const startTime = performance.now();
@@ -57,7 +55,6 @@ function Portfolio() {
     requestAnimationFrame(update);
   };
 
-  // Scroll Reveal
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -72,12 +69,10 @@ function Portfolio() {
         }
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
-
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, []);
 
-  // Hero Progress
   useEffect(() => {
     setTimeout(() => {
       const bar = document.getElementById('heroProgress');
@@ -87,7 +82,6 @@ function Portfolio() {
     }, 600);
   }, []);
 
-  // Navbar scroll
   useEffect(() => {
     const handleScroll = () => {
       const nav = document.getElementById('portNav');
@@ -138,8 +132,6 @@ function Portfolio() {
         .reveal-delay-3 { transition-delay:0.3s; }
         .reveal-delay-4 { transition-delay:0.4s; }
         .skill-bar-fill { width:0%;transition:width 1.2s ease; }
-
-        /* GRID CONTAINERS */
         .grid-services { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
         .grid-projects { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
         .grid-skills { display:grid;grid-template-columns:repeat(4,1fr);gap:24px; }
@@ -151,16 +143,11 @@ function Portfolio() {
         .hero-tags { display:flex;flex-wrap:wrap;gap:16px; }
         .contact-links { display:flex;justify-content:center;flex-wrap:wrap;gap:16px;margin-bottom:40px; }
         .contact-cta-row { display:flex;justify-content:center;gap:16px;flex-wrap:wrap; }
-
-        /* SERVICE LIST ITEMS */
         .svc-list { list-style:none;display:flex;flex-direction:column;gap:8px; }
         .svc-list li { font-size:14px;color:#777;display:flex;align-items:flex-start;gap:8px;line-height:1.5; }
         .svc-list li span { flex:1;min-width:0;word-wrap:break-word;overflow-wrap:break-word; }
-
-        /* PROJECT TAGS */
         .proj-tags { display:flex;flex-wrap:wrap;gap:6px; }
 
-        /* MOBILE FIXES */
         @media (max-width:1024px) {
           .grid-services { grid-template-columns:repeat(2,1fr) !important; }
           .grid-projects { grid-template-columns:repeat(2,1fr) !important; }
@@ -189,6 +176,17 @@ function Portfolio() {
           .contact-cta-row button { width:100% !important;max-width:320px !important;justify-content:center !important; }
           .grid-footer { flex-direction:column !important;text-align:center !important; }
           .section-title-m { font-size:28px !important; }
+          .hcm-card { padding:14px !important;border-radius:14px !important; }
+          .hcm-inner { padding:14px !important;margin-bottom:10px !important;border-radius:10px !important; }
+          .hcm-name { font-size:15px !important; }
+          .hcm-role { font-size:11px !important;margin-bottom:10px !important; }
+          .hcm-progress-label { font-size:11px !important;margin-bottom:4px !important; }
+          .hcm-progress-bar { height:6px !important; }
+          .hcm-progress-text { font-size:11px !important;margin-top:4px !important; }
+          .hcm-stat { padding:10px 6px !important;border-radius:8px !important; }
+          .hcm-stat-val { font-size:18px !important; }
+          .hcm-stat-label { font-size:10px !important; }
+          .hcm-grid { gap:8px !important; }
         }
 
         @media (max-width:520px) {
@@ -238,21 +236,21 @@ function Portfolio() {
           </div>
         </div>
 
-        <div style={{ flex:1,minWidth:0,width:'100%',maxWidth:'520px',background:'linear-gradient(135deg,#1a237e,#0288d1)',borderRadius:'20px',padding:'28px',boxShadow:'0 20px 60px rgba(26,35,126,0.2)' }}>
-          <div style={{ background:'white',borderRadius:'12px',padding:'20px',marginBottom:'14px' }}>
-            <div style={{ ...fontStyle,fontWeight:700,color:'#1a237e',fontSize:'17px',marginBottom:'2px' }}>Toheeb Oyekola 👋</div>
-            <div style={{ fontSize:'13px',color:'#999',marginBottom:'14px' }}>Software Engineer & Educator</div>
-            <div style={{ fontSize:'13px',color:'#555',marginBottom:'5px' }}>Projects Completed</div>
-            <div style={{ background:'#e0e0e0',borderRadius:'5px',height:'8px',overflow:'hidden' }}>
+        <div className="hcm-card" style={{ flex:1,minWidth:0,width:'100%',maxWidth:'520px',background:'linear-gradient(135deg,#1a237e,#0288d1)',borderRadius:'20px',padding:'28px',boxShadow:'0 20px 60px rgba(26,35,126,0.2)' }}>
+          <div className="hcm-inner" style={{ background:'white',borderRadius:'12px',padding:'20px',marginBottom:'14px' }}>
+            <div className="hcm-name" style={{ ...fontStyle,fontWeight:700,color:'#1a237e',fontSize:'17px',marginBottom:'2px' }}>Toheeb Oyekola 👋</div>
+            <div className="hcm-role" style={{ fontSize:'13px',color:'#999',marginBottom:'14px' }}>Software Engineer & Educator</div>
+            <div className="hcm-progress-label" style={{ fontSize:'13px',color:'#555',marginBottom:'5px' }}>Projects Completed</div>
+            <div className="hcm-progress-bar" style={{ background:'#e0e0e0',borderRadius:'5px',height:'8px',overflow:'hidden' }}>
               <div id="heroProgress" style={{ background:'linear-gradient(90deg,#1a237e,#0288d1)',borderRadius:'5px',height:'100%',width:'0%',transition:'width 1.5s ease' }}></div>
             </div>
-            <div style={{ fontSize:'13px',color:'#1a237e',fontWeight:700,marginTop:'5px' }}><span id="heroProgressText">0</span> Complete</div>
+            <div className="hcm-progress-text" style={{ fontSize:'13px',color:'#1a237e',fontWeight:700,marginTop:'5px' }}><span id="heroProgressText">0</span> Complete</div>
           </div>
-          <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px' }}>
+          <div className="hcm-grid" style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px' }}>
             {[{v:'15',l:'Projects Built'},{v:'500',l:'Students Taught'},{v:'200',l:'Devices Repaired'},{v:'50',l:'Happy Clients'}].map((s,i) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.15)',borderRadius:'10px',padding:'15px 10px',textAlign:'center' }}>
-                <div data-count={s.v} style={{ ...fontStyle,fontWeight:800,color:'white',fontSize:'22px' }}>0</div>
-                <span style={{ color:'rgba(255,255,255,0.8)',fontSize:'11px',lineHeight:1.2 }}>{s.l}</span>
+              <div key={i} className="hcm-stat" style={{ background:'rgba(255,255,255,0.15)',borderRadius:'10px',padding:'15px 10px',textAlign:'center' }}>
+                <div className="hcm-stat-val" data-count={s.v} style={{ ...fontStyle,fontWeight:800,color:'white',fontSize:'22px' }}>0</div>
+                <span className="hcm-stat-label" style={{ color:'rgba(255,255,255,0.8)',fontSize:'11px',lineHeight:1.2 }}>{s.l}</span>
               </div>
             ))}
           </div>
@@ -308,7 +306,6 @@ function Portfolio() {
                 onMouseOver={(e) => e.currentTarget.style.opacity = 1} onMouseOut={(e) => e.currentTarget.style.opacity = 0}></div>
             </div>
           ))}
-          {/* CTA Card */}
           <div className="reveal reveal-delay-3" onClick={() => document.getElementById('contact').scrollIntoView({behavior:'smooth'})}
             style={{ background:'linear-gradient(135deg,#1a237e,#0288d1)',borderRadius:'20px',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',minHeight:'300px',transition:'transform 0.3s' }}
             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
