@@ -285,9 +285,13 @@ export default function NairafameAI({ user }) {
           : c
       ));
     } catch (err) {
+      const isRateLimit = err?.response?.status === 429;
+      const errorMsg = isRateLimit
+        ? "I'm currently receiving a lot of questions and need a short break 😊 Please try again in a few minutes!"
+        : "I'm sorry, I couldn't generate a response. Please try again.";
       setChats(prev => prev.map(c =>
         c.id === chatId
-          ? { ...c, messages: [...c.messages, { role: 'assistant', content: "I'm sorry, I couldn't generate a response. Please try again." }] }
+          ? { ...c, messages: [...c.messages, { role: 'assistant', content: errorMsg }] }
           : c
       ));
     }
