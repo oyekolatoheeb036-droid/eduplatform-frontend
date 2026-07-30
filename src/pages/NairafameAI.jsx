@@ -10,6 +10,10 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 const API_BASE = 'https://eduplatform-api-pol1.onrender.com';
 
@@ -43,6 +47,82 @@ function createNewChat() {
     messages: [],
     createdAt: new Date().toISOString()
   };
+}
+
+// ── Message Renderer ──────────────────────────────────────────────────────────
+function MessageRenderer({ content, isUser }) {
+  const bodyFont = { fontFamily: "'Inter', sans-serif" };
+
+  return (
+    <Box style={{
+      fontSize: '14px',
+      lineHeight: '1.8',
+      color: isUser ? 'white' : '#0a0a0a',
+      ...bodyFont,
+    }}>
+      <style>{`
+        .ai-message p { margin: 0 0 10px 0; }
+        .ai-message p:last-child { margin-bottom: 0; }
+        .ai-message strong { font-weight: 700; }
+        .ai-message em { font-style: italic; }
+        .ai-message ul { margin: 8px 0 10px 0; padding-left: 20px; }
+        .ai-message ol { margin: 8px 0 10px 0; padding-left: 20px; }
+        .ai-message li { margin-bottom: 5px; }
+        .ai-message h1, .ai-message h2, .ai-message h3 {
+          font-family: 'Space Grotesk', sans-serif;
+          font-weight: 800;
+          margin: 16px 0 8px 0;
+          color: ${isUser ? 'white' : '#1a237e'};
+        }
+        .ai-message h1 { font-size: 18px; }
+        .ai-message h2 { font-size: 16px; }
+        .ai-message h3 { font-size: 15px; }
+        .ai-message code {
+          background: ${isUser ? 'rgba(255,255,255,0.2)' : '#f0f2f8'};
+          color: ${isUser ? 'white' : '#1a237e'};
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 13px;
+        }
+        .ai-message pre {
+          background: ${isUser ? 'rgba(255,255,255,0.15)' : '#f0f2f8'};
+          padding: 12px;
+          border-radius: 8px;
+          overflow-x: auto;
+          margin: 10px 0;
+        }
+        .ai-message pre code {
+          background: none;
+          padding: 0;
+        }
+        .ai-message blockquote {
+          border-left: 3px solid ${isUser ? 'rgba(255,255,255,0.5)' : '#1a237e'};
+          margin: 10px 0;
+          padding: 4px 12px;
+          opacity: 0.85;
+        }
+        .ai-message .katex { font-size: 1.05em; }
+        .ai-message .katex-display {
+          margin: 12px 0;
+          overflow-x: auto;
+        }
+        .ai-message hr {
+          border: none;
+          border-top: 1px solid ${isUser ? 'rgba(255,255,255,0.3)' : '#e0e0e0'};
+          margin: 12px 0;
+        }
+      `}</style>
+      <div className="ai-message">
+        <ReactMarkdown
+          remarkPlugins={[remarkMath]}
+          rehypePlugins={[rehypeKatex]}
+        >
+          {content}
+        </ReactMarkdown>
+      </div>
+    </Box>
+  );
 }
 
 const BASE_AI_CONTEXT = `You are Nairafame AI, a friendly and expert tutor for Nigerian secondary school and university students.
@@ -85,7 +165,14 @@ RULES:
 - Show step-by-step workings for math problems so students can learn the process
 - If asked about topics outside Mathematics and Science, politely redirect the student
 - Never do homework directly for students — guide them to understand the concept instead
-- Always be positive and motivating`;
+- Always be positive and motivating
+- FORMATTING RULES: Always use proper markdown formatting in your responses:
+  * Use **bold** for key terms and important points
+  * Use proper LaTeX math notation: inline math with $...$ and display math with $$...$$
+  * For example: The quadratic formula is $$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
+  * Use numbered lists for steps
+  * Use bullet points for lists of items
+  * Use headings (##) to organize long responses`;
 
 export default function NairafameAI({ user }) {
   const fontStyle = { fontFamily: "'Space Grotesk', sans-serif" };
@@ -105,14 +192,11 @@ export default function NairafameAI({ user }) {
 
   const activeChat = chats.find(c => c.id === activeChatId) || null;
 
-  // Fetch all courses, lessons and sections from the database on page load
   useEffect(() => {
     const fetchSiteContext = async () => {
       try {
         const res = await axios.get(`${API_BASE}/api/ai/context`);
         const data = res.data.context;
-
-        // Build a readable text version of the site content
         let contextText = '\n\nFULL NAIRAFAME ACADEMY COURSE CONTENT:\n';
         data.forEach((courseItem, ci) => {
           contextText += `\nCOURSE ${ci + 1}: ${courseItem.course}\n`;
@@ -125,7 +209,6 @@ export default function NairafameAI({ user }) {
             });
           });
         });
-
         setSiteContext(contextText);
       } catch (err) {
         console.log('Could not fetch site context:', err);
@@ -192,7 +275,6 @@ export default function NairafameAI({ user }) {
       const chat = updatedChats.find(c => c.id === chatId);
       const res = await axios.post(`${API_BASE}/api/ai/chat`, {
         messages: chat.messages,
-        // Combine base context with live site data from database
         ai_context: BASE_AI_CONTEXT + siteContext
       });
 
@@ -444,11 +526,8 @@ export default function NairafameAI({ user }) {
                   : '18px 18px 18px 4px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 border: msg.role === 'assistant' ? '1px solid #f0f0f0' : 'none',
-                fontSize: '14px', lineHeight: '1.7',
-                whiteSpace: 'pre-wrap',
-                ...bodyFont
               }}>
-                {msg.content}
+                <MessageRenderer content={msg.content} isUser={msg.role === 'user'} />
               </Box>
 
               {msg.role === 'user' && (
@@ -516,7 +595,7 @@ export default function NairafameAI({ user }) {
               InputProps={{
                 style: {
                   borderRadius: '12px', fontSize: '14px',
-                  background: '#fafafa', ...bodyFont
+                  background: '#fafafa', fontFamily: "'Inter', sans-serif"
                 }
               }}
             />
@@ -534,7 +613,7 @@ export default function NairafameAI({ user }) {
               {loading ? <CircularProgress size={20} style={{ color: 'white' }} /> : <SendIcon />}
             </IconButton>
           </Box>
-          <Typography style={{ textAlign: 'center', color: '#bbb', fontSize: '11px', marginTop: '8px', ...bodyFont }}>
+          <Typography style={{ textAlign: 'center', color: '#bbb', fontSize: '11px', marginTop: '8px', fontFamily: "'Inter', sans-serif" }}>
             Nairafame AI can make mistakes. Always verify important answers.
           </Typography>
         </Box>
