@@ -1,0 +1,111 @@
+warning: in the working copy of 'src/App.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/AuthContext.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/pages/Dashboard.js', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/App.js b/src/App.js[m
+[1mindex df24194..7063b1e 100644[m
+[1m--- a/src/App.js[m
+[1m+++ b/src/App.js[m
+[36m@@ -6,6 +6,8 @@[m [mimport Courses from './pages/Courses';[m
+ import Lessons from './pages/Lessons';[m
+ import Quiz from './pages/Quiz';[m
+ import Dashboard from './pages/Dashboard';[m
+[32m+[m[32mimport MathematicalTools from './pages/MathematicalTools';[m
+[32m+[m[32mimport QuadraticExplorer from './pages/QuadraticExplorer';[m
+ import TeacherDashboard from './pages/TeacherDashboard';[m
+ import AdminDashboard from './pages/AdminDashboard';[m
+ import Badges from './pages/Badges';[m
+[36m@@ -289,6 +291,12 @@[m [mfunction App() {[m
+             <Badges />[m
+           </ProtectedRoute>[m
+         } />[m
+[32m+[m[32m        <Route path="/math-tools" element={<MathematicalTools />} />[m
+[32m+[m[32m        <Route path="/math-tools/quadratic-explorer" element={[m
+[32m+[m[32m          <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>[m
+[32m+[m[32m            <QuadraticExplorer />[m
+[32m+[m[32m          </ProtectedRoute>[m
+[32m+[m[32m        } />[m
+         <Route path="/teacher" element={[m
+           <ProtectedRoute allowedRoles={['teacher', 'admin']}>[m
+             <TeacherDashboard />[m
+[1mdiff --git a/src/AuthContext.js b/src/AuthContext.js[m
+[1mindex 6260316..5704b6d 100644[m
+[1m--- a/src/AuthContext.js[m
+[1m+++ b/src/AuthContext.js[m
+[36m@@ -6,7 +6,6 @@[m [mexport function AuthProvider({ children }) {[m
+   const [user, setUser] = useState(null);[m
+ [m
+   useEffect(() => {[m
+[31m-    // Check if user is already logged in[m
+     const storedUser = localStorage.getItem('user');[m
+     if (storedUser) {[m
+       setUser(JSON.parse(storedUser));[m
+[36m@@ -25,8 +24,14 @@[m [mexport function AuthProvider({ children }) {[m
+     setUser(null);[m
+   };[m
+ [m
+[32m+[m[32m  const updateUser = (newData) => {[m
+[32m+[m[32m    const updated = { ...user, ...newData };[m
+[32m+[m[32m    localStorage.setItem('user', JSON.stringify(updated));[m
+[32m+[m[32m    setUser(updated);[m
+[32m+[m[32m  };[m
+[32m+[m
+   return ([m
+[31m-    <AuthContext.Provider value={{ user, login, logout }}>[m
+[32m+[m[32m    <AuthContext.Provider value={{ user, login, logout, updateUser }}>[m
+       {children}[m
+     </AuthContext.Provider>[m
+   );[m
+[36m@@ -34,4 +39,4 @@[m [mexport function AuthProvider({ children }) {[m
+ [m
+ export function useAuth() {[m
+   return useContext(AuthContext);[m
+[31m-}[m
+\ No newline at end of file[m
+[32m+[m[32m}[m
+[1mdiff --git a/src/pages/Dashboard.js b/src/pages/Dashboard.js[m
+[1mindex d75f005..a271a16 100644[m
+[1m--- a/src/pages/Dashboard.js[m
+[1m+++ b/src/pages/Dashboard.js[m
+[36m@@ -8,6 +8,7 @@[m [mimport SchoolIcon from '@mui/icons-material/School';[m
+ import CheckCircleIcon from '@mui/icons-material/CheckCircle';[m
+ import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';[m
+ import QuizIcon from '@mui/icons-material/Quiz';[m
+[32m+[m[32mimport CalculateIcon from '@mui/icons-material/Calculate';[m
+ import { useNavigate } from 'react-router-dom';[m
+ import { useAuth } from '../AuthContext';[m
+ [m
+[36m@@ -206,6 +207,34 @@[m [mfunction Dashboard() {[m
+           </Grid>[m
+         )}[m
+ [m
+[32m+[m[32m        <Box style={{ marginTop: '40px' }}>[m
+[32m+[m[32m          <Box style={{ marginBottom: '24px' }}>[m
+[32m+[m[32m            <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '26px', ...fontStyle }}>Math Tools</Typography>[m
+[32m+[m[32m            <Typography variant="body2" style={{ color: '#999', marginTop: '4px', ...bodyFont }}>Interactive tools to help you practice and visualize concepts</Typography>[m
+[32m+[m[32m          </Box>[m
+[32m+[m[32m          <Grid container spacing={3}>[m
+[32m+[m[32m            <Grid item xs={12} sm={6} md={4}>[m
+[32m+[m[32m              <Card elevation={0} style={{ borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', height: '100%' }}>[m
+[32m+[m[32m                <Box style={{ background: 'linear-gradient(135deg, #ff6f00, #e0623d)', padding: '28px 25px', minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>[m
+[32m+[m[32m                  <Box style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>[m
+[32m+[m[32m                    <CalculateIcon style={{ fontSize: '30px', color: 'white' }} />[m
+[32m+[m[32m                  </Box>[m
+[32m+[m[32m                  <Typography style={{ color: 'white', fontWeight: '800', fontSize: '18px', lineHeight: '1.3', ...fontStyle }}>Quadratic Explorer</Typography>[m
+[32m+[m[32m                </Box>[m
+[32m+[m[32m                <CardContent style={{ padding: '22px 25px' }}>[m
+[32m+[m[32m                  <Typography variant="body2" color="textSecondary" style={{ marginBottom: '18px', lineHeight: '1.6', ...bodyFont }}>[m
+[32m+[m[32m                    Build tables, plot points, draw curves, and learn quadratic graphs step-by-step with AI guidance.[m
+[32m+[m[32m                  </Typography>[m
+[32m+[m[32m                  <Button fullWidth variant="contained" onClick={() => navigate('/math-tools/quadratic-explorer')}[m
+[32m+[m[32m                    style={{ background: 'linear-gradient(135deg, #ff6f00, #e0623d)', borderRadius: '10px', padding: '12px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>[m
+[32m+[m[32m                    Launch Tool[m
+[32m+[m[32m                  </Button>[m
+[32m+[m[32m                </CardContent>[m
+[32m+[m[32m              </Card>[m
+[32m+[m[32m            </Grid>[m
+[32m+[m[32m          </Grid>[m
+[32m+[m[32m        </Box>[m
+[32m+[m
+         {quizResults.length > 0 && ([m
+           <Box style={{ marginTop: '40px' }}>[m
+             <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '26px', marginBottom: '24px', ...fontStyle }}>[m

@@ -8,6 +8,7 @@ import SchoolIcon from '@mui/icons-material/School';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import QuizIcon from '@mui/icons-material/Quiz';
+import CalculateIcon from '@mui/icons-material/Calculate';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 
@@ -205,6 +206,34 @@ function Dashboard() {
             ))}
           </Grid>
         )}
+
+        <Box style={{ marginTop: '40px' }}>
+          <Box style={{ marginBottom: '24px' }}>
+            <Typography style={{ fontWeight: '800', color: '#0a0a0a', fontSize: '26px', ...fontStyle }}>Math Tools</Typography>
+            <Typography variant="body2" style={{ color: '#999', marginTop: '4px', ...bodyFont }}>Interactive tools to help you practice and visualize concepts</Typography>
+          </Box>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={4}>
+              <Card elevation={0} style={{ borderRadius: '20px', overflow: 'hidden', border: '1px solid #f0f0f0', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', height: '100%' }}>
+                <Box style={{ background: 'linear-gradient(135deg, #ff6f00, #e0623d)', padding: '28px 25px', minHeight: '120px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <Box style={{ width: '50px', height: '50px', borderRadius: '12px', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
+                    <CalculateIcon style={{ fontSize: '30px', color: 'white' }} />
+                  </Box>
+                  <Typography style={{ color: 'white', fontWeight: '800', fontSize: '18px', lineHeight: '1.3', ...fontStyle }}>Quadratic Explorer</Typography>
+                </Box>
+                <CardContent style={{ padding: '22px 25px' }}>
+                  <Typography variant="body2" color="textSecondary" style={{ marginBottom: '18px', lineHeight: '1.6', ...bodyFont }}>
+                    Build tables, plot points, draw curves, and learn quadratic graphs step-by-step with AI guidance.
+                  </Typography>
+                  <Button fullWidth variant="contained" onClick={() => navigate('/math-tools/quadratic-explorer')}
+                    style={{ background: 'linear-gradient(135deg, #ff6f00, #e0623d)', borderRadius: '10px', padding: '12px', fontWeight: '700', textTransform: 'none', boxShadow: 'none', ...bodyFont }}>
+                    Launch Tool
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Box>
 
         {quizResults.length > 0 && (
           <Box style={{ marginTop: '40px' }}>

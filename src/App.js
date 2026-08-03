@@ -6,6 +6,8 @@ import Courses from './pages/Courses';
 import Lessons from './pages/Lessons';
 import Quiz from './pages/Quiz';
 import Dashboard from './pages/Dashboard';
+import MathematicalTools from './pages/MathematicalTools';
+import QuadraticExplorer from './pages/QuadraticExplorer';
 import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Badges from './pages/Badges';
@@ -287,6 +289,12 @@ function App() {
         <Route path="/badges" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
             <Badges />
+          </ProtectedRoute>
+        } />
+        <Route path="/math-tools" element={<MathematicalTools />} />
+        <Route path="/math-tools/quadratic-explorer" element={
+          <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
+            <QuadraticExplorer />
           </ProtectedRoute>
         } />
         <Route path="/teacher" element={
