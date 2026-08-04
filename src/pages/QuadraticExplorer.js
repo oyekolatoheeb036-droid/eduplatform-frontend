@@ -241,6 +241,44 @@ function labelPoint(pt, vertex) {
     : `(${fmt(pt.x)}, ${fmt(pt.y)})`;
 }
 
+function NumInput({ value, onChange, style }) {
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", ...style }}>
+      <button
+        type="button"
+        className="qx-spin-btn"
+        style={{ borderRadius: "8px 0 0 8px", borderRight: "none" }}
+        onClick={() => {
+          const v = value === "" ? 0 : Number(value);
+          onChange(v - 1);
+        }}
+      >
+        −
+      </button>
+      <input
+        className="qx-num-input"
+        type="number"
+        value={value}
+        onChange={(e) =>
+          onChange(e.target.value === "" ? "" : Number(e.target.value))
+        }
+        style={{ borderRadius: 0, borderLeft: "none", borderRight: "none", width: 44 }}
+      />
+      <button
+        type="button"
+        className="qx-spin-btn"
+        style={{ borderRadius: "0 8px 8px 0", borderLeft: "none" }}
+        onClick={() => {
+          const v = value === "" ? 0 : Number(value);
+          onChange(v + 1);
+        }}
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
 function buildPathD(points, xScale, yScale) {
   if (!points || points.length < 2) return "";
   return points
@@ -1072,11 +1110,19 @@ export default function QuadraticExplorer() {
           @media (min-width: 900px) { .qx-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
           .qx-input { border: 1.5px solid #f0f0f0; border-radius: 8px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; outline: none; width: 60px; }
           .qx-input:focus { border-color: #1a237e; }
-          .qx-num-input { border: 1.5px solid #f0f0f0; border-radius: 8px; padding: 8px 6px; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; outline: none; width: 64px; }
+          .qx-num-input { border: 1.5px solid #f0f0f0; padding: 8px 4px; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; outline: none; width: 44px; height: 38px; }
           .qx-num-input:focus { border-color: #1a237e; }
-          .qx-num-input::-webkit-inner-spin-button,
-          .qx-num-input::-webkit-outer-spin-button { opacity: 1; height: 30px; width: 20px; }
-          .qx-num-input { -moz-appearance: auto; }
+          .qx-spin-btn { width: 28px; height: 38px; border: 1.5px solid #f0f0f0; background: #fafafa; font-size: 16px; font-weight: 700; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; font-family: 'Inter', sans-serif; }
+          .qx-spin-btn:hover { background: #E8EAF6; color: #1a237e; }
+          .qx-spin-btn:active { background: #C5CAE9; }
+          .qx-num-input::-webkit-inner-spin-button, .qx-num-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+          .qx-num-input { -moz-appearance: textfield; }
+          @media (min-width: 900px) {
+            .qx-spin-btn { display: none !important; }
+            .qx-num-input { border-radius: 8px !important; width: 64px !important; border-left: 1.5px solid #f0f0f0 !important; border-right: 1.5px solid #f0f0f0 !important; }
+            .qx-num-input::-webkit-inner-spin-button, .qx-num-input::-webkit-outer-spin-button { -webkit-appearance: auto; opacity: 1; height: 28px; }
+            .qx-num-input { -moz-appearance: auto; }
+          }
           .qx-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 8px; padding: 12px 20px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 150ms ease; width: 100%; }
           .qx-btn-primary { background: #1a237e; color: white; }
           .qx-btn-primary:hover { background: #283593; }
@@ -1245,38 +1291,11 @@ export default function QuadraticExplorer() {
                     }}
                   >
                     <span style={{ fontWeight: 600 }}>y =</span>
-                    <input
-                      className="qx-num-input"
-                      type="number"
-                      value={a}
-                      onChange={(e) =>
-                        setA(
-                          e.target.value === "" ? "" : Number(e.target.value)
-                        )
-                      }
-                    />
+                    <NumInput value={a} onChange={(v) => setA(v)} />
                     <span style={{ fontWeight: 600 }}>x² +</span>
-                    <input
-                      className="qx-num-input"
-                      type="number"
-                      value={b}
-                      onChange={(e) =>
-                        setB(
-                          e.target.value === "" ? "" : Number(e.target.value)
-                        )
-                      }
-                    />
+                    <NumInput value={b} onChange={(v) => setB(v)} />
                     <span style={{ fontWeight: 600 }}>x +</span>
-                    <input
-                      className="qx-num-input"
-                      type="number"
-                      value={c}
-                      onChange={(e) =>
-                        setC(
-                          e.target.value === "" ? "" : Number(e.target.value)
-                        )
-                      }
-                    />
+                    <NumInput value={c} onChange={(v) => setC(v)} />
                   </div>
 
                   <div
@@ -1289,18 +1308,14 @@ export default function QuadraticExplorer() {
                     }}
                   >
                     <span style={{ fontWeight: 600 }}>X Range: From</span>
-                    <input
-                      className="qx-num-input"
-                      type="number"
+                    <NumInput
                       value={xStart}
-                      onChange={(e) => setXStart(Number(e.target.value))}
+                      onChange={(v) => setXStart(v === "" ? 0 : v)}
                     />
                     <span style={{ fontWeight: 600 }}>to</span>
-                    <input
-                      className="qx-num-input"
-                      type="number"
+                    <NumInput
                       value={xEnd}
-                      onChange={(e) => setXEnd(Number(e.target.value))}
+                      onChange={(v) => setXEnd(v === "" ? 0 : v)}
                     />
                   </div>
 
@@ -1872,6 +1887,7 @@ export default function QuadraticExplorer() {
                     <input
                       className="qx-num-input"
                       type="number"
+                      style={{ width: 64 }}
                       value={readValueInput}
                       onChange={(e) => setReadValueInput(e.target.value)}
                     />
