@@ -57,6 +57,10 @@ export default function MathematicalTools() {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-6px); }
         }
+        @keyframes mt-premium-glow {
+          0%, 100% { box-shadow: 0 8px 32px rgba(255,152,0,0.15), 0 2px 8px rgba(0,0,0,0.04); }
+          50% { box-shadow: 0 12px 40px rgba(255,152,0,0.25), 0 4px 12px rgba(0,0,0,0.06); }
+        }
         .mt-card {
           transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
           animation: mt-bounce-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
@@ -79,6 +83,15 @@ export default function MathematicalTools() {
         .mt-card:nth-child(1).mt-card-featured { animation-delay: 0s, 1s; }
         .mt-card:nth-child(2).mt-card-featured { animation-delay: 0.12s, 1.12s; }
         .mt-card:nth-child(3).mt-card-featured { animation-delay: 0.24s, 1.24s; }
+        .mt-premium-card {
+          animation: mt-bounce-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.36s backwards, mt-premium-glow 3s ease-in-out 1.5s infinite;
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+        }
+        .mt-premium-card:hover {
+          animation: none;
+          transform: translateY(-10px) scale(1.02);
+          box-shadow: 0 20px 50px rgba(255,152,0,0.3), 0 8px 20px rgba(0,0,0,0.08);
+        }
       `}</style>
 
       <div style={{ background: 'linear-gradient(135deg, #1a237e 0%, #283593 50%, #1a237e 100%)', padding: '80px 24px 60px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -115,7 +128,6 @@ export default function MathematicalTools() {
                   transformStyle: 'preserve-3d',
                 }}
               >
-                {/* Featured gradient accent strip + mini graph */}
                 {isFeatured && (
                   <div style={{
                     height: 140,
@@ -126,37 +138,26 @@ export default function MathematicalTools() {
                     justifyContent: 'center',
                     overflow: 'hidden',
                   }}>
-                    {/* Decorative grid dots */}
                     <div style={{ position: 'absolute', inset: 0, opacity: 0.08 }}>
                       {Array.from({ length: 80 }).map((_, i) => (
                         <div key={i} style={{ position: 'absolute', width: 2, height: 2, borderRadius: '50%', background: '#fff', left: `${(i % 10) * 10 + 5}%`, top: `${Math.floor(i / 10) * 12.5 + 6}%` }} />
                       ))}
                     </div>
-                    {/* Mini parabola SVG */}
                     <svg width="200" height="110" viewBox="0 0 200 110" style={{ position: 'relative', zIndex: 1 }}>
-                      {/* Axes */}
                       <line x1="20" y1="95" x2="180" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
                       <line x1="100" y1="10" x2="100" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-                      {/* Axis arrows */}
                       <polygon points="180,95 175,91 175,99" fill="rgba(255,255,255,0.3)" />
                       <polygon points="100,10 96,15 104,15" fill="rgba(255,255,255,0.3)" />
-                      {/* Parabola curve */}
                       <path d="M 30 95 Q 50 90 65 70 Q 80 45 100 30 Q 120 45 135 70 Q 150 90 170 95" fill="none" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
-                      {/* Vertex dot */}
                       <circle cx="100" cy="30" r="5" fill="#F59E0B" stroke="#fff" strokeWidth="2" />
-                      {/* Root dots */}
                       <circle cx="55" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
                       <circle cx="145" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
-                      {/* Y-intercept dot */}
                       <circle cx="100" cy="82" r="4" fill="#2F5FCC" stroke="#fff" strokeWidth="1.5" />
-                      {/* Dashed symmetry line */}
                       <line x1="100" y1="15" x2="100" y2="90" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 3" />
-                      {/* Labels */}
                       <text x="100" y="22" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="8" fontFamily="Inter, sans-serif" fontWeight="600">vertex</text>
                       <text x="55" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">root</text>
                       <text x="145" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">root</text>
                     </svg>
-                    {/* Popular badge */}
                     {tool.popular && (
                       <div style={{ position: 'absolute', top: 12, right: 12, display: 'inline-flex', alignItems: 'center', gap: 4, background: 'linear-gradient(135deg, #FFB300, #FF8F00)', color: '#3E2723', padding: '4px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, letterSpacing: '0.5px', zIndex: 2 }}>
                         ⭐ Most Popular
@@ -190,15 +191,29 @@ export default function MathematicalTools() {
           })}
         </div>
 
-        <div style={{ marginTop: 48, background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)', border: '1px solid #FFB300', borderRadius: 20, padding: '40px 32px', textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#FF8F00" stroke="#FF8F00" strokeWidth="1"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z"/></svg>
-            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 800, color: '#3E2723' }}>Upgrade to Nairafame Premium</h2>
+        <div className="mt-premium-card" style={{
+          marginTop: 48,
+          background: 'linear-gradient(135deg, #FFF8E1, #FFF3E0)',
+          border: '1px solid #FFB300',
+          borderRadius: 20,
+          padding: '40px 32px',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,152,0,0.06)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: -20, left: -20, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,152,0,0.04)', pointerEvents: 'none' }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#FF8F00" stroke="#FF8F00" strokeWidth="1"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26z"/></svg>
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 24, fontWeight: 800, color: '#3E2723', margin: 0 }}>Nairafame Premium</h2>
+            </div>
+            <p style={{ fontSize: 15, color: '#666', lineHeight: 1.6, maxWidth: 500, margin: '0 auto 16px' }}>Unlock Auto-Graph Mode, AI Tutor, and step-by-step solutions for all tools.</p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,152,0,0.12)', border: '1px solid rgba(255,152,0,0.3)', padding: '8px 20px', borderRadius: 30, fontSize: 14, fontWeight: 700, color: '#E65100', fontFamily: "'Inter', sans-serif" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E65100" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Coming Soon
+            </div>
           </div>
-          <p style={{ fontSize: 15, color: '#666', lineHeight: 1.6, maxWidth: 500, margin: '0 auto 20px' }}>Unlock Auto-Graph Mode, AI Tutor, and step-by-step solutions for all tools. Just 2,500 NGN/month.</p>
-          <Link to={user ? '/math-tools/quadratic-explorer' : '/register'} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, #FFB300, #FF8F00)', color: '#3E2723', padding: '12px 28px', borderRadius: 8, fontWeight: 700, fontSize: 15, textDecoration: 'none', fontFamily: "'Inter', sans-serif" }}>
-            {user ? 'Try the Quadratic Tool' : 'Register to Get Started'}
-          </Link>
         </div>
       </div>
     </div>
