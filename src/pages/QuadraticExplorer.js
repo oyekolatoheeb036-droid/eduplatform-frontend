@@ -1838,32 +1838,31 @@ export default function QuadraticExplorer() {
                           Ask a question about this quadratic equation...
                         </p>
                       )}
-                      {chatMessages.map((msg, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            marginBottom: 8,
-                            textAlign: msg.role === "user" ? "right" : "left",
-                          }}
-                        >
-                          <span
-                            style={{
-                              background:
-                                msg.role === "user" ? "#1a237e" : "#f0f0f0",
-                              color:
-                                msg.role === "user" ? "white" : "#0a0a0a",
-                              padding: "6px 10px",
-                              borderRadius: 8,
-                              display: "inline-block",
-                              fontSize: 13,
-                              maxWidth: "80%",
-                              wordWrap: "break-word",
-                            }}
-                          >
-                            {msg.content}
-                          </span>
-                        </div>
-                      ))}
+                    {chatMessages.map((msg, i) => (
+  <div
+    key={i}
+    style={{
+      marginBottom: 8,
+      textAlign: msg.role === "user" ? "right" : "left",
+    }}
+  >
+    <span
+      style={{
+        background: msg.role === "user" ? "#1a237e" : "#f0f0f0",
+        color: msg.role === "user" ? "white" : "#0a0a0a",
+        padding: "6px 10px",
+        borderRadius: 8,
+        display: "inline-block",
+        fontSize: 13,
+        maxWidth: "80%",
+        wordWrap: "break-word",
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {msg.content}
+    </span>
+  </div>
+))}
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <input
