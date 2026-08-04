@@ -45,6 +45,7 @@ const COLORS = {
   paperMinor: "#F3C3CE",
   paperMajor: "#D63A63",
   paperAxis: "#B01E45",
+  aiAction: "#7C4DFF",
 };
 
 function round(n, d = 4) {
@@ -137,11 +138,14 @@ async function askNairafameAI(question, solvedData, history) {
       solvedData,
       history,
     });
-    return res.data.reply;
+    return {
+      reply: res.data.reply,
+      actions: res.data.actions || [],
+    };
   } catch (err) {
     const errMsg =
       err.response?.data?.error || "Network error. Please try again.";
-    return `Error: ${errMsg}`;
+    return { reply: `Error: ${errMsg}`, actions: [] };
   }
 }
 
@@ -246,6 +250,7 @@ function InteractiveGraph({
   pushHistory,
   tool,
   setTool,
+  graphActions = [],
 }) {
   const W = 560,
     H = 680;
@@ -684,6 +689,118 @@ function InteractiveGraph({
           strokeDasharray="4 2"
         />
       ))}
+
+      {/* ── AI Visual Actions (highlighted points, trace lines, etc.) ── */}
+      {graphActions.map((action, i) => {
+        if (action.type === "highlight_point") {
+          const color = action.color || COLORS.aiAction;
+          return (
+            <g key={"ai" + i}>
+              <circle
+                cx={xScale(action.x)}
+                cy={yScale(action.y)}
+                r="7"
+                fill={color}
+                stroke="#fff"
+                strokeWidth="2"
+                opacity="0.9"
+              />
+              {action.label && (
+                <text
+                  x={xScale(action.x) + 12}
+                  y={yScale(action.y) - 12}
+                  fontSize="11"
+                  fill={color}
+                  fontWeight="700"
+                  fontFamily="Inter, sans-serif"
+                >
+                  {action.label}
+                </text>
+              )}
+            </g>
+          );
+        }
+
+        if (action.type === "trace_to_axes") {
+          const color = action.color || COLORS.aiAction;
+          return (
+            <g key={"ai" + i}>
+              {/* Dotted line from point horizontally to y-axis */}
+              <line
+                x1={xScale(action.x)}
+                y1={yScale(action.y)}
+                x2={xScale(0)}
+                y2={yScale(action.y)}
+                stroke={color}
+                strokeWidth="1.5"
+                strokeDasharray="4 3"
+                opacity="0.7"
+              />
+              {/* Dotted line from point vertically to x-axis */}
+              <line
+                x1={xScale(action.x)}
+                y1={yScale(action.y)}
+                x2={xScale(action.x)}
+                y2={yScale(0)}
+                stroke={color}
+                strokeWidth="1.5"
+                strokeDasharray="4 3"
+                opacity="0.7"
+              />
+              {/* Small dot at x-axis */}
+              <circle
+                cx={xScale(action.x)}
+                cy={yScale(0)}
+                r="3"
+                fill={color}
+                opacity="0.5"
+              />
+              {/* Small dot at y-axis */}
+              <circle
+                cx={xScale(0)}
+                cy={yScale(action.y)}
+                r="3"
+                fill={color}
+                opacity="0.5"
+              />
+            </g>
+          );
+        }
+
+        if (action.type === "draw_line") {
+          return (
+            <line
+              key={"ai" + i}
+              x1={xScale(action.x1)}
+              y1={yScale(action.y1)}
+              x2={xScale(action.x2)}
+              y2={yScale(action.y2)}
+              stroke={action.color || COLORS.aiAction}
+              strokeWidth="2"
+              strokeDasharray={action.style === "dashed" ? "6 3" : "none"}
+              opacity="0.8"
+            />
+          );
+        }
+
+        if (action.type === "show_label") {
+          return (
+            <text
+              key={"ai" + i}
+              x={xScale(action.x) + 8}
+              y={yScale(action.y) - 8}
+              fontSize="11"
+              fill={action.color || COLORS.aiAction}
+              fontWeight="700"
+              fontFamily="Inter, sans-serif"
+            >
+              {action.text || ""}
+            </text>
+          );
+        }
+
+        return null;
+      })}
     </svg>
   );
 }
@@ -724,6 +841,9 @@ export default function QuadraticExplorer() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
+
+  // AI Visual Actions State
+  const [graphActions, setGraphActions] = useState([]);
 
   const pushHistory = useCallback(() => {
     setHistory((h) => [...h, plotStateRef.current]);
@@ -848,6 +968,7 @@ export default function QuadraticExplorer() {
     setScaleApplied(false);
     setChatMessages([]);
     setChatInput("");
+    setGraphActions([]);
   };
 
   const autoSelectScale = () => {
@@ -882,8 +1003,12 @@ export default function QuadraticExplorer() {
     setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setChatInput("");
     setChatLoading(true);
-    const reply = await askNairafameAI(userMsg, solved, chatMessages);
+    setGraphActions([]);
+    const { reply, actions } = await askNairafameAI(userMsg, solved, chatMessages);
     setChatMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    if (actions && actions.length > 0) {
+      setGraphActions(actions);
+    }
     setChatLoading(false);
   };
 
@@ -1022,6 +1147,7 @@ export default function QuadraticExplorer() {
                       pushHistory={pushHistory}
                       tool={tool}
                       setTool={setTool}
+                      graphActions={graphActions}
                     />
                   )}
                   {step === 0 && (
@@ -1531,8 +1657,8 @@ export default function QuadraticExplorer() {
                     onClick={() => setStep(5)}
                   >
                     {curveAccurate
-                      ? "Curve Drawn! Draw Symmetry →"
-                      : "Draw the curve accurately to continue"}
+                      ? "Curve Drawn! Axis of Symmetry →"
+                      : "Draw a smooth curve through all points"}
                   </button>
                 </div>
               )}
@@ -1561,8 +1687,8 @@ export default function QuadraticExplorer() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Click and drag from top to bottom through the vertex to draw
-                    the axis of symmetry (a vertical dashed line).
+                    Click and drag a vertical dashed line through the vertex.
+                    This is the axis of symmetry: x = {fmt(solved.vertex.x)}.
                   </p>
                   <div
                     style={{
@@ -1576,8 +1702,8 @@ export default function QuadraticExplorer() {
                     }}
                   >
                     {symmetryCorrect
-                      ? "Axis of Symmetry Drawn!"
-                      : "Draw a vertical line through the vertex."}
+                      ? "Axis of symmetry drawn correctly!"
+                      : "Draw a vertical dashed line through the vertex."}
                   </div>
                   <button
                     className="qx-btn qx-btn-primary"
@@ -1585,7 +1711,7 @@ export default function QuadraticExplorer() {
                     onClick={() => setStep(6)}
                   >
                     {symmetryCorrect
-                      ? "Symmetry Drawn! Find Intercepts →"
+                      ? "Symmetry Drawn! Mark Intercepts →"
                       : "Draw the axis of symmetry to continue"}
                   </button>
                 </div>
@@ -1605,7 +1731,7 @@ export default function QuadraticExplorer() {
                       color: "#0a0a0a",
                     }}
                   >
-                    Identify the Intercepts
+                    Mark the Intercepts
                   </h2>
                   <p
                     style={{
@@ -1615,9 +1741,8 @@ export default function QuadraticExplorer() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Click on the y-intercept (where the curve crosses the
-                    y-axis) and the x-intercepts (roots, where it crosses the
-                    x-axis).
+                    Click to mark the y-intercept and all x-intercepts (roots)
+                    on the graph.
                   </p>
                   <div
                     style={{
@@ -1631,8 +1756,8 @@ export default function QuadraticExplorer() {
                     }}
                   >
                     {interceptsCorrect
-                      ? "All Intercepts Identified!"
-                      : "Click the intercepts on the graph."}
+                      ? "All intercepts marked!"
+                      : "Click the y-intercept and all roots on the graph."}
                   </div>
                   <button
                     className="qx-btn qx-btn-primary"
@@ -1640,13 +1765,13 @@ export default function QuadraticExplorer() {
                     onClick={() => setStep(7)}
                   >
                     {interceptsCorrect
-                      ? "Intercepts Found! Read Values →"
-                      : "Identify the intercepts to continue"}
+                      ? "Intercepts Marked! Read Values →"
+                      : "Mark all intercepts to continue"}
                   </button>
                 </div>
               )}
 
-              {step === 7 && readValueQuestion && (
+              {step === 7 && (
                 <div className="qx-card">
                   <div className="qx-badge">
                     <HelpCircle size={14} /> Step 7 of 9
@@ -1660,7 +1785,7 @@ export default function QuadraticExplorer() {
                       color: "#0a0a0a",
                     }}
                   >
-                    Read Value from Graph
+                    Read a Value from the Graph
                   </h2>
                   <p
                     style={{
@@ -1670,17 +1795,11 @@ export default function QuadraticExplorer() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Look at the graph. When x = {readValueQuestion.x}, what is
-                    the value of y?
+                    {readValueQuestion
+                      ? `When x = ${readValueQuestion.x}, what is y? Read it from your graph.`
+                      : "Loading question..."}
                   </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 10,
-                      alignItems: "center",
-                      marginBottom: 16,
-                    }}
-                  >
+                  <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
                     <span style={{ fontWeight: 600 }}>y =</span>
                     <input
                       className="qx-input"
@@ -1695,8 +1814,8 @@ export default function QuadraticExplorer() {
                     onClick={() => setStep(8)}
                   >
                     {readValueCorrect
-                      ? "Correct! Check Direction →"
-                      : "Enter the correct value to continue"}
+                      ? "Correct! Direction of Opening →"
+                      : "Type the correct y-value to continue"}
                   </button>
                 </div>
               )}
@@ -1704,7 +1823,7 @@ export default function QuadraticExplorer() {
               {step === 8 && (
                 <div className="qx-card">
                   <div className="qx-badge">
-                    <ListChecks size={14} /> Step 8 of 9
+                    <HelpCircle size={14} /> Step 8 of 9
                   </div>
                   <h2
                     style={{
@@ -1725,34 +1844,30 @@ export default function QuadraticExplorer() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Which way does the parabola open?
+                    Does the parabola open upwards or downwards?
                   </p>
                   <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
                     <button
                       className="qx-btn qx-btn-sec"
                       style={{
-                        background:
-                          dirAnswer === "up" ? COLORS.workSoft : "#fff",
-                        borderColor:
-                          dirAnswer === "up" ? COLORS.work : COLORS.line,
+                        background: dirAnswer === "up" ? COLORS.workSoft : "#fff",
+                        borderColor: dirAnswer === "up" ? COLORS.work : COLORS.line,
                         color: dirAnswer === "up" ? COLORS.work : "#555",
                       }}
                       onClick={() => setDirAnswer("up")}
                     >
-                      Upward ↑
+                      Opens Upward ↑
                     </button>
                     <button
                       className="qx-btn qx-btn-sec"
                       style={{
-                        background:
-                          dirAnswer === "down" ? COLORS.workSoft : "#fff",
-                        borderColor:
-                          dirAnswer === "down" ? COLORS.work : COLORS.line,
+                        background: dirAnswer === "down" ? COLORS.workSoft : "#fff",
+                        borderColor: dirAnswer === "down" ? COLORS.work : COLORS.line,
                         color: dirAnswer === "down" ? COLORS.work : "#555",
                       }}
                       onClick={() => setDirAnswer("down")}
                     >
-                      Downward ↓
+                      Opens Downward ↓
                     </button>
                   </div>
                   <button
@@ -1769,20 +1884,27 @@ export default function QuadraticExplorer() {
 
               {step === 9 && (
                 <div className="qx-card">
-                  <div className="qx-badge">
-                    <CheckCircle2 size={14} /> Step 9 of 9
-                  </div>
-                  <h2
+                  <div
                     style={{
-                      fontFamily: "'Space Grotesk', sans-serif",
-                      fontSize: 20,
-                      fontWeight: 700,
-                      marginBottom: 8,
-                      color: "#0a0a0a",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 12,
                     }}
                   >
-                    Final Graph & Review
-                  </h2>
+                    <CheckCircle2 size={20} color={COLORS.work} />
+                    <h2
+                      style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontSize: 20,
+                        fontWeight: 700,
+                        color: COLORS.work,
+                        margin: 0,
+                      }}
+                    >
+                      Graph Complete!
+                    </h2>
+                  </div>
                   <p
                     style={{
                       fontSize: 14,
@@ -1791,108 +1913,136 @@ export default function QuadraticExplorer() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Congratulations! You have successfully graphed the quadratic
-                    equation. The true curve is now revealed in orange.
+                    Your graph of y = {av}x² + {bv >= 0 ? `+ ${bv}` : bv}x + {cv >= 0 ? `+ ${cv}` : cv} is
+                    complete with all key features marked.
+                  </p>
+                  <button
+                    className="qx-btn qx-btn-sec"
+                    onClick={resetWizard}
+                  >
+                    <RotateCcw size={16} /> Start New Graph
+                  </button>
+                </div>
+              )}
+
+              {/* ── AI Chat Section (available from step 1 onwards) ── */}
+              {step >= 1 && (
+                <div className="qx-card" style={{ marginTop: 16 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <MessageCircle size={16} color="#1a237e" />
+                    <div
+                      style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        color: "#0a0a0a",
+                      }}
+                    >
+                      Ask Nairafame AI
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "#555",
+                      marginBottom: 12,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Ask about this quadratic equation. The AI can highlight
+                    points and trace values directly on your graph!
                   </p>
 
                   <div
                     style={{
-                      marginTop: 20,
-                      marginBottom: 20,
-                      borderTop: "1px solid #f0f0f0",
-                      paddingTop: 16,
+                      maxHeight: 240,
+                      overflowY: "auto",
+                      marginBottom: 12,
+                      padding: "8px 0",
                     }}
                   >
-                    <h3
-                      style={{
-                        fontFamily: "'Space Grotesk', sans-serif",
-                        fontWeight: 700,
-                        marginBottom: 12,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <MessageCircle size={18} /> Ask Nairafame AI
-                    </h3>
-                    <div
-                      style={{
-                        maxHeight: 200,
-                        overflowY: "auto",
-                        border: "1px solid #f0f0f0",
-                        borderRadius: 8,
-                        padding: 10,
-                        marginBottom: 10,
-                        background: "#fafafa",
-                      }}
-                    >
-                      {chatMessages.length === 0 && (
-                        <p
+                    {chatMessages.length === 0 && (
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#999",
+                          textAlign: "center",
+                          padding: 16,
+                        }}
+                      >
+                        Try: "What is y when x = 3?" or "Show me the roots"
+                      </div>
+                    )}
+                    {chatMessages.map((msg, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: "flex",
+                          justifyContent:
+                            msg.role === "user" ? "flex-end" : "flex-start",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div
                           style={{
+                            maxWidth: "85%",
+                            padding: "8px 12px",
+                            borderRadius: 12,
                             fontSize: 13,
-                            color: "#555",
-                            textAlign: "center",
-                            margin: 0,
+                            lineHeight: 1.5,
+                            whiteSpace: "pre-wrap",
+                            background:
+                              msg.role === "user" ? "#1a237e" : "#f0f2f8",
+                            color:
+                              msg.role === "user" ? "#fff" : "#0a0a0a",
                           }}
                         >
-                          Ask a question about this quadratic equation...
-                        </p>
-                      )}
-                    {chatMessages.map((msg, i) => (
-  <div
-    key={i}
-    style={{
-      marginBottom: 8,
-      textAlign: msg.role === "user" ? "right" : "left",
-    }}
-  >
-    <span
-      style={{
-        background: msg.role === "user" ? "#1a237e" : "#f0f0f0",
-        color: msg.role === "user" ? "white" : "#0a0a0a",
-        padding: "6px 10px",
-        borderRadius: 8,
-        display: "inline-block",
-        fontSize: 13,
-        maxWidth: "80%",
-        wordWrap: "break-word",
-        whiteSpace: "pre-wrap",
-      }}
-    >
-      {msg.content}
-    </span>
-  </div>
-))}
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <input
-                        className="qx-input"
-                        style={{ flex: 1, width: "auto" }}
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        onKeyDown={(e) =>
-                          e.key === "Enter" && handleChatSubmit()
-                        }
-                        placeholder="Ask about this curve..."
-                      />
-                      <button
-                        className="qx-btn qx-btn-primary"
-                        style={{ width: "auto", padding: "8px 16px" }}
-                        onClick={handleChatSubmit}
-                        disabled={chatLoading}
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && (
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#999",
+                          padding: "4px 0",
+                        }}
                       >
-                        <Send size={16} />
-                      </button>
-                    </div>
+                        Thinking...
+                      </div>
+                    )}
                   </div>
 
-                  <button
-                    className="qx-btn qx-btn-sec"
-                    onClick={resetWizard}
-                    style={{ marginTop: 16 }}
-                  >
-                    <RotateCcw size={16} /> Start Over
-                  </button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      className="qx-input"
+                      style={{ flex: 1, width: "auto", textAlign: "left" }}
+                      placeholder="Ask about this graph..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !chatLoading)
+                          handleChatSubmit();
+                      }}
+                      disabled={chatLoading}
+                    />
+                    <button
+                      className="qx-btn qx-btn-primary"
+                      style={{ width: "auto", padding: "8px 14px" }}
+                      onClick={handleChatSubmit}
+                      disabled={chatLoading || !chatInput.trim()}
+                    >
+                      <Send size={16} />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
