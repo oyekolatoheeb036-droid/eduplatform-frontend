@@ -230,73 +230,6 @@ function PinnedTable({ solved }) {
           </tbody>
         </table>
       </div>
-
-      {showsavemodal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.4)",
-            display: "flex",
-            alignitems: "center",
-            justifycontent: "center",
-            zindex: 1000,
-          }}
-          onclick={() => !saving && setshowsavemodal(false)}
-        >
-          <div
-            classname="qx-card"
-            style={{ width: 360, maxwidth: "90vw" }}
-            onclick={(e) => e.stoppropagation()}
-          >
-            <h3
-              style={{
-                fontfamily: "'space grotesk', sans-serif",
-                fontweight: 700,
-                fontsize: 18,
-                marginbottom: 12,
-              }}
-            >
-              save your progress
-            </h3>
-            <input
-              classname="qx-input"
-              style={{ width: "100%", textalign: "left", marginbottom: 16 }}
-              value={savetitle}
-              onchange={(e) => setsavetitle(e.target.value)}
-              placeholder="give it a name..."
-            />
-            {savemsg && (
-              <div
-                style={{
-                  fontsize: 13,
-                  marginbottom: 12,
-                  color: savemsg === "saved!" ? colors.work : "#c62828",
-                  fontweight: 600,
-                }}
-              >
-                {savemsg}
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                classname="qx-btn qx-btn-sec"
-                onclick={() => setshowsavemodal(false)}
-                disabled={saving}
-              >
-                cancel
-              </button>
-              <button
-                classname="qx-btn qx-btn-primary"
-                onclick={handlesaveconfirm}
-                disabled={saving}
-              >
-                {saving ? "saving..." : "save"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -2357,67 +2290,67 @@ export default function QuadraticExplorer() {
         </div>
       </div>
 
-      {showsavemodal && (
+      {showSaveModal && (
         <div
           style={{
             position: "fixed",
             inset: 0,
             background: "rgba(0,0,0,0.4)",
             display: "flex",
-            alignitems: "center",
-            justifycontent: "center",
-            zindex: 1000,
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
           }}
-          onclick={() => !saving && setshowsavemodal(false)}
+          onClick={() => !saving && setShowSaveModal(false)}
         >
           <div
-            classname="qx-card"
-            style={{ width: 360, maxwidth: "90vw" }}
-            onclick={(e) => e.stoppropagation()}
+            className="qx-card"
+            style={{ width: 360, maxWidth: "90vw" }}
+            onClick={(e) => e.stopPropagation()}
           >
             <h3
               style={{
-                fontfamily: "'space grotesk', sans-serif",
-                fontweight: 700,
-                fontsize: 18,
-                marginbottom: 12,
+                fontFamily: "'Space Grotesk', sans-serif",
+                fontWeight: 700,
+                fontSize: 18,
+                marginBottom: 12,
               }}
             >
-              save your progress
+              Save Your Progress
             </h3>
             <input
-              classname="qx-input"
-              style={{ width: "100%", textalign: "left", marginbottom: 16 }}
-              value={savetitle}
-              onchange={(e) => setsavetitle(e.target.value)}
-              placeholder="give it a name..."
+              className="qx-input"
+              style={{ width: "100%", textAlign: "left", marginBottom: 16 }}
+              value={saveTitle}
+              onChange={(e) => setSaveTitle(e.target.value)}
+              placeholder="Give it a name..."
             />
-            {savemsg && (
+            {saveMsg && (
               <div
                 style={{
-                  fontsize: 13,
-                  marginbottom: 12,
-                  color: savemsg === "saved!" ? colors.work : "#c62828",
-                  fontweight: 600,
+                  fontSize: 13,
+                  marginBottom: 12,
+                  color: saveMsg === "Saved!" ? COLORS.work : "#c62828",
+                  fontWeight: 600,
                 }}
               >
-                {savemsg}
+                {saveMsg}
               </div>
             )}
             <div style={{ display: "flex", gap: 10 }}>
               <button
-                classname="qx-btn qx-btn-sec"
-                onclick={() => setshowsavemodal(false)}
+                className="qx-btn qx-btn-sec"
+                onClick={() => setShowSaveModal(false)}
                 disabled={saving}
               >
-                cancel
+                Cancel
               </button>
               <button
-                classname="qx-btn qx-btn-primary"
-                onclick={handlesaveconfirm}
+                className="qx-btn qx-btn-primary"
+                onClick={handleSaveConfirm}
                 disabled={saving}
               >
-                {saving ? "saving..." : "save"}
+                {saving ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
