@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import axios from "axios";
+import { usenavigate, uselocation } from "react-router-dom";
 import {
   RotateCcw,
   Undo2,
@@ -229,6 +230,73 @@ function PinnedTable({ solved }) {
           </tbody>
         </table>
       </div>
+
+      {showsavemodal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignitems: "center",
+            justifycontent: "center",
+            zindex: 1000,
+          }}
+          onclick={() => !saving && setshowsavemodal(false)}
+        >
+          <div
+            classname="qx-card"
+            style={{ width: 360, maxwidth: "90vw" }}
+            onclick={(e) => e.stoppropagation()}
+          >
+            <h3
+              style={{
+                fontfamily: "'space grotesk', sans-serif",
+                fontweight: 700,
+                fontsize: 18,
+                marginbottom: 12,
+              }}
+            >
+              save your progress
+            </h3>
+            <input
+              classname="qx-input"
+              style={{ width: "100%", textalign: "left", marginbottom: 16 }}
+              value={savetitle}
+              onchange={(e) => setsavetitle(e.target.value)}
+              placeholder="give it a name..."
+            />
+            {savemsg && (
+              <div
+                style={{
+                  fontsize: 13,
+                  marginbottom: 12,
+                  color: savemsg === "saved!" ? colors.work : "#c62828",
+                  fontweight: 600,
+                }}
+              >
+                {savemsg}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                classname="qx-btn qx-btn-sec"
+                onclick={() => setshowsavemodal(false)}
+                disabled={saving}
+              >
+                cancel
+              </button>
+              <button
+                classname="qx-btn qx-btn-primary"
+                onclick={handlesaveconfirm}
+                disabled={saving}
+              >
+                {saving ? "saving..." : "save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -924,6 +992,106 @@ export default function QuadraticExplorer() {
   // AI Visual Actions State
   const [graphActions, setGraphActions] = useState([]);
 
+  // Save Progress State
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [saveId, setSaveId] = useState(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const loadId = params.get("save");
+    if (!loadId) return;
+
+    const token = localStorage.getItem("token");
+    axios
+      .get(`${API}/api/quadratic-saves/${loadId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const s = res.data.save;
+        setA(Number(s.a));
+        setB(Number(s.b));
+        setC(Number(s.c));
+        setXStart(s.x_start);
+        setXEnd(s.x_end);
+        setXScaleUnit(s.x_scale_unit);
+        setYScaleUnit(s.y_scale_unit);
+        setScaleApplied(true);
+        setTableInputs(s.table_inputs || {});
+        setPlotState(
+          s.plot_state || {
+            points: [],
+            vertex: null,
+            curve: [],
+            bigCurve: [],
+            yint: null,
+            roots: [],
+            symmetry: null,
+          }
+        );
+        setDirAnswer(s.dir_answer || null);
+        setStep(s.step);
+        setSaveId(s.id);
+      })
+      .catch((err) => {
+        console.error("Failed to load save:", err);
+      });
+  }, [location.search]);
+
+  // Save Progress State
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [saveId, setSaveId] = useState(null);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveTitle, setSaveTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const loadId = params.get("save");
+    if (!loadId) return;
+
+    const token = localStorage.getItem("token");
+    axios
+      .get(`${API}/api/quadratic-saves/${loadId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const s = res.data.save;
+        setA(Number(s.a));
+        setB(Number(s.b));
+        setC(Number(s.c));
+        setXStart(s.x_start);
+        setXEnd(s.x_end);
+        setXScaleUnit(s.x_scale_unit);
+        setYScaleUnit(s.y_scale_unit);
+        setScaleApplied(true);
+        setTableInputs(s.table_inputs || {});
+        setPlotState(
+          s.plot_state || {
+            points: [],
+            vertex: null,
+            curve: [],
+            bigCurve: [],
+            yint: null,
+            roots: [],
+            symmetry: null,
+          }
+        );
+        setDirAnswer(s.dir_answer || null);
+        setStep(s.step);
+        setSaveId(s.id);
+      })
+      .catch((err) => {
+        console.error("Failed to load save:", err);
+      });
+  }, [location.search]);
+
   const pushHistory = useCallback(() => {
     setHistory((h) => [...h, plotStateRef.current]);
   }, []);
@@ -1078,6 +1246,56 @@ export default function QuadraticExplorer() {
 
   const showPinnedTable = tableCorrect && step >= 2 && step <= 8;
 
+  const openSaveModal = () => {
+    const autoTitle = `y = ${av}x² + ${bv}x + ${cv}`;
+    setSaveTitle(autoTitle);
+    setShowSaveModal(true);
+  };
+
+  const handleSaveConfirm = async () => {
+    setSaving(true);
+    setSaveMsg("");
+    const token = localStorage.getItem("token");
+    const payload = {
+      title: saveTitle.trim() || `y = ${av}x² + ${bv}x + ${cv}`,
+      a: av,
+      b: bv,
+      c: cv,
+      xStart,
+      xEnd,
+      xScaleUnit,
+      yScaleUnit,
+      step,
+      tableInputs,
+      plotState,
+      dirAnswer,
+    };
+    try {
+      if (saveId) {
+        const res = await axios.put(
+          `${API}/api/quadratic-saves/${saveId}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setSaveId(res.data.save.id);
+      } else {
+        const res = await axios.post(`${API}/api/quadratic-saves`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSaveId(res.data.save.id);
+      }
+      setSaveMsg("Saved!");
+      setTimeout(() => {
+        setShowSaveModal(false);
+        setSaveMsg("");
+      }, 1000);
+    } catch (err) {
+      setSaveMsg(err.response?.data?.error || "Failed to save. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+    
   const handleChatSubmit = async () => {
     if (!chatInput.trim()) return;
     const userMsg = chatInput.trim();
@@ -1212,16 +1430,28 @@ export default function QuadraticExplorer() {
                   >
                     Graph Paper
                   </div>
-                  {step > 0 && (
-                    <button
-                      className="qx-undo-btn"
-                      onClick={handleUndo}
-                      disabled={history.length === 0}
-                      title="Undo (Ctrl+Z)"
-                    >
-                      <Undo2 size={14} /> Undo ({history.length})
-                    </button>
-                  )}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {step > 0 && (
+                      <button
+                        className="qx-undo-btn"
+                        onClick={handleUndo}
+                        disabled={history.length === 0}
+                        title="Undo (Ctrl+Z)"
+                      >
+                        <Undo2 size={14} /> Undo ({history.length})
+                      </button>
+                    )}
+                    {step > 0 && (
+                      <button
+                        className="qx-undo-btn"
+                        onClick={openSaveModal}
+                        style={{ borderColor: COLORS.work, color: COLORS.work }}
+                        title="Save your progress"
+                      >
+                        💾 Save
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div
                   style={{
@@ -2175,6 +2405,73 @@ export default function QuadraticExplorer() {
           </div>
         </div>
       </div>
+
+      {showsavemodal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignitems: "center",
+            justifycontent: "center",
+            zindex: 1000,
+          }}
+          onclick={() => !saving && setshowsavemodal(false)}
+        >
+          <div
+            classname="qx-card"
+            style={{ width: 360, maxwidth: "90vw" }}
+            onclick={(e) => e.stoppropagation()}
+          >
+            <h3
+              style={{
+                fontfamily: "'space grotesk', sans-serif",
+                fontweight: 700,
+                fontsize: 18,
+                marginbottom: 12,
+              }}
+            >
+              save your progress
+            </h3>
+            <input
+              classname="qx-input"
+              style={{ width: "100%", textalign: "left", marginbottom: 16 }}
+              value={savetitle}
+              onchange={(e) => setsavetitle(e.target.value)}
+              placeholder="give it a name..."
+            />
+            {savemsg && (
+              <div
+                style={{
+                  fontsize: 13,
+                  marginbottom: 12,
+                  color: savemsg === "saved!" ? colors.work : "#c62828",
+                  fontweight: 600,
+                }}
+              >
+                {savemsg}
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                classname="qx-btn qx-btn-sec"
+                onclick={() => setshowsavemodal(false)}
+                disabled={saving}
+              >
+                cancel
+              </button>
+              <button
+                classname="qx-btn qx-btn-primary"
+                onclick={handlesaveconfirm}
+                disabled={saving}
+              >
+                {saving ? "saving..." : "save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

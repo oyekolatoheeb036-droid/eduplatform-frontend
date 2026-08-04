@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
+
+const API = 'https://eduplatform-api-pol1.onrender.com';
 
 const TOOLS = [
   {
@@ -43,6 +46,39 @@ const TOOLS = [
 
 export default function MathematicalTools() {
   const { user } = useAuth();
+  const [saves, setSaves] = useState([]);
+  const [savesLoading, setSavesLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
+
+  useEffect(() => {
+    if (!user) {
+      setSavesLoading(false);
+      return;
+    }
+    const token = localStorage.getItem('token');
+    axios
+      .get(`${API}/api/quadratic-saves`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setSaves(res.data.saves))
+      .catch((err) => console.error('Failed to load saves:', err))
+      .finally(() => setSavesLoading(false));
+  }, [user]);
+
+  const handleDeleteSave = async (id) => {
+    setDeletingId(id);
+    const token = localStorage.getItem('token');
+    try {
+      await axios.delete(`${API}/api/quadratic-saves/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSaves((prev) => prev.filter((s) => s.id !== id));
+    } catch (err) {
+      console.error('Failed to delete save:', err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div style={{ minHeight: '100vh', background: '#f0f2f8' }}>
@@ -105,6 +141,74 @@ export default function MathematicalTools() {
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, maxWidth: 560, margin: '0 auto' }}>Master WAEC and NECO math with interactive graphing tools, step-by-step solutions, and AI-powered tutoring.</p>
         </div>
       </div>
+
+      {user && !savesLoading && saves.length > 0 && (
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 0' }}>
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 800, color: '#0a0a0a', marginBottom: 16 }}>
+            My Saved Work
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 8 }}>
+            {saves.map((save) => (
+              <div
+                key={save.id}
+                style={{
+                  background: 'white',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: 14,
+                  padding: '18px 20px',
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 10,
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#0a0a0a', marginBottom: 4 }}>
+                    {save.title}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#999' }}>
+                    Step {save.step} of 9 · {new Date(save.updated_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link
+                    to={`/math-tools/quadratic-explorer?save=${save.id}`}
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      background: '#1a237e',
+                      color: 'white',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Continue
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteSave(save.id)}
+                    disabled={deletingId === save.id}
+                    style={{
+                      border: '1px solid #f0f0f0',
+                      background: 'white',
+                      color: '#c62828',
+                      borderRadius: 8,
+                      padding: '8px 12px',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {deletingId === save.id ? '...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 28, perspective: '1200px' }}>
