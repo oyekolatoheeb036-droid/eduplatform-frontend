@@ -36,8 +36,9 @@ function Navbar() {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Courses', path: '/courses' },
+    { label: 'Math Tools', path: '/math-tools' },
     { label: 'Community', path: '/community' },
-  { label: 'Our Founder', path: '/oyekola-toheeb' },
+    { label: 'Our Founder', path: '/oyekola-toheeb' },
   ];
 
   if (!user) {
@@ -197,6 +198,7 @@ function Navbar() {
           <div style={navStyles.navLinks}>
             <Link to="/" style={navStyles.navLink}>Home</Link>
             <Link to="/courses" style={navStyles.navLink}>Courses</Link>
+            <Link to="/math-tools" style={navStyles.navLink}>Math Tools</Link>
             <Link to="/community" style={navStyles.navLink}>Community</Link>
             <Link to="/oyekola-toheeb" style={navStyles.navLink}>Our Founder</Link>
             {user && user.role === 'student' && (
