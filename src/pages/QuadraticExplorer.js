@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import axios from "axios";
-import { usenavigate, uselocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   RotateCcw,
   Undo2,
