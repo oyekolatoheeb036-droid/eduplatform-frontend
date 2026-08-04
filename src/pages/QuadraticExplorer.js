@@ -46,6 +46,7 @@ const COLORS = {
   paperMajor: "#D63A63",
   paperAxis: "#B01E45",
   aiAction: "#7C4DFF",
+  bigPencil: "#E0623D",
 };
 
 function round(n, d = 4) {
@@ -240,6 +241,20 @@ function labelPoint(pt, vertex) {
     : `(${fmt(pt.x)}, ${fmt(pt.y)})`;
 }
 
+function buildPathD(points, xScale, yScale) {
+  if (!points || points.length < 2) return "";
+  return points
+    .map(
+      (p, i) =>
+        (i === 0 ? "M" : "L") +
+        " " +
+        xScale(p.x).toFixed(2) +
+        " " +
+        yScale(p.y).toFixed(2)
+    )
+    .join(" ");
+}
+
 function InteractiveGraph({
   solved,
   xStep,
@@ -325,6 +340,8 @@ function InteractiveGraph({
     };
   }
 
+  const isDrawing = step === 4 && (tool === "pencil" || tool === "big_pencil");
+
   function handleClick(e) {
     if (step !== 2 && step !== 3 && step !== 6) return;
     const { x, y } = getSvgPoint(e);
@@ -376,11 +393,18 @@ function InteractiveGraph({
     setIsMouseDown(true);
     strokeStarted.current = false;
     const p = getSvgPoint(e);
+
     if (step === 4 && tool === "pencil") {
       pushHistory();
       strokeStarted.current = true;
       lastDrawPoint.current = p;
       setPlotState((prev) => ({ ...prev, curve: [...prev.curve, p] }));
+    }
+    if (step === 4 && tool === "big_pencil") {
+      pushHistory();
+      strokeStarted.current = true;
+      lastDrawPoint.current = p;
+      setPlotState((prev) => ({ ...prev, bigCurve: [...prev.bigCurve, p] }));
     }
     if (step === 4 && tool === "eraser") {
       pushHistory();
@@ -408,11 +432,22 @@ function InteractiveGraph({
           lastDrawPoint.current = p;
           setPlotState((prev) => ({ ...prev, curve: [...prev.curve, p] }));
         }
+      } else if (tool === "big_pencil") {
+        const last = lastDrawPoint.current;
+        const minDist = (xMax - xMin) / 80;
+        if (!last || Math.hypot(p.x - last.x, p.y - last.y) >= minDist) {
+          lastDrawPoint.current = p;
+          setPlotState((prev) => ({ ...prev, bigCurve: [...prev.bigCurve, p] }));
+        }
       } else if (tool === "eraser") {
+        const eraserRadius = xStep * 0.8;
         setPlotState((prev) => ({
           ...prev,
           curve: prev.curve.filter(
-            (pt) => Math.hypot(pt.x - p.x, pt.y - p.y) > xStep * 0.5
+            (pt) => Math.hypot(pt.x - p.x, pt.y - p.y) > eraserRadius
+          ),
+          bigCurve: prev.bigCurve.filter(
+            (pt) => Math.hypot(pt.x - p.x, pt.y - p.y) > eraserRadius
           ),
         }));
       }
@@ -430,6 +465,19 @@ function InteractiveGraph({
     strokeStarted.current = false;
   }
 
+  const cursorStyle =
+    step === 4
+      ? tool === "eraser"
+        ? "cell"
+        : tool === "big_pencil"
+        ? "crosshair"
+        : "crosshair"
+      : step === 5
+      ? "crosshair"
+      : step === 2 || step === 3 || step === 6
+      ? "pointer"
+      : "default";
+
   return (
     <svg
       ref={svgRef}
@@ -439,16 +487,7 @@ function InteractiveGraph({
         height: "auto",
         display: "block",
         background: COLORS.paperBg,
-        cursor:
-          step === 4
-            ? tool === "eraser"
-              ? "cell"
-              : "crosshair"
-            : step === 5
-            ? "crosshair"
-            : step === 2 || step === 3 || step === 6
-            ? "pointer"
-            : "default",
+        cursor: cursorStyle,
         touchAction: step === 4 || step === 5 ? "none" : "auto",
       }}
       onClick={handleClick}
@@ -581,24 +620,29 @@ function InteractiveGraph({
         />
       ))}
 
+      {/* Regular pencil strokes */}
       {plotState.curve && plotState.curve.length > 1 && (
         <path
-          d={plotState.curve
-            .map(
-              (p, i) =>
-                (i === 0 ? "M" : "L") +
-                " " +
-                xScale(p.x).toFixed(2) +
-                " " +
-                yScale(p.y).toFixed(2)
-            )
-            .join(" ")}
+          d={buildPathD(plotState.curve, xScale, yScale)}
           fill="none"
           stroke={COLORS.curve}
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           opacity="0.6"
+        />
+      )}
+
+      {/* Big pencil strokes (thicker for mobile finger drawing) */}
+      {plotState.bigCurve && plotState.bigCurve.length > 1 && (
+        <path
+          d={buildPathD(plotState.bigCurve, xScale, yScale)}
+          fill="none"
+          stroke={COLORS.bigPencil}
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.5"
         />
       )}
 
@@ -690,7 +734,7 @@ function InteractiveGraph({
         />
       ))}
 
-      {/* ── AI Visual Actions (highlighted points, trace lines, etc.) ── */}
+      {/* ── AI Visual Actions ── */}
       {graphActions.map((action, i) => {
         if (action.type === "highlight_point") {
           const color = action.color || COLORS.aiAction;
@@ -725,7 +769,6 @@ function InteractiveGraph({
           const color = action.color || COLORS.aiAction;
           return (
             <g key={"ai" + i}>
-              {/* Dotted line from point horizontally to y-axis */}
               <line
                 x1={xScale(action.x)}
                 y1={yScale(action.y)}
@@ -736,7 +779,6 @@ function InteractiveGraph({
                 strokeDasharray="4 3"
                 opacity="0.7"
               />
-              {/* Dotted line from point vertically to x-axis */}
               <line
                 x1={xScale(action.x)}
                 y1={yScale(action.y)}
@@ -747,7 +789,6 @@ function InteractiveGraph({
                 strokeDasharray="4 3"
                 opacity="0.7"
               />
-              {/* Small dot at x-axis */}
               <circle
                 cx={xScale(action.x)}
                 cy={yScale(0)}
@@ -755,7 +796,6 @@ function InteractiveGraph({
                 fill={color}
                 opacity="0.5"
               />
-              {/* Small dot at y-axis */}
               <circle
                 cx={xScale(0)}
                 cy={yScale(action.y)}
@@ -822,6 +862,7 @@ export default function QuadraticExplorer() {
     points: [],
     vertex: null,
     curve: [],
+    bigCurve: [],
     yint: null,
     roots: [],
     symmetry: null,
@@ -900,6 +941,7 @@ export default function QuadraticExplorer() {
   const TOLERANCE_FACTOR = 0.18;
 
   const curveCoverage = useMemo(() => {
+    const allCurvePoints = [...plotState.curve, ...plotState.bigCurve];
     if (!solved.valid || curveTargets.length === 0)
       return { covered: 0, total: 0, missing: [] };
     const tolX = xScaleUnit * TOLERANCE_FACTOR;
@@ -907,20 +949,20 @@ export default function QuadraticExplorer() {
     let covered = 0;
     const missing = [];
     curveTargets.forEach((pt) => {
-      const hit = plotState.curve.some(
+      const hit = allCurvePoints.some(
         (cp) => Math.abs(cp.x - pt.x) <= tolX && Math.abs(cp.y - pt.y) <= tolY
       );
       if (hit) covered++;
       else missing.push(pt);
     });
     return { covered, total: curveTargets.length, missing };
-  }, [plotState.curve, curveTargets, xScaleUnit, yScaleUnit, solved.valid]);
+  }, [plotState.curve, plotState.bigCurve, curveTargets, xScaleUnit, yScaleUnit, solved.valid]);
 
   const curveAccurate =
     solved.valid &&
     curveCoverage.total > 0 &&
     curveCoverage.covered === curveCoverage.total &&
-    plotState.curve.length > 10;
+    (plotState.curve.length > 10 || plotState.bigCurve.length > 5);
 
   const symmetryCorrect = useMemo(() => {
     if (!plotState.symmetry) return false;
@@ -956,6 +998,7 @@ export default function QuadraticExplorer() {
       points: [],
       vertex: null,
       curve: [],
+      bigCurve: [],
       yint: null,
       roots: [],
       symmetry: null,
@@ -1029,6 +1072,11 @@ export default function QuadraticExplorer() {
           @media (min-width: 900px) { .qx-grid { grid-template-columns: 1.2fr 0.8fr; align-items: start; } }
           .qx-input { border: 1.5px solid #f0f0f0; border-radius: 8px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; outline: none; width: 60px; }
           .qx-input:focus { border-color: #1a237e; }
+          .qx-num-input { border: 1.5px solid #f0f0f0; border-radius: 8px; padding: 8px 6px; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; outline: none; width: 64px; }
+          .qx-num-input:focus { border-color: #1a237e; }
+          .qx-num-input::-webkit-inner-spin-button,
+          .qx-num-input::-webkit-outer-spin-button { opacity: 1; height: 30px; width: 20px; }
+          .qx-num-input { -moz-appearance: auto; }
           .qx-btn { display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 8px; padding: 12px 20px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 150ms ease; width: 100%; }
           .qx-btn-primary { background: #1a237e; color: white; }
           .qx-btn-primary:hover { background: #283593; }
@@ -1198,7 +1246,7 @@ export default function QuadraticExplorer() {
                   >
                     <span style={{ fontWeight: 600 }}>y =</span>
                     <input
-                      className="qx-input"
+                      className="qx-num-input"
                       type="number"
                       value={a}
                       onChange={(e) =>
@@ -1209,7 +1257,7 @@ export default function QuadraticExplorer() {
                     />
                     <span style={{ fontWeight: 600 }}>x² +</span>
                     <input
-                      className="qx-input"
+                      className="qx-num-input"
                       type="number"
                       value={b}
                       onChange={(e) =>
@@ -1220,7 +1268,7 @@ export default function QuadraticExplorer() {
                     />
                     <span style={{ fontWeight: 600 }}>x +</span>
                     <input
-                      className="qx-input"
+                      className="qx-num-input"
                       type="number"
                       value={c}
                       onChange={(e) =>
@@ -1242,14 +1290,14 @@ export default function QuadraticExplorer() {
                   >
                     <span style={{ fontWeight: 600 }}>X Range: From</span>
                     <input
-                      className="qx-input"
+                      className="qx-num-input"
                       type="number"
                       value={xStart}
                       onChange={(e) => setXStart(Number(e.target.value))}
                     />
                     <span style={{ fontWeight: 600 }}>to</span>
                     <input
-                      className="qx-input"
+                      className="qx-num-input"
                       type="number"
                       value={xEnd}
                       onChange={(e) => setXEnd(Number(e.target.value))}
@@ -1438,7 +1486,7 @@ export default function QuadraticExplorer() {
                             style={{ padding: 4, border: "1px solid #f0f0f0" }}
                           >
                             <input
-                              className="qx-input"
+                              className="qx-num-input"
                               style={{
                                 width: "100%",
                                 borderColor:
@@ -1603,14 +1651,16 @@ export default function QuadraticExplorer() {
                     }}
                   >
                     Click and drag to draw a smooth parabola that passes through
-                    every plotted point and the vertex. Use the eraser to fix
-                    mistakes, or Ctrl+Z to undo your last stroke.
+                    every plotted point and the vertex. Use the Big Pencil on
+                    your phone, or the Eraser to fix mistakes.
                   </p>
 
-                  <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+                  <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
                     <button
                       className="qx-btn qx-btn-sec"
                       style={{
+                        flex: 1,
+                        minWidth: 90,
                         background:
                           tool === "pencil" ? COLORS.workSoft : "#fff",
                         borderColor:
@@ -1624,11 +1674,29 @@ export default function QuadraticExplorer() {
                     <button
                       className="qx-btn qx-btn-sec"
                       style={{
+                        flex: 1,
+                        minWidth: 90,
                         background:
-                          tool === "eraser" ? COLORS.rememberSoft : "#fff",
+                          tool === "big_pencil" ? COLORS.rememberSoft : "#fff",
                         borderColor:
-                          tool === "eraser" ? COLORS.remember : COLORS.line,
-                        color: tool === "eraser" ? COLORS.remember : "#555",
+                          tool === "big_pencil" ? COLORS.remember : COLORS.line,
+                        color: tool === "big_pencil" ? COLORS.remember : "#555",
+                      }}
+                      onClick={() => setTool("big_pencil")}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="M15 5l4 4"/></svg>
+                      Big ✏️
+                    </button>
+                    <button
+                      className="qx-btn qx-btn-sec"
+                      style={{
+                        flex: 1,
+                        minWidth: 90,
+                        background:
+                          tool === "eraser" ? "#ffe0e0" : "#fff",
+                        borderColor:
+                          tool === "eraser" ? "#e53935" : COLORS.line,
+                        color: tool === "eraser" ? "#e53935" : "#555",
                       }}
                       onClick={() => setTool("eraser")}
                     >
@@ -1799,10 +1867,10 @@ export default function QuadraticExplorer() {
                       ? `When x = ${readValueQuestion.x}, what is y? Read it from your graph.`
                       : "Loading question..."}
                   </p>
-                  <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+                  <div style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center" }}>
                     <span style={{ fontWeight: 600 }}>y =</span>
                     <input
-                      className="qx-input"
+                      className="qx-num-input"
                       type="number"
                       value={readValueInput}
                       onChange={(e) => setReadValueInput(e.target.value)}
@@ -1913,8 +1981,8 @@ export default function QuadraticExplorer() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Your graph of y = {av}x² + {bv >= 0 ? `+ ${bv}` : bv}x + {cv >= 0 ? `+ ${cv}` : cv} is
-                    complete with all key features marked.
+                    Your graph of y = {av}x² {bv >= 0 ? `+ ${bv}` : `- ${Math.abs(bv)}`}x {cv >= 0 ? `+ ${cv}` : `- ${Math.abs(cv)}`} is
+                    complete with all key features marked. Now you can ask the AI any questions about this graph!
                   </p>
                   <button
                     className="qx-btn qx-btn-sec"
@@ -1925,8 +1993,8 @@ export default function QuadraticExplorer() {
                 </div>
               )}
 
-              {/* ── AI Chat Section (available from step 1 onwards) ── */}
-              {step >= 1 && (
+              {/* ── AI Chat Section (ONLY after step 9 — graph complete) ── */}
+              {step === 9 && (
                 <div className="qx-card" style={{ marginTop: 16 }}>
                   <div
                     style={{
@@ -2023,8 +2091,15 @@ export default function QuadraticExplorer() {
 
                   <div style={{ display: "flex", gap: 8 }}>
                     <input
-                      className="qx-input"
-                      style={{ flex: 1, width: "auto", textAlign: "left" }}
+                      style={{
+                        flex: 1,
+                        border: "1.5px solid #f0f0f0",
+                        borderRadius: 8,
+                        padding: "10px 12px",
+                        fontSize: 14,
+                        outline: "none",
+                        fontFamily: "'Inter', sans-serif",
+                      }}
                       placeholder="Ask about this graph..."
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
@@ -2036,13 +2111,48 @@ export default function QuadraticExplorer() {
                     />
                     <button
                       className="qx-btn qx-btn-primary"
-                      style={{ width: "auto", padding: "8px 14px" }}
+                      style={{ width: "auto", padding: "10px 16px" }}
                       onClick={handleChatSubmit}
                       disabled={chatLoading || !chatInput.trim()}
                     >
                       <Send size={16} />
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* ── AI Locked Message (shown before step 9) ── */}
+              {step >= 1 && step < 9 && (
+                <div className="qx-card" style={{ marginTop: 16, opacity: 0.6 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <MessageCircle size={16} color="#999" />
+                    <div
+                      style={{
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        fontWeight: 700,
+                        fontSize: 15,
+                        color: "#999",
+                      }}
+                    >
+                      AI Tutor
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      color: "#999",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    🔒 Complete all 9 steps to unlock the AI tutor. It can answer questions and highlight points on your graph!
+                  </p>
                 </div>
               )}
             </div>
