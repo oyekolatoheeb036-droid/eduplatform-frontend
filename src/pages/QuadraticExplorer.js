@@ -1042,55 +1042,6 @@ export default function QuadraticExplorer() {
       });
   }, [location.search]);
 
-  // Save Progress State
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [saveId, setSaveId] = useState(null);
-  const [showSaveModal, setShowSaveModal] = useState(false);
-  const [saveTitle, setSaveTitle] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState("");
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const loadId = params.get("save");
-    if (!loadId) return;
-
-    const token = localStorage.getItem("token");
-    axios
-      .get(`${API}/api/quadratic-saves/${loadId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        const s = res.data.save;
-        setA(Number(s.a));
-        setB(Number(s.b));
-        setC(Number(s.c));
-        setXStart(s.x_start);
-        setXEnd(s.x_end);
-        setXScaleUnit(s.x_scale_unit);
-        setYScaleUnit(s.y_scale_unit);
-        setScaleApplied(true);
-        setTableInputs(s.table_inputs || {});
-        setPlotState(
-          s.plot_state || {
-            points: [],
-            vertex: null,
-            curve: [],
-            bigCurve: [],
-            yint: null,
-            roots: [],
-            symmetry: null,
-          }
-        );
-        setDirAnswer(s.dir_answer || null);
-        setStep(s.step);
-        setSaveId(s.id);
-      })
-      .catch((err) => {
-        console.error("Failed to load save:", err);
-      });
-  }, [location.search]);
 
   const pushHistory = useCallback(() => {
     setHistory((h) => [...h, plotStateRef.current]);
