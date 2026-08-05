@@ -967,6 +967,8 @@ export default function QuadraticExplorer() {
           }
         );
         setDirAnswer(s.dir_answer || null);
+        setChatMessages(s.chat_messages || []);
+        setGraphActions(s.graph_actions || []);
         setStep(s.step);
         setSaveId(s.id);
       })
@@ -1153,6 +1155,8 @@ export default function QuadraticExplorer() {
       tableInputs,
       plotState,
       dirAnswer,
+      chatMessages,
+      graphActions,
     };
     try {
       if (saveId) {
