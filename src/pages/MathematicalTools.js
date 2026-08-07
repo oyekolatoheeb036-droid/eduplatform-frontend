@@ -56,20 +56,31 @@ export default function MathematicalTools() {
       return;
     }
     const token = localStorage.getItem('token');
-    axios
-      .get(`${API}/api/quadratic-saves`, {
-        headers: { Authorization: `Bearer ${token}` },
+    const headers = { Authorization: `Bearer ${token}` };
+
+    Promise.all([
+      axios.get(`${API}/api/quadratic-saves`, { headers })
+        .then((res) => res.data.saves.map((s) => ({ ...s, type: 'quadratic' })))
+        .catch((err) => { console.error('Failed to load quadratic saves:', err); return []; }),
+      axios.get(`${API}/api/linear-saves`, { headers })
+        .then((res) => res.data.saves.map((s) => ({ ...s, type: 'linear' })))
+        .catch((err) => { console.error('Failed to load linear saves:', err); return []; }),
+    ])
+      .then(([quadraticSaves, linearSaves]) => {
+        const combined = [...quadraticSaves, ...linearSaves].sort(
+          (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+        );
+        setSaves(combined);
       })
-      .then((res) => setSaves(res.data.saves))
-      .catch((err) => console.error('Failed to load saves:', err))
       .finally(() => setSavesLoading(false));
   }, [user]);
 
-  const handleDeleteSave = async (id) => {
+  const handleDeleteSave = async (id, type) => {
     setDeletingId(id);
     const token = localStorage.getItem('token');
+    const endpoint = type === 'linear' ? 'linear-saves' : 'quadratic-saves';
     try {
-      await axios.delete(`${API}/api/quadratic-saves/${id}`, {
+      await axios.delete(`${API}/api/${endpoint}/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSaves((prev) => prev.filter((s) => s.id !== id));
@@ -150,7 +161,7 @@ export default function MathematicalTools() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 8 }}>
             {saves.map((save) => (
               <div
-                key={save.id}
+                key={`${save.type}-${save.id}`}
                 style={{
                   background: 'white',
                   border: '1px solid #f0f0f0',
@@ -163,16 +174,29 @@ export default function MathematicalTools() {
                 }}
               >
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#0a0a0a', marginBottom: 4 }}>
-                    {save.title}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#0a0a0a' }}>
+                      {save.title}
+                    </div>
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 800,
+                      letterSpacing: '0.5px',
+                      padding: '2px 8px',
+                      borderRadius: 20,
+                      background: save.type === 'linear' ? '#E8EAF6' : '#FFF3E0',
+                      color: save.type === 'linear' ? '#1a237e' : '#ff6f00',
+                    }}>
+                      {save.type === 'linear' ? 'LINEAR' : 'QUADRATIC'}
+                    </span>
                   </div>
                   <div style={{ fontSize: 12, color: '#999' }}>
-                    Step {save.step} of 9 · {new Date(save.updated_at).toLocaleDateString()}
+                    Step {save.step} of {save.type === 'linear' ? 8 : 9} · {new Date(save.updated_at).toLocaleDateString()}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <Link
-                    to={`/math-tools/quadratic-explorer?save=${save.id}`}
+                    to={`/math-tools/${save.type === 'linear' ? 'linear-explorer' : 'quadratic-explorer'}?save=${save.id}`}
                     style={{
                       flex: 1,
                       textAlign: 'center',
@@ -188,7 +212,7 @@ export default function MathematicalTools() {
                     Continue
                   </Link>
                   <button
-                    onClick={() => handleDeleteSave(save.id)}
+                    onClick={() => handleDeleteSave(save.id, save.type)}
                     disabled={deletingId === save.id}
                     style={{
                       border: '1px solid #f0f0f0',
