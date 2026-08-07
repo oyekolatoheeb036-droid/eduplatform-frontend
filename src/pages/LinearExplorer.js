@@ -604,10 +604,12 @@ export default function LinearExplorer() {
     if (!chatInput.trim()) return;
     const userMsg = chatInput.trim();
     setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
-    setChatInput(""); setChatLoading(true); setGraphActions([]);
+    setChatInput(""); setChatLoading(true);
     const { reply, actions } = await askNairafameAI(userMsg, solved, chatMessages);
     setChatMessages((prev) => [...prev, { role: "assistant", content: reply }]);
-    if (actions && actions.length > 0) setGraphActions(actions);
+    if (actions && actions.length > 0) {
+      setGraphActions((prev) => [...prev, ...actions]);
+    }
     setChatLoading(false);
   };
 
