@@ -8,6 +8,7 @@ import Quiz from './pages/Quiz';
 import Dashboard from './pages/Dashboard';
 import MathematicalTools from './pages/MathematicalTools';
 import QuadraticExplorer from './pages/QuadraticExplorer';
+import LinearExplorer from "./pages/LinearExplorer";
 import TeacherDashboard from './pages/TeacherDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Badges from './pages/Badges';
@@ -294,6 +295,7 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/math-tools" element={<MathematicalTools />} />
+        <Route path="/math-tools/linear-explorer" element={<LinearExplorer />} />
         <Route path="/math-tools/quadratic-explorer" element={
           <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
             <QuadraticExplorer />
