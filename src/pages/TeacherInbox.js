@@ -17,6 +17,10 @@ const COLORS = {
   rememberSoft: "#FFF3E0",
 };
 
+function isStaffRole(role) {
+  return role === "teacher" || role === "admin";
+}
+
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
   if (diff < 60) return "just now";
@@ -55,6 +59,7 @@ export default function TeacherInbox() {
 
   const loadThreads = useCallback(async () => {
     setLoading(true);
+    setErrorMsg("");
     try {
       const params = filter ? { status: filter } : {};
       const res = await axios.get(`${API}/api/teacher-questions/inbox`, { ...authHeaders(), params });
@@ -129,6 +134,8 @@ export default function TeacherInbox() {
 
               {loading ? (
                 <div style={{ fontSize: 13, color: "#999", textAlign: "center", padding: 20 }}>Loading...</div>
+              ) : errorMsg ? (
+                <div style={{ fontSize: 13, color: "#c62828", textAlign: "center", padding: 20 }}>{errorMsg}</div>
               ) : threads.length === 0 ? (
                 <div style={{ fontSize: 13, color: "#999", textAlign: "center", padding: 20 }}>Nothing here.</div>
               ) : (
@@ -170,13 +177,13 @@ export default function TeacherInbox() {
 
                   <div style={{ maxHeight: 380, overflowY: "auto", marginBottom: 16 }}>
                     {activeMessages.map((msg) => (
-                      <div key={msg.id} style={{ display: "flex", justifyContent: msg.sender_role === "teacher" ? "flex-end" : "flex-start", marginBottom: 10 }}>
+                      <div key={msg.id} style={{ display: "flex", justifyContent: isStaffRole(msg.sender_role) ? "flex-end" : "flex-start", marginBottom: 10 }}>
                         <div style={{ maxWidth: "75%" }}>
-                          <div style={{ padding: "10px 14px", borderRadius: 12, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", background: msg.sender_role === "teacher" ? COLORS.primary : COLORS.workSoft, color: msg.sender_role === "teacher" ? "#fff" : COLORS.ink }}>
+                          <div style={{ padding: "10px 14px", borderRadius: 12, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", background: isStaffRole(msg.sender_role) ? COLORS.primary : COLORS.workSoft, color: isStaffRole(msg.sender_role) ? "#fff" : COLORS.ink }}>
                             {msg.message}
                           </div>
-                          <div style={{ fontSize: 10, color: "#999", marginTop: 3, textAlign: msg.sender_role === "teacher" ? "right" : "left" }}>
-                            {msg.sender_role === "teacher" ? "You" : activeThread.student_name} · {timeAgo(msg.created_at)}
+                          <div style={{ fontSize: 10, color: "#999", marginTop: 3, textAlign: isStaffRole(msg.sender_role) ? "right" : "left" }}>
+                            {isStaffRole(msg.sender_role) ? "You" : activeThread.student_name} · {timeAgo(msg.created_at)}
                           </div>
                         </div>
                       </div>
