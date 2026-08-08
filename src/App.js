@@ -27,6 +27,7 @@ import PendingSubmissions from './pages/PendingSubmissions';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import TeacherInbox from "./pages/TeacherInbox";
+import SetTheoryExplorer from './pages/SetTheoryExplorer';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -326,6 +327,11 @@ function App() {
         <Route path="/teacher/pending" element={
   <ProtectedRoute allowedRoles={['teacher', 'admin']}>
     <PendingSubmissions />
+  </ProtectedRoute>
+} />
+<Route path="/math-tools/set-theory-explorer" element={
+  <ProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
+    <SetTheoryExplorer />
   </ProtectedRoute>
 } />
         <Route path="/login" element={<Login />} />

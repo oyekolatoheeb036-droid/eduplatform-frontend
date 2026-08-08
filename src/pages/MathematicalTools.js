@@ -16,20 +16,35 @@ const TOOLS = [
     available: true,
     featured: true,
     popular: true,
-    icon: (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a237e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 16c2-8 4-8 6 0s4 8 6 0"/></svg>),
+    hasIllustration: true,
+    banner: 'quadratic',
   },
   {
-  id: 'linear-equations',
-  title: 'Linear Equations Tool',
-  description: 'Graph and solve linear equations step by step with AI assistance.',
-  path: '/math-tools/linear-explorer',
-  free: true,
-  premium: false,
-  available: true,
-  featured: false,
-  popular: false,
-  icon: (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a237e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="20" x2="20" y2="4"/><circle cx="4" cy="20" r="1.5" fill="#1a237e"/><circle cx="20" cy="4" r="1.5" fill="#1a237e"/></svg>),
-},
+    id: 'linear-equations',
+    title: 'Linear Equations Tool',
+    description: 'Graph and solve linear equations step by step — slope, intercepts, and AI assistance for every question.',
+    path: '/math-tools/linear-explorer',
+    free: true,
+    premium: false,
+    available: true,
+    featured: false,
+    popular: false,
+    hasIllustration: true,
+    banner: 'linear',
+  },
+  {
+    id: 'set-theory-explorer',
+    title: 'Set Theory Explorer',
+    description: 'Solve Venn diagram problems two ways — Formula Method or Region Method — with a live diagram and AI-powered tutoring.',
+    path: '/math-tools/set-theory-explorer',
+    free: true,
+    premium: false,
+    available: true,
+    featured: false,
+    popular: false,
+    hasIllustration: true,
+    banner: 'sets',
+  },
   {
     id: 'simultaneous-equations',
     title: 'Simultaneous Equations Solver',
@@ -40,9 +55,96 @@ const TOOLS = [
     available: false,
     featured: false,
     popular: false,
+    hasIllustration: false,
     icon: (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M9 6h12M6 9v12"/></svg>),
   },
 ];
+
+// ----------------------------------------------------------------------------
+// Banner illustrations — one per "hasIllustration" tool, drawn in the same
+// 200x110 viewBox and navy/gold/coral palette as the original Quadratic
+// banner, so all three read as one professional family rather than one
+// polished hero next to two plain icon cards.
+// ----------------------------------------------------------------------------
+
+function QuadraticIllustration() {
+  return (
+    <svg width="200" height="110" viewBox="0 0 200 110" style={{ position: 'relative', zIndex: 1 }}>
+      <line x1="20" y1="95" x2="180" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+      <line x1="100" y1="10" x2="100" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+      <polygon points="180,95 175,91 175,99" fill="rgba(255,255,255,0.3)" />
+      <polygon points="100,10 96,15 104,15" fill="rgba(255,255,255,0.3)" />
+      <path d="M 30 95 Q 50 90 65 70 Q 80 45 100 30 Q 120 45 135 70 Q 150 90 170 95" fill="none" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+      <circle cx="100" cy="30" r="5" fill="#F59E0B" stroke="#fff" strokeWidth="2" />
+      <circle cx="55" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
+      <circle cx="145" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
+      <circle cx="100" cy="82" r="4" fill="#2F5FCC" stroke="#fff" strokeWidth="1.5" />
+      <line x1="100" y1="15" x2="100" y2="90" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 3" />
+      <text x="100" y="22" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="8" fontFamily="Inter, sans-serif" fontWeight="600">vertex</text>
+      <text x="55" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">root</text>
+      <text x="145" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">root</text>
+    </svg>
+  );
+}
+
+function LinearIllustration() {
+  return (
+    <svg width="200" height="110" viewBox="0 0 200 110" style={{ position: 'relative', zIndex: 1 }}>
+      <line x1="20" y1="95" x2="180" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+      <line x1="35" y1="10" x2="35" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
+      <polygon points="180,95 175,91 175,99" fill="rgba(255,255,255,0.3)" />
+      <polygon points="35,10 31,15 39,15" fill="rgba(255,255,255,0.3)" />
+
+      {/* the line itself */}
+      <line x1="42" y1="88" x2="160" y2="24" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+
+      {/* rise/run triangle, showing slope visually */}
+      <path d="M 78 66 L 78 42 L 102 42" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="3 3" />
+      <text x="70" y="56" textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="7" fontFamily="Inter, sans-serif">rise</text>
+      <text x="90" y="52" textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="7" fontFamily="Inter, sans-serif">run</text>
+
+      {/* y-intercept */}
+      <circle cx="35" cy="72" r="4" fill="#2F5FCC" stroke="#fff" strokeWidth="1.5" />
+      <text x="35" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif" style={{ transform: 'translateY(4px)' }}>y-int</text>
+
+      {/* x-intercept */}
+      <circle cx="150" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
+      <text x="150" y="107" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">x-int</text>
+
+      <text x="140" y="30" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="8" fontFamily="Inter, sans-serif" fontWeight="600">y = mx + b</text>
+    </svg>
+  );
+}
+
+function SetTheoryIllustration() {
+  return (
+    <svg width="200" height="110" viewBox="0 0 200 110" style={{ position: 'relative', zIndex: 1 }}>
+      {/* universal set box */}
+      <rect x="24" y="14" width="152" height="84" rx="6" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
+      <text x="34" y="28" fill="rgba(255,255,255,0.5)" fontSize="9" fontFamily="Inter, sans-serif" fontWeight="600">U</text>
+
+      {/* two overlapping circles */}
+      <circle cx="82" cy="58" r="34" fill="rgba(245,158,11,0.10)" stroke="#F59E0B" strokeWidth="2" />
+      <circle cx="118" cy="58" r="34" fill="rgba(224,98,61,0.10)" stroke="#E0623D" strokeWidth="2" />
+
+      <text x="62" y="30" textAnchor="middle" fill="#F59E0B" fontSize="11" fontFamily="Space Grotesk, sans-serif" fontWeight="700">A</text>
+      <text x="138" y="30" textAnchor="middle" fill="#E0623D" fontSize="11" fontFamily="Space Grotesk, sans-serif" fontWeight="700">B</text>
+
+      {/* overlap region + region counts, echoing the tool's own diagram */}
+      <text x="66" y="62" textAnchor="middle" fill="rgba(255,255,255,0.75)" fontSize="9" fontFamily="'JetBrains Mono', monospace" fontWeight="700">12</text>
+      <text x="100" y="62" textAnchor="middle" fill="#fff" fontSize="9" fontFamily="'JetBrains Mono', monospace" fontWeight="700">7</text>
+      <text x="134" y="62" textAnchor="middle" fill="rgba(255,255,255,0.75)" fontSize="9" fontFamily="'JetBrains Mono', monospace" fontWeight="700">9</text>
+
+      <text x="100" y="90" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="8" fontFamily="Inter, sans-serif">n(A ∩ B) = 7</text>
+    </svg>
+  );
+}
+
+const BANNER_ILLUSTRATIONS = {
+  quadratic: QuadraticIllustration,
+  linear: LinearIllustration,
+  sets: SetTheoryIllustration,
+};
 
 export default function MathematicalTools() {
   const { user } = useAuth();
@@ -127,6 +229,7 @@ export default function MathematicalTools() {
         .mt-card:nth-child(1) { animation-delay: 0s; }
         .mt-card:nth-child(2) { animation-delay: 0.12s; }
         .mt-card:nth-child(3) { animation-delay: 0.24s; }
+        .mt-card:nth-child(4) { animation-delay: 0.36s; }
         .mt-card:nth-child(1).mt-card-featured { animation-delay: 0s, 1s; }
         .mt-card:nth-child(2).mt-card-featured { animation-delay: 0.12s, 1.12s; }
         .mt-card:nth-child(3).mt-card-featured { animation-delay: 0.24s, 1.24s; }
@@ -239,6 +342,8 @@ export default function MathematicalTools() {
           {TOOLS.map((tool) => {
             const isLocked = !tool.available;
             const isFeatured = tool.featured;
+            const showBanner = tool.hasIllustration && !isLocked;
+            const Illustration = tool.banner ? BANNER_ILLUSTRATIONS[tool.banner] : null;
             const linkTo = user ? tool.path : '/register';
             return (
               <div
@@ -256,7 +361,7 @@ export default function MathematicalTools() {
                   transformStyle: 'preserve-3d',
                 }}
               >
-                {isFeatured && (
+                {showBanner && (
                   <div style={{
                     height: 140,
                     background: 'linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%)',
@@ -271,21 +376,7 @@ export default function MathematicalTools() {
                         <div key={i} style={{ position: 'absolute', width: 2, height: 2, borderRadius: '50%', background: '#fff', left: `${(i % 10) * 10 + 5}%`, top: `${Math.floor(i / 10) * 12.5 + 6}%` }} />
                       ))}
                     </div>
-                    <svg width="200" height="110" viewBox="0 0 200 110" style={{ position: 'relative', zIndex: 1 }}>
-                      <line x1="20" y1="95" x2="180" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-                      <line x1="100" y1="10" x2="100" y2="95" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-                      <polygon points="180,95 175,91 175,99" fill="rgba(255,255,255,0.3)" />
-                      <polygon points="100,10 96,15 104,15" fill="rgba(255,255,255,0.3)" />
-                      <path d="M 30 95 Q 50 90 65 70 Q 80 45 100 30 Q 120 45 135 70 Q 150 90 170 95" fill="none" stroke="#F59E0B" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
-                      <circle cx="100" cy="30" r="5" fill="#F59E0B" stroke="#fff" strokeWidth="2" />
-                      <circle cx="55" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
-                      <circle cx="145" cy="95" r="4" fill="#E0623D" stroke="#fff" strokeWidth="1.5" />
-                      <circle cx="100" cy="82" r="4" fill="#2F5FCC" stroke="#fff" strokeWidth="1.5" />
-                      <line x1="100" y1="15" x2="100" y2="90" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="4 3" />
-                      <text x="100" y="22" textAnchor="middle" fill="rgba(255,255,255,0.6)" fontSize="8" fontFamily="Inter, sans-serif" fontWeight="600">vertex</text>
-                      <text x="55" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">root</text>
-                      <text x="145" y="88" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="7" fontFamily="Inter, sans-serif">root</text>
-                    </svg>
+                    {Illustration && <Illustration />}
                     {tool.popular && (
                       <div style={{ position: 'absolute', top: 12, right: 12, display: 'inline-flex', alignItems: 'center', gap: 4, background: 'linear-gradient(135deg, #FFB300, #FF8F00)', color: '#3E2723', padding: '4px 10px', borderRadius: 20, fontSize: 10, fontWeight: 800, letterSpacing: '0.5px', zIndex: 2 }}>
                         ⭐ Most Popular
@@ -294,11 +385,11 @@ export default function MathematicalTools() {
                   </div>
                 )}
 
-                <div style={{ padding: isFeatured ? '20px 28px 28px' : '28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                  {!isFeatured && (
+                <div style={{ padding: showBanner ? '20px 28px 28px' : '28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  {!showBanner && (
                     <div style={{ width: 52, height: 52, borderRadius: 12, background: isLocked ? '#f5f5f5' : '#E8EAF6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>{tool.icon}</div>
                   )}
-                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: isFeatured ? 20 : 18, fontWeight: 700, marginBottom: 8, color: isLocked ? '#999' : '#0a0a0a' }}>{tool.title}</h3>
+                  <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: showBanner ? 20 : 18, fontWeight: 700, marginBottom: 8, color: isLocked ? '#999' : '#0a0a0a' }}>{tool.title}</h3>
                   <p style={{ fontSize: 14, color: '#666', lineHeight: 1.6, marginBottom: 16, flex: 1 }}>{tool.description}</p>
                   <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
                     {tool.free && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: '#E8F5E9', color: '#2e7d32', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>FREE</span>}
