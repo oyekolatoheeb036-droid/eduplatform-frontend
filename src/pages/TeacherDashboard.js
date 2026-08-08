@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Card,
@@ -25,6 +26,9 @@ import PlayCircleFilledIcon from '@mui/icons-material/PlayCircleFilled';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
+import ForumIcon from '@mui/icons-material/Forum';
+
+const API = 'https://eduplatform-api-pol1.onrender.com';
 
 function TeacherDashboard() {
   const [courses, setCourses] = useState([]);
@@ -36,6 +40,7 @@ function TeacherDashboard() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('success');
+  const [openQuestionCount, setOpenQuestionCount] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
   const instructor_id = user?.id || 1;
@@ -50,17 +55,29 @@ function TeacherDashboard() {
 
   useEffect(() => {
     fetchCourses();
+    fetchOpenQuestionCount();
+    // Refresh the badge periodically so a teacher who leaves the dashboard
+    // open still sees new questions come in without a manual refresh.
+    const interval = setInterval(fetchOpenQuestionCount, 45000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchCourses = () => {
-    axios.get('https://eduplatform-api-pol1.onrender.com/api/courses')
+    axios.get(`${API}/api/courses`)
       .then(res => setCourses(res.data))
       .catch(err => console.log(err));
   };
 
+  const fetchOpenQuestionCount = () => {
+    const token = localStorage.getItem('token');
+    axios.get(`${API}/api/teacher-questions/open-count`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setOpenQuestionCount(res.data.count || 0))
+      .catch(err => console.log('Could not load open question count:', err));
+  };
+
   const handleCreateCourse = async () => {
     try {
-      await axios.post('https://eduplatform-api-pol1.onrender.com/api/courses', {
+      await axios.post(`${API}/api/courses`, {
         title: newCourse.title,
         description: newCourse.description,
         instructor_id
@@ -78,7 +95,7 @@ function TeacherDashboard() {
 
   const handleEditCourse = async () => {
     try {
-      await axios.put(`https://eduplatform-api-pol1.onrender.com/api/courses/${selectedCourse.id}`, {
+      await axios.put(`${API}/api/courses/${selectedCourse.id}`, {
         title: editCourse.title,
         description: editCourse.description
       });
@@ -94,7 +111,7 @@ function TeacherDashboard() {
 
   const handleDeleteCourse = async () => {
     try {
-      await axios.delete(`https://eduplatform-api-pol1.onrender.com/api/courses/${selectedCourse.id}`);
+      await axios.delete(`${API}/api/courses/${selectedCourse.id}`);
       setMessageType('success');
       setMessage('Course deleted successfully!');
       setOpenDeleteDialog(false);
@@ -182,41 +199,66 @@ function TeacherDashboard() {
             Welcome, {teacherName}. Create lessons, organize course content, and keep your classroom moving.
           </Typography>
 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenDialog(true)}
-            style={{
-              marginTop: '28px',
-              backgroundColor: '#1a237e',
-              borderRadius: '10px',
-              padding: '12px 24px',
-              fontWeight: '700',
-              textTransform: 'none',
-              boxShadow: '0 4px 15px rgba(26,35,126,0.25)',
-              ...bodyFont
-            }}
-          >
-            Create Course
+          <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '28px' }}>
             <Button
-  variant="outlined"
-  startIcon={<AssignmentLateIcon />}
-  onClick={() => navigate('/teacher/pending')}
-  style={{
-    marginTop: '16px',
-    marginLeft: '12px',
-    borderColor: '#ff6f00',
-    color: '#ff6f00',
-    borderRadius: '10px',
-    padding: '12px 24px',
-    fontWeight: '700',
-    textTransform: 'none',
-    ...bodyFont
-  }}
->
-  Pending Submissions
-</Button>
-          </Button>
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenDialog(true)}
+              style={{
+                backgroundColor: '#1a237e',
+                borderRadius: '10px',
+                padding: '12px 24px',
+                fontWeight: '700',
+                textTransform: 'none',
+                boxShadow: '0 4px 15px rgba(26,35,126,0.25)',
+                ...bodyFont
+              }}
+            >
+              Create Course
+            </Button>
+
+            <Button
+              variant="outlined"
+              startIcon={<AssignmentLateIcon />}
+              onClick={() => navigate('/teacher/pending')}
+              style={{
+                borderColor: '#ff6f00',
+                color: '#ff6f00',
+                borderRadius: '10px',
+                padding: '12px 24px',
+                fontWeight: '700',
+                textTransform: 'none',
+                ...bodyFont
+              }}
+            >
+              Pending Submissions
+            </Button>
+
+            <Badge
+              badgeContent={openQuestionCount}
+              color="error"
+              overlap="rectangular"
+              invisible={openQuestionCount === 0}
+              sx={{ '& .MuiBadge-badge': { right: 14, top: 6, fontWeight: 700 } }}
+            >
+              <Button
+                variant="outlined"
+                startIcon={<ForumIcon />}
+                onClick={() => navigate('/teacher/inbox')}
+                style={{
+                  borderColor: '#1a237e',
+                  color: '#1a237e',
+                  borderRadius: '10px',
+                  padding: '12px 24px',
+                  fontWeight: '700',
+                  textTransform: 'none',
+                  ...bodyFont
+                }}
+              >
+                Student Questions
+              </Button>
+            </Badge>
+          </Box>
         </Box>
       </Box>
 
