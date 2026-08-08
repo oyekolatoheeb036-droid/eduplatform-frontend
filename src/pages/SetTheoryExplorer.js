@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { solveSetProblem } from "./setTheorySolver";
-import VennDiagram, { getRegionRevealOrder } from "./VennDiagram";
+import { solveSetProblem } from "./SetTheorySolver";import VennDiagram, { getRegionRevealOrder } from "./VennDiagram";
 
 // ============================================================================
 // SetTheoryExplorer.jsx
