@@ -24,6 +24,7 @@ import {
   TrendingDown,
   Minus,
 } from "lucide-react";
+import HelpPanel from "./HelpPanel";
 
 const API = "https://eduplatform-api-pol1.onrender.com";
 
@@ -908,6 +909,10 @@ export default function LinearExplorer() {
                   </div>
                 </div>
               )}
+
+              {step === 8 && (
+  <HelpPanel tool="linear" contextTitle={`y = ${mv}x ${bv >= 0 ? `+ ${bv}` : `- ${Math.abs(bv)}`}`} />
+)}
 
               {step >= 1 && step < 8 && (
                 <div className="lx-card" style={{ marginTop: 16, opacity: 0.6 }}>

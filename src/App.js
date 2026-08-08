@@ -26,6 +26,7 @@ import ResetPassword from './pages/ResetPassword';
 import PendingSubmissions from './pages/PendingSubmissions';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';
+import TeacherInbox from "./TeacherInbox";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -283,6 +284,7 @@ function App() {
         <Route path="/community" element={<Community />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/about" element={<About />} />
+        <Route path="/teacher/inbox" element={<TeacherInbox />} />
         <Route path="/oyekola-toheeb" element={<Portfolio />} />
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['student', 'admin']}>
