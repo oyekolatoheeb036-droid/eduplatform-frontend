@@ -64,7 +64,7 @@ function fmt(n, d = 2) {
 
 function solveLinear(m, b, xStart, xEnd, xStep, yStep) {
   if (m === 0 && b === 0) return { valid: false };
-  
+
   const yIntercept = b;
   const xIntercept = m !== 0 ? round(-b / m, 4) : null;
   const slopeType = m > 0 ? "Increasing" : m < 0 ? "Decreasing" : "Horizontal";
@@ -343,12 +343,12 @@ function InteractiveGraph({
       onTouchEnd={handleMouseUp}
     >
       <rect x={PAD.left} y={PAD.top} width={plotW} height={plotH} fill={COLORS.paperBg} />
-      
+
       {minorXGrid.map((v) => (<line key={"mgx" + v} x1={xScale(v)} x2={xScale(v)} y1={PAD.top} y2={H - PAD.bottom} stroke={COLORS.paperMinor} strokeWidth="0.5" />))}
       {minorYGrid.map((v) => (<line key={"mgy" + v} x1={PAD.left} x2={W - PAD.right} y1={yScale(v)} y2={yScale(v)} stroke={COLORS.paperMinor} strokeWidth="0.5" />))}
       {xGrid.map((v) => (<line key={"gx" + v} x1={xScale(v)} x2={xScale(v)} y1={PAD.top} y2={H - PAD.bottom} stroke={COLORS.paperMajor} strokeWidth="1" />))}
       {yGrid.map((v) => (<line key={"gy" + v} x1={PAD.left} x2={W - PAD.right} y1={yScale(v)} y2={yScale(v)} stroke={COLORS.paperMajor} strokeWidth="1" />))}
-      
+
       <rect x={PAD.left} y={PAD.top} width={plotW} height={plotH} fill="none" stroke={COLORS.paperMajor} strokeWidth="1.2" />
       <line x1={PAD.left} x2={W - PAD.right} y1={yScale(0)} y2={yScale(0)} stroke={COLORS.paperAxis} strokeWidth="2" />
       <line x1={xScale(0)} x2={xScale(0)} y1={PAD.top} y2={H - PAD.bottom} stroke={COLORS.paperAxis} strokeWidth="2" />
@@ -453,6 +453,8 @@ export default function LinearExplorer() {
   const [saveTitle, setSaveTitle] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  // NEW: holds the student's existing saves so we can detect a duplicate title
+  const [mySaves, setMySaves] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -576,18 +578,57 @@ export default function LinearExplorer() {
   const acceptScale = () => setScaleApplied(true);
   const showPinnedTable = tableCorrect && step >= 2 && step <= 7;
 
-  const openSaveModal = () => {
-    setSaveTitle(`y = ${mv}x ${bv >= 0 ? `+ ${bv}` : `- ${Math.abs(bv)}`}`);
+  // UPDATED: also fetches the student's existing saves so we can check for a duplicate title
+  const openSaveModal = async () => {
+    setSaveTitle(saveTitle || `y = ${mv}x ${bv >= 0 ? `+ ${bv}` : `- ${Math.abs(bv)}`}`);
     setShowSaveModal(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API}/api/linear-saves`, { headers: { Authorization: `Bearer ${token}` } });
+      setMySaves(res.data.saves || []);
+    } catch (err) {
+      console.error("Failed to load saves list:", err);
+    }
   };
 
+  // UPDATED: checks for a same-name save first; overwrite (PUT) or ask to rename
   const handleSaveConfirm = async () => {
+    const trimmedTitle = saveTitle.trim();
+    if (!trimmedTitle) {
+      setSaveMsg("Please enter a name.");
+      return;
+    }
+
+    // Find any OTHER save (not the one currently open) with the same title
+    const duplicate = mySaves.find(
+      (s) => s.title.trim().toLowerCase() === trimmedTitle.toLowerCase() && s.id !== saveId
+    );
+
+    if (duplicate) {
+      const wantsOverwrite = window.confirm(
+        `A save named "${trimmedTitle}" already exists. Overwrite it? (Cancel to rename instead)`
+      );
+      if (!wantsOverwrite) {
+        setSaveMsg("Please rename this save and try again.");
+        return;
+      }
+      // Overwrite the EXISTING save's row, and adopt its id going forward
+      await saveToId(duplicate.id);
+      return;
+    }
+
+    // No name conflict — save normally (update if saveId exists, else create new)
+    await saveToId(saveId);
+  };
+
+  // NEW: does the actual PUT/POST, used by handleSaveConfirm above
+  const saveToId = async (idToUse) => {
     setSaving(true); setSaveMsg("");
     const token = localStorage.getItem("token");
     const payload = { title: saveTitle.trim(), m: mv, b: bv, xStart, xEnd, xScaleUnit, yScaleUnit, step, tableInputs, plotState, slopeAnswer, chatMessages, graphActions };
     try {
-      if (saveId) {
-        const res = await axios.put(`${API}/api/linear-saves/${saveId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      if (idToUse) {
+        const res = await axios.put(`${API}/api/linear-saves/${idToUse}`, payload, { headers: { Authorization: `Bearer ${token}` } });
         setSaveId(res.data.save.id);
       } else {
         const res = await axios.post(`${API}/api/linear-saves`, payload, { headers: { Authorization: `Bearer ${token}` } });
