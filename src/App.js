@@ -26,7 +26,7 @@ import ResetPassword from './pages/ResetPassword';
 import PendingSubmissions from './pages/PendingSubmissions';
 import About from './pages/About';
 import Portfolio from './pages/Portfolio';
-import TeacherInbox from "./TeacherInbox";
+import TeacherInbox from "./pages/TeacherInbox";
 
 function Navbar() {
   const { user, logout } = useAuth();
