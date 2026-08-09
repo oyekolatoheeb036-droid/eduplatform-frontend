@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { solveSetProblem } from "./setTheorySolver";
+import { solveSetProblem } from "./SetTheorySolver";
 import VennDiagram, { getRegionRevealOrder } from "./VennDiagram";
-import { generateFormulaWorkings } from "./formulaWorkings";
+import { generateFormulaWorkings } from "./FormulaWorkings";
 
 // ============================================================================
 // SetTheoryExplorer.jsx
