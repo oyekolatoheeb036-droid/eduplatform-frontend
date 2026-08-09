@@ -1,4 +1,4 @@
-import { parseLinearExpression } from "./setTheorySolver";
+import { parseLinearExpression } from "./SetTheorySolver";
 
 // ============================================================================
 // formulaWorkings.js
