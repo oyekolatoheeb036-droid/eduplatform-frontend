@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { solveSetProblem } from "./SetTheorySolver";import VennDiagram, { getRegionRevealOrder } from "./VennDiagram";
+import { solveSetProblem } from "./setTheorySolver";
+import VennDiagram, { getRegionRevealOrder } from "./VennDiagram";
+import { generateFormulaWorkings } from "./formulaWorkings";
 
 // ============================================================================
 // SetTheoryExplorer.jsx
@@ -39,7 +41,7 @@ const FONT_HEADING = "'Space Grotesk', sans-serif";
 const FONT_BODY = "'Inter', -apple-system, sans-serif";
 const FONT_MONO = "'JetBrains Mono', monospace";
 
-const API_BASE = "https://eduplatform-api-pol1.onrender.com/api/ai";
+const API_BASE = "/api/ai";
 
 // ---------------------------------------------------------------------------
 // Field metadata for the guided form — one entry per namedValues key the
@@ -174,6 +176,15 @@ export default function SetTheoryExplorer() {
   const [solveError, setSolveError] = useState(null);
   const [revealedIds, setRevealedIds] = useState([]); // Region Method progressive reveal
 
+  // Formula Method: deterministic step-by-step working (computed instantly,
+  // no network call — see formulaWorkings.js). Region Method: AI-narrated
+  // explanation per region, fetched right before that region is revealed so
+  // the student always sees "how" before the number lands in the diagram.
+  const [formulaWorking, setFormulaWorking] = useState(null); // { lines, usable } | null
+  const [regionExplanations, setRegionExplanations] = useState({}); // { [regionId]: text }
+  const [regionExplaining, setRegionExplaining] = useState(false);
+  const [regionExplainError, setRegionExplainError] = useState(null);
+
   const [chatHistory, setChatHistory] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -197,6 +208,9 @@ export default function SetTheoryExplorer() {
     setRevealedIds([]);
     setChatHistory([]);
     setChatHighlightIds([]);
+    setFormulaWorking(null);
+    setRegionExplanations({});
+    setRegionExplainError(null);
   }
 
   function updateNamedValue(key, value) {
@@ -237,6 +251,9 @@ export default function SetTheoryExplorer() {
       setSolved(null);
       setSolveError(null);
       setRevealedIds([]);
+      setFormulaWorking(null);
+      setRegionExplanations({});
+      setRegionExplainError(null);
       // Switch to guided view so the student can see/edit what the AI
       // extracted before solving — never solve silently off a raw parse.
       setInputMode("guided");
@@ -251,29 +268,94 @@ export default function SetTheoryExplorer() {
 
   function handleSolve() {
     const result = solveSetProblem({ numSets, namedValues, findExpr: findExpr || null });
+    setRegionExplanations({});
+    setRegionExplainError(null);
     if (!result.success) {
       setSolveError(result.error);
       setSolved(result); // may still carry partial regions/unresolved info
+      setFormulaWorking(null);
       return;
     }
     setSolveError(null);
     setSolved(result);
     setChatHistory([]);
     setChatHighlightIds([]);
-    setRevealedIds(method === "region" ? [] : null); // null = reveal all (Formula Method)
+
+    if (method === "formula") {
+      // Deterministic, instant, no network call — see formulaWorkings.js.
+      const working = generateFormulaWorkings({
+        numSets,
+        setLabels,
+        namedValues,
+        derived: result.derived,
+        unknowns: result.unknowns,
+        target: result.target,
+      });
+      setFormulaWorking(working);
+      setRevealedIds(null); // Formula Method: diagram fills in all at once, working shown above it
+    } else {
+      setFormulaWorking(null);
+      setRevealedIds([]); // Region Method: nothing revealed until the student steps through it
+    }
   }
 
-  function handleRevealNext() {
-    if (!solved) return;
+  // Region Method: fetch the AI's narration of a specific region FIRST, and
+  // only reveal that region's number in the diagram once the explanation is
+  // back — so the student always sees "how" before the number appears,
+  // never a number with no working behind it yet.
+  async function handleRevealNext() {
+    if (!solved?.success || regionExplaining) return;
     const order = getRegionRevealOrder(numSets);
-    const next = order.find((id) => !revealedIds.includes(id));
-    if (next) setRevealedIds((prev) => [...prev, next]);
+    const nextId = order.find((id) => !revealedIds.includes(id));
+    if (!nextId) return;
+
+    setRegionExplaining(true);
+    setRegionExplainError(null);
+    try {
+      const regionMeta = solved.regionList.find((r) => r.id === nextId);
+      const question = `Explain how the region "${regionMeta?.label || nextId}" (${nextId}) was found from the given information, in the step-by-step style of the tutor notes (e.g. "Let X represent...", direct substitution or subtraction). Keep it to 2-3 short lines, and end by stating its value.`;
+
+      const res = await fetch(`${API_BASE}/set-theory-chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question,
+          solvedData: buildSolvedDataForChat(),
+          history: [],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't work out that region just now.");
+
+      setRegionExplanations((prev) => ({ ...prev, [nextId]: data.reply }));
+      setRevealedIds((prev) => [...prev, nextId]);
+    } catch (err) {
+      setRegionExplainError(err.message || "Something went wrong explaining that region.");
+    } finally {
+      setRegionExplaining(false);
+    }
   }
 
   function handleMethodChange(m) {
     setMethod(m);
     if (solved?.success) {
-      setRevealedIds(m === "region" ? [] : null);
+      if (m === "formula") {
+        const working = generateFormulaWorkings({
+          numSets,
+          setLabels,
+          namedValues,
+          derived: solved.derived,
+          unknowns: solved.unknowns,
+          target: solved.target,
+        });
+        setFormulaWorking(working);
+        setRevealedIds(null);
+      } else {
+        setFormulaWorking(null);
+        setRegionExplanations({});
+        setRegionExplainError(null);
+        setRevealedIds([]);
+      }
     }
   }
 
@@ -515,17 +597,80 @@ export default function SetTheoryExplorer() {
           </div>
         )}
 
+        {/* ---- Working: Formula Method (deterministic, shown before the diagram) ---- */}
+        {solved?.success && method === "formula" && formulaWorking && (
+          <div style={cardStyle}>
+            <div style={sectionLabelStyle}>Show your working</div>
+            {formulaWorking.usable ? (
+              <div
+                style={{
+                  fontFamily: FONT_MONO,
+                  fontSize: 14,
+                  lineHeight: 1.7,
+                  color: COLORS.ink,
+                  background: COLORS.bg,
+                  border: `1.5px solid ${COLORS.border}`,
+                  borderRadius: 8,
+                  padding: "14px 16px",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {formulaWorking.lines.join("\n")}
+              </div>
+            ) : (
+              <p style={{ fontSize: 13, color: COLORS.inkSoft, margin: 0 }}>
+                The given values don't map cleanly onto a single-step formula derivation for this
+                problem — but the diagram below is still fully solved and correct. Ask the tutor
+                below if you'd like it explained.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ---- Working: Region Method (AI-narrated, one region at a time) ---- */}
+        {solved?.success && method === "region" && revealedIds.length > 0 && (
+          <div style={cardStyle}>
+            <div style={sectionLabelStyle}>Show your working</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {revealedIds.map((id) => {
+                const regionMeta = solved.regionList.find((r) => r.id === id);
+                return (
+                  <div
+                    key={id}
+                    style={{
+                      background: COLORS.bg,
+                      border: `1.5px solid ${COLORS.border}`,
+                      borderRadius: 8,
+                      padding: "12px 14px",
+                    }}
+                  >
+                    <div style={{ fontFamily: FONT_MONO, fontWeight: 700, fontSize: 14, color: COLORS.rule, marginBottom: 4 }}>
+                      {regionMeta?.label || id} = {regionMeta?.value}
+                    </div>
+                    <div style={{ fontSize: 14, lineHeight: 1.6, color: COLORS.ink, whiteSpace: "pre-wrap" }}>
+                      {regionExplanations[id] || "…"}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ---- Result: diagram + region method controls ---- */}
         {solved?.success && (
           <div style={cardStyle}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
               <div style={sectionLabelStyle}>Venn diagram</div>
               {method === "region" && !allRevealed && (
-                <button onClick={handleRevealNext} style={secondaryButtonStyle}>
-                  Reveal next region →
+                <button onClick={handleRevealNext} disabled={regionExplaining} style={secondaryButtonStyle}>
+                  {regionExplaining ? "Working it out…" : "Reveal next region →"}
                 </button>
               )}
             </div>
+            {method === "region" && regionExplainError && (
+              <div style={{ ...errorBoxStyle, marginTop: 8, marginBottom: 8 }}>{regionExplainError}</div>
+            )}
 
             <VennDiagram
               numSets={numSets}
