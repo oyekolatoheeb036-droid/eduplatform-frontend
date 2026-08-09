@@ -41,7 +41,7 @@ const FONT_HEADING = "'Space Grotesk', sans-serif";
 const FONT_BODY = "'Inter', -apple-system, sans-serif";
 const FONT_MONO = "'JetBrains Mono', monospace";
 
-const API_BASE = "/api/ai";
+const API_BASE = "https://eduplatform-api-pol1.onrender.com/api/ai";
 
 // ---------------------------------------------------------------------------
 // Field metadata for the guided form — one entry per namedValues key the
