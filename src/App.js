@@ -28,6 +28,7 @@ import About from './pages/About';
 import Portfolio from './pages/Portfolio';
 import TeacherInbox from "./pages/TeacherInbox";
 import SetTheoryExplorer from './pages/SetTheoryExplorer';
+import LiveQuiz from './pages/LiveQuiz';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -39,7 +40,8 @@ function Navbar() {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Courses', path: '/courses' },
-    { label: 'Math Tools', path: '/math-tools' },
+    { label: 'Math Tools', path: '/math-tools' },y
+    { label: 'Live Quiz', path: '/live-quiz' },
     { label: 'Community', path: '/community' },
     { label: 'Our Founder', path: '/oyekola-toheeb' },
   ];
@@ -202,6 +204,7 @@ function Navbar() {
             <Link to="/" style={navStyles.navLink}>Home</Link>
             <Link to="/courses" style={navStyles.navLink}>Courses</Link>
             <Link to="/math-tools" style={navStyles.navLink}>Math Tools</Link>
+            <Link to="/live-quiz" style={navStyles.navLink}>Live Quiz</Link>
             <Link to="/community" style={navStyles.navLink}>Community</Link>
             <Link to="/oyekola-toheeb" style={navStyles.navLink}>Our Founder</Link>
             {user && user.role === 'student' && (
@@ -304,6 +307,11 @@ function App() {
             <QuadraticExplorer />
           </ProtectedRoute>
         } />
+        <Route path="/live-quiz" element={
+  <ProtectedRoute allowedRoles={['student', 'admin']}>
+    <LiveQuiz />
+  </ProtectedRoute>
+} />
         <Route path="/teacher" element={
           <ProtectedRoute allowedRoles={['teacher', 'admin']}>
             <TeacherDashboard />
