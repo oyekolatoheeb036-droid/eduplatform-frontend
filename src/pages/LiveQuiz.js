@@ -219,7 +219,7 @@ function LiveQuiz() {
 
   // duel setup
   const [selectedTopic, setSelectedTopic] = useState(null);
-  const [opponentUsername, setOpponentUsername] = useState('');
+  const [opponentEmail, setOpponentEmail] = useState('');
   const [selectedTimer, setSelectedTimer] = useState(15);
   const [creating, setCreating] = useState(false);
   const [setupError, setSetupError] = useState(null);
@@ -280,8 +280,8 @@ function LiveQuiz() {
       setSetupError('Pick a topic first.');
       return;
     }
-    if (!opponentUsername.trim()) {
-      setSetupError('Enter the username of who you want to duel.');
+    if (!opponentEmail.trim()) {
+      setSetupError("Enter your opponent's email.");
       return;
     }
     setCreating(true);
@@ -290,7 +290,7 @@ function LiveQuiz() {
       const res = await axios.post(
         `${API_URL}/api/duels/challenge`,
         {
-          opponentUsername: opponentUsername.trim(),
+          opponentEmail: opponentEmail.trim(),
           topic: selectedTopic,
           timePerQuestionSeconds: selectedTimer,
           numQuestions: 10,
@@ -457,12 +457,13 @@ function LiveQuiz() {
             </div>
 
             <div style={styles.card}>
-              <div style={styles.label}>Opponent's username</div>
+              <div style={styles.label}>Opponent's email</div>
               <input
                 style={styles.input}
-                placeholder="e.g. Chidinma"
-                value={opponentUsername}
-                onChange={(e) => setOpponentUsername(e.target.value)}
+                placeholder="e.g. chidinma@example.com"
+                type="email"
+                value={opponentEmail}
+                onChange={(e) => setOpponentEmail(e.target.value)}
               />
 
               <div style={{ ...styles.label, marginTop: '18px' }}>Time per question</div>
@@ -498,7 +499,7 @@ function LiveQuiz() {
           <div style={styles.card}>
             <h2 style={{ color: colors.navy, marginTop: 0 }}>Waiting for opponent…</h2>
             <p style={{ color: colors.textMuted, fontSize: '14px' }}>
-              You challenged <strong>{opponentUsername}</strong> to a {selectedTopic} duel
+              You challenged <strong>{opponentEmail}</strong> to a {selectedTopic} duel
               ({selectedTimer}s per question). The duel starts as soon as they accept.
             </p>
           </div>
