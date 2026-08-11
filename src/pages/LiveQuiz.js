@@ -3,7 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import { useAuth } from '../AuthContext';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = 'https://eduplatform-api-pol1.onrender.com';
 
 // ── Design tokens (matches Navbar.js) ──
 const colors = {
