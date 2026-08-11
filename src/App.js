@@ -40,7 +40,7 @@ function Navbar() {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Courses', path: '/courses' },
-    { label: 'Math Tools', path: '/math-tools' },y
+    { label: 'Math Tools', path: '/math-tools' },
     { label: 'Live Quiz', path: '/live-quiz' },
     { label: 'Community', path: '/community' },
     { label: 'Our Founder', path: '/oyekola-toheeb' },
