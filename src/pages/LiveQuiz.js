@@ -5,12 +5,13 @@ import { useAuth } from '../AuthContext';
 
 const API_URL = 'https://eduplatform-api-pol1.onrender.com';
 
-// ── Design tokens (matches Navbar.js) ──
+// ── Design tokens (Enhanced for 3D) ──
 const colors = {
   navy: '#1E2A78',
   navyDark: '#162060',
   amber: '#F59E0B',
-  bg: '#F7F8FC',
+  amberDark: '#B45309',
+  bg: '#F0F2F8',
   cardBg: '#FFFFFF',
   border: '#E4E7F2',
   textDark: '#1A1F36',
@@ -22,160 +23,216 @@ const colors = {
 const styles = {
   page: {
     minHeight: '80vh',
-    background: colors.bg,
-    padding: '32px 16px',
-    fontFamily: 'inherit',
+    background: `linear-gradient(135deg, ${colors.bg} 0%, #E0E5F0 100%)`,
+    padding: '40px 16px',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    perspective: '1000px',
   },
   container: {
     maxWidth: '640px',
     margin: '0 auto',
+    position: 'relative',
+    zIndex: 1,
   },
   header: {
-    marginBottom: '24px',
+    marginBottom: '28px',
+    textAlign: 'center',
   },
   eyebrow: {
     fontSize: '12px',
-    fontWeight: 600,
-    letterSpacing: '0.14em',
+    fontWeight: 700,
+    letterSpacing: '0.18em',
     textTransform: 'uppercase',
     color: colors.amber,
-    marginBottom: '6px',
+    marginBottom: '8px',
+    display: 'inline-block',
+    padding: '4px 12px',
+    background: '#FFF7E8',
+    borderRadius: '20px',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
   },
   title: {
-    fontSize: '26px',
-    fontWeight: 600,
+    fontSize: '32px',
+    fontWeight: 800,
     color: colors.navy,
     margin: 0,
+    textShadow: '1px 1px 0px rgba(255,255,255,1), 2px 2px 4px rgba(30, 42, 120, 0.1)',
   },
   subtitle: {
-    fontSize: '14px',
+    fontSize: '15px',
     color: colors.textMuted,
-    marginTop: '6px',
+    marginTop: '8px',
   },
   card: {
     background: colors.cardBg,
     border: `1px solid ${colors.border}`,
-    borderRadius: '14px',
-    padding: '24px',
-    marginBottom: '16px',
+    borderRadius: '16px',
+    padding: '28px',
+    marginBottom: '24px',
+    boxShadow: '0 10px 30px rgba(30, 42, 120, 0.08), 0 4px 12px rgba(30, 42, 120, 0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   },
   topicGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-    gap: '10px',
-    marginTop: '14px',
+    gap: '12px',
+    marginTop: '16px',
   },
   topicButton: (selected) => ({
-    padding: '14px',
-    borderRadius: '10px',
+    padding: '16px',
+    borderRadius: '12px',
     border: `1.5px solid ${selected ? colors.navy : colors.border}`,
-    background: selected ? colors.navy : '#fff',
+    background: selected ? `linear-gradient(145deg, ${colors.navy}, ${colors.navyDark})` : '#fff',
     color: selected ? '#fff' : colors.textDark,
-    fontSize: '14px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    textAlign: 'left',
-    transition: 'all 0.15s',
-  }),
-  input: {
-    width: '100%',
-    padding: '12px 14px',
-    borderRadius: '10px',
-    border: `1.5px solid ${colors.border}`,
-    fontSize: '14px',
-    marginTop: '6px',
-    boxSizing: 'border-box',
-  },
-  label: {
-    fontSize: '13px',
-    fontWeight: 500,
-    color: colors.textDark,
-  },
-  timerRow: {
-    display: 'flex',
-    gap: '8px',
-    marginTop: '6px',
-  },
-  timerButton: (selected) => ({
-    padding: '8px 14px',
-    borderRadius: '8px',
-    border: `1.5px solid ${selected ? colors.amber : colors.border}`,
-    background: selected ? '#FFF7E8' : '#fff',
-    color: selected ? '#92640A' : colors.textDark,
-    fontSize: '13px',
-    fontWeight: 500,
-    cursor: 'pointer',
-  }),
-  primaryButton: {
-    marginTop: '18px',
-    width: '100%',
-    padding: '13px',
-    borderRadius: '10px',
-    border: 'none',
-    background: colors.amber,
-    color: colors.navy,
     fontSize: '14px',
     fontWeight: 600,
     cursor: 'pointer',
+    textAlign: 'left',
+    boxShadow: selected 
+      ? '0 6px 12px rgba(30, 42, 120, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)' 
+      : '0 4px 0 rgba(30, 42, 120, 0.1), 0 2px 4px rgba(0,0,0,0.05)',
+    transform: selected ? 'translateY(2px)' : 'translateY(0)',
+    transition: 'all 0.2s ease',
+  }),
+  input: {
+    width: '100%',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    border: `1.5px solid ${colors.border}`,
+    fontSize: '14px',
+    marginTop: '8px',
+    boxSizing: 'border-box',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)',
+    transition: 'border 0.2s, box-shadow 0.2s',
+  },
+  label: {
+    fontSize: '13px',
+    fontWeight: 600,
+    color: colors.textDark,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  timerRow: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '8px',
+  },
+  timerButton: (selected) => ({
+    padding: '10px 16px',
+    borderRadius: '10px',
+    border: `1.5px solid ${selected ? colors.amber : colors.border}`,
+    background: selected ? colors.amber : '#fff',
+    color: selected ? '#fff' : colors.textDark,
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    boxShadow: selected 
+      ? '0 4px 8px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)' 
+      : '0 3px 0 rgba(0,0,0,0.08)',
+    transform: selected ? 'translateY(2px)' : 'translateY(0)',
+    transition: 'all 0.2s',
+  }),
+  primaryButton: {
+    marginTop: '24px',
+    width: '100%',
+    padding: '16px',
+    borderRadius: '12px',
+    border: 'none',
+    background: `linear-gradient(145deg, ${colors.amber}, #D97706)`,
+    color: '#fff',
+    fontSize: '15px',
+    fontWeight: 700,
+    cursor: 'pointer',
+    boxShadow: '0 5px 0 #B45309, 0 10px 20px rgba(245, 158, 11, 0.3)',
+    transition: 'transform 0.1s, box-shadow 0.1s',
   },
   disabledButton: {
-    opacity: 0.5,
+    opacity: 0.6,
     cursor: 'not-allowed',
+    transform: 'translateY(4px)',
+    boxShadow: '0 1px 0 #B45309',
   },
   errorText: {
     color: colors.incorrect,
     fontSize: '13px',
-    marginTop: '10px',
+    marginTop: '12px',
+    fontWeight: '500',
+    background: '#FEF1F1',
+    padding: '10px 14px',
+    borderRadius: '8px',
+    border: '1px solid rgba(220, 38, 38, 0.1)',
   },
   scoreRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '18px',
+    marginBottom: '24px',
+    background: '#F7F8FC',
+    padding: '16px',
+    borderRadius: '12px',
+    border: '1px solid #E4E7F2',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
   },
   playerScore: {
     textAlign: 'center',
   },
   scoreValue: {
-    fontSize: '32px',
-    fontWeight: 700,
+    fontSize: '36px',
+    fontWeight: 800,
     color: colors.navy,
+    lineHeight: 1,
+    textShadow: '1px 1px 0 rgba(255,255,255,1)',
   },
   scoreLabel: {
     fontSize: '12px',
     color: colors.textMuted,
-    marginTop: '2px',
+    marginTop: '4px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    fontWeight: 600,
   },
   vs: {
-    fontSize: '13px',
-    color: colors.textMuted,
-    fontWeight: 500,
+    fontSize: '14px',
+    color: colors.amber,
+    fontWeight: 700,
+    background: '#FFF7E8',
+    padding: '8px 14px',
+    borderRadius: '20px',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
   },
   timerBar: {
-    height: '6px',
-    background: colors.border,
-    borderRadius: '4px',
+    height: '10px',
+    background: '#E4E7F2',
+    borderRadius: '5px',
     overflow: 'hidden',
-    marginBottom: '18px',
+    marginBottom: '24px',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
   },
   timerFill: (pct) => ({
     height: '100%',
     width: `${pct}%`,
-    background: pct > 30 ? colors.amber : colors.incorrect,
-    transition: 'width 1s linear',
+    background: pct > 50 
+      ? `linear-gradient(90deg, ${colors.amber}, #FBBF24)` 
+      : pct > 20 
+        ? `linear-gradient(90deg, #DC2626, ${colors.amber})` 
+        : `linear-gradient(90deg, #991B1B, ${colors.incorrect})`,
+    boxShadow: '0 0 10px rgba(245, 158, 11, 0.5)',
+    transition: 'width 1s linear, background 0.5s ease',
   }),
   questionText: {
-    fontSize: '18px',
-    fontWeight: 600,
+    fontSize: '20px',
+    fontWeight: 700,
     color: colors.textDark,
-    marginBottom: '18px',
+    marginBottom: '24px',
+    lineHeight: 1.4,
   },
   optionButton: (state) => ({
-    display: 'block',
+    display: 'flex',
+    alignItems: 'center',
     width: '100%',
     textAlign: 'left',
-    padding: '14px',
-    borderRadius: '10px',
+    padding: '16px 18px',
+    borderRadius: '12px',
     border: `1.5px solid ${
       state === 'correct' ? colors.correct :
       state === 'incorrect' ? colors.incorrect :
@@ -186,49 +243,66 @@ const styles = {
       state === 'incorrect' ? '#FEF1F1' :
       state === 'selected' ? '#F0F1FA' : '#fff',
     color: colors.textDark,
-    fontSize: '14px',
-    marginBottom: '10px',
+    fontSize: '15px',
+    marginBottom: '12px',
     cursor: 'pointer',
+    fontWeight: 500,
+    boxShadow: state 
+      ? `inset 0 4px 8px rgba(0,0,0,0.05)` 
+      : '0 4px 0 rgba(30, 42, 120, 0.1), 0 2px 4px rgba(0,0,0,0.03)',
+    transform: state ? 'translateY(2px)' : 'translateY(0)',
+    transition: 'all 0.2s ease',
   }),
   resultBanner: (won) => ({
     textAlign: 'center',
-    padding: '28px 20px',
-    borderRadius: '14px',
-    background: won === true ? '#EFFCF3' : won === false ? '#FEF1F1' : '#FFF7E8',
-    marginBottom: '18px',
+    padding: '36px 24px',
+    borderRadius: '16px',
+    background: won === true 
+      ? `linear-gradient(145deg, #EFFCF3, #D1FAE5)` 
+      : won === false 
+        ? `linear-gradient(145deg, #FEF1F1, #FEE2E2)` 
+        : `linear-gradient(145deg, #FFF7E8, #FEF3C7)`,
+    marginBottom: '24px',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)',
+    border: '1px solid rgba(0,0,0,0.05)',
   }),
   resultTitle: (won) => ({
-    fontSize: '22px',
-    fontWeight: 700,
+    fontSize: '28px',
+    fontWeight: 800,
     color: won === true ? colors.correct : won === false ? colors.incorrect : '#92640A',
     margin: 0,
+    textShadow: '1px 1px 0 rgba(255,255,255,1)',
   }),
   pendingCard: {
-    background: '#FFF7E8',
+    background: 'linear-gradient(145deg, #FFF7E8, #FFF)',
     border: `1.5px solid ${colors.amber}`,
-    borderRadius: '14px',
-    padding: '18px',
+    borderRadius: '12px',
+    padding: '20px',
     marginBottom: '16px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: '12px',
     flexWrap: 'wrap',
+    boxShadow: '0 4px 0 rgba(245, 158, 11, 0.2), 0 10px 20px rgba(0,0,0,0.05)',
   },
   pendingText: {
     fontSize: '14px',
     color: colors.textDark,
+    fontWeight: 500,
   },
   acceptButton: {
-    padding: '10px 20px',
-    borderRadius: '8px',
+    padding: '12px 24px',
+    borderRadius: '10px',
     border: 'none',
-    background: colors.navy,
+    background: `linear-gradient(145deg, ${colors.navy}, ${colors.navyDark})`,
     color: '#fff',
-    fontSize: '13px',
-    fontWeight: 600,
+    fontSize: '14px',
+    fontWeight: 700,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+    boxShadow: '0 4px 0 #0F1845, 0 6px 12px rgba(30, 42, 120, 0.3)',
+    transition: 'transform 0.1s, box-shadow 0.1s',
   },
 };
 
@@ -465,7 +539,11 @@ function LiveQuiz() {
     return (
       <div style={styles.page}>
         <div style={styles.container}>
-          <p>You need to be logged in to play a Live Quiz duel.</p>
+          <div style={styles.card}>
+            <p style={{ textAlign: 'center', color: colors.textMuted }}>
+              You need to be logged in to play a Live Quiz duel.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -473,6 +551,37 @@ function LiveQuiz() {
 
   return (
     <div style={styles.page}>
+      <style>{`
+        .nf-3d-btn:hover:not(:disabled) {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 0 rgba(30, 42, 120, 0.1), 0 8px 15px rgba(0,0,0,0.08) !important;
+        }
+        .nf-3d-btn:active:not(:disabled) {
+          transform: translateY(2px) !important;
+          box-shadow: 0 2px 0 rgba(30, 42, 120, 0.1) !important;
+        }
+        .nf-primary-3d:hover:not(:disabled) {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 7px 0 #B45309, 0 12px 24px rgba(245, 158, 11, 0.4) !important;
+        }
+        .nf-primary-3d:active:not(:disabled) {
+          transform: translateY(4px) !important;
+          box-shadow: 0 1px 0 #B45309 !important;
+        }
+        .nf-accept-3d:hover:not(:disabled) {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 0 #0F1845, 0 10px 20px rgba(30, 42, 120, 0.4) !important;
+        }
+        .nf-accept-3d:active:not(:disabled) {
+          transform: translateY(4px) !important;
+          box-shadow: 0 1px 0 #0F1845 !important;
+        }
+        input:focus {
+          border-color: ${colors.amber} !important;
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+        }
+      `}</style>
+
       <div style={styles.container}>
 
         {screen === 'setup' && (
@@ -484,6 +593,7 @@ function LiveQuiz() {
                   <strong>{challenge.topic}</strong> duel ({challenge.time_per_question_seconds}s/question)
                 </div>
                 <button
+                  className="nf-accept-3d"
                   style={styles.acceptButton}
                   onClick={() => acceptDuel(challenge.id)}
                 >
@@ -493,17 +603,18 @@ function LiveQuiz() {
             ))}
 
             <div style={styles.header}>
-              <div style={styles.eyebrow}>Live Quiz</div>
-              <h1 style={styles.title}>Challenge a friend</h1>
+              <div style={styles.eyebrow}>⚡ Live Quiz</div>
+              <h1 style={styles.title}>Challenge a Friend</h1>
               <p style={styles.subtitle}>Pick a topic, set your timer, and duel it out live.</p>
             </div>
 
             <div style={styles.card}>
-              <div style={styles.label}>Topic</div>
+              <div style={styles.label}>Select Topic</div>
               <div style={styles.topicGrid}>
                 {TOPICS.map((topic) => (
                   <button
                     key={topic}
+                    className="nf-3d-btn"
                     style={styles.topicButton(selectedTopic === topic)}
                     onClick={() => setSelectedTopic(topic)}
                   >
@@ -514,7 +625,7 @@ function LiveQuiz() {
             </div>
 
             <div style={styles.card}>
-              <div style={styles.label}>Opponent's email</div>
+              <div style={styles.label}>Opponent's Email</div>
               <input
                 style={styles.input}
                 placeholder="e.g. chidinma@example.com"
@@ -523,11 +634,12 @@ function LiveQuiz() {
                 onChange={(e) => setOpponentEmail(e.target.value)}
               />
 
-              <div style={{ ...styles.label, marginTop: '18px' }}>Time per question</div>
+              <div style={{ ...styles.label, marginTop: '24px' }}>Time per Question</div>
               <div style={styles.timerRow}>
                 {TIMER_OPTIONS.map((secs) => (
                   <button
                     key={secs}
+                    className="nf-3d-btn"
                     style={styles.timerButton(selectedTimer === secs)}
                     onClick={() => setSelectedTimer(secs)}
                   >
@@ -537,6 +649,7 @@ function LiveQuiz() {
               </div>
 
               <button
+                className="nf-primary-3d"
                 style={{
                   ...styles.primaryButton,
                   ...(creating ? styles.disabledButton : {}),
@@ -544,7 +657,7 @@ function LiveQuiz() {
                 onClick={handleChallenge}
                 disabled={creating}
               >
-                {creating ? 'Sending challenge…' : 'Send challenge'}
+                {creating ? 'Sending challenge…' : 'Send Challenge 🚀'}
               </button>
 
               {setupError && <div style={styles.errorText}>{setupError}</div>}
@@ -553,9 +666,9 @@ function LiveQuiz() {
         )}
 
         {screen === 'waiting' && (
-          <div style={styles.card}>
-            <h2 style={{ color: colors.navy, marginTop: 0 }}>Waiting for opponent…</h2>
-            <p style={{ color: colors.textMuted, fontSize: '14px' }}>
+          <div style={{ ...styles.card, textAlign: 'center' }}>
+            <h2 style={{ color: colors.navy, marginTop: 0, fontSize: '24px' }}>Waiting for Opponent…</h2>
+            <p style={{ color: colors.textMuted, fontSize: '15px' }}>
               You challenged <strong>{opponentEmail}</strong> to a {selectedTopic} duel
               ({selectedTimer}s per question). The duel starts as soon as they accept.
             </p>
@@ -593,11 +706,12 @@ function LiveQuiz() {
               return (
                 <button
                   key={letter}
+                  className="nf-3d-btn"
                   style={styles.optionButton(state)}
                   onClick={() => handleAnswer(letter)}
                   disabled={!!selectedAnswer}
                 >
-                  <strong>{letter}.</strong> {optionText}
+                  <strong style={{ marginRight: '10px', color: colors.amber }}>{letter}.</strong> {optionText}
                 </button>
               );
             })}
@@ -627,7 +741,7 @@ function LiveQuiz() {
                   </div>
                   <div style={styles.scoreLabel}>You</div>
                 </div>
-                <div style={styles.vs}>Final score</div>
+                <div style={styles.vs}>Final Score</div>
                 <div style={styles.playerScore}>
                   <div style={styles.scoreValue}>
                     {isChallenger ? result.opponentScore : result.challengerScore}
@@ -636,6 +750,7 @@ function LiveQuiz() {
                 </div>
               </div>
               <button
+                className="nf-primary-3d"
                 style={styles.primaryButton}
                 onClick={() => {
                   setScreen('setup');
@@ -646,7 +761,7 @@ function LiveQuiz() {
                   setOpponentScore(0);
                 }}
               >
-                Duel again
+                Duel Again 🔁
               </button>
             </div>
           </>
