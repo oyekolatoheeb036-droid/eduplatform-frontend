@@ -203,6 +203,33 @@ const styles = {
     color: won === true ? colors.correct : won === false ? colors.incorrect : '#92640A',
     margin: 0,
   }),
+  pendingCard: {
+    background: '#FFF7E8',
+    border: `1.5px solid ${colors.amber}`,
+    borderRadius: '14px',
+    padding: '18px',
+    marginBottom: '16px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap',
+  },
+  pendingText: {
+    fontSize: '14px',
+    color: colors.textDark,
+  },
+  acceptButton: {
+    padding: '10px 20px',
+    borderRadius: '8px',
+    border: 'none',
+    background: colors.navy,
+    color: '#fff',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
 };
 
 const TOPICS = [
@@ -235,11 +262,31 @@ function LiveQuiz() {
   const [timeLeft, setTimeLeft] = useState(null);
   const [screen, setScreen] = useState('setup');
   const [result, setResult] = useState(null);
+  const [pendingChallenges, setPendingChallenges] = useState([]);
+  const [loadingPending, setLoadingPending] = useState(true);
 
   const questionStartRef = useRef(null);
   const timerIntervalRef = useRef(null);
 
   const isChallenger = duel && user && duel.challenger_id === user.id;
+
+  const fetchPending = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/api/duels/pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPendingChallenges(res.data.pending);
+    } catch (err) {
+      // Non-fatal — just means the pending list stays empty
+    } finally {
+      setLoadingPending(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) fetchPending();
+  }, [user, fetchPending]);
 
   useEffect(() => {
     const socket = io(API_URL);
@@ -250,12 +297,7 @@ function LiveQuiz() {
     }
 
     socket.on('duel:invite', (payload) => {
-      const accept = window.confirm(
-        `${payload.fromName} challenged you to a ${payload.topic} duel! Accept?`
-      );
-      if (accept) {
-        acceptDuel(payload.duelId);
-      }
+      fetchPending();
     });
 
     return () => {
@@ -435,6 +477,21 @@ function LiveQuiz() {
 
         {screen === 'setup' && (
           <>
+            {!loadingPending && pendingChallenges.map((challenge) => (
+              <div key={challenge.id} style={styles.pendingCard}>
+                <div style={styles.pendingText}>
+                  <strong>{challenge.challenger_name}</strong> challenged you to a{' '}
+                  <strong>{challenge.topic}</strong> duel ({challenge.time_per_question_seconds}s/question)
+                </div>
+                <button
+                  style={styles.acceptButton}
+                  onClick={() => acceptDuel(challenge.id)}
+                >
+                  Accept
+                </button>
+              </div>
+            ))}
+
             <div style={styles.header}>
               <div style={styles.eyebrow}>Live Quiz</div>
               <h1 style={styles.title}>Challenge a friend</h1>
