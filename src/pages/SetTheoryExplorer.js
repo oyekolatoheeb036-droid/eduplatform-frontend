@@ -43,6 +43,9 @@ const FONT_MONO = "'JetBrains Mono', monospace";
 
 const API_BASE = "https://eduplatform-api-pol1.onrender.com/api/ai";
 
+// The image URL you provided
+const BACKGROUND_IMAGE_URL = 'https://z-cdn-media.chatglm.cn/files/265aacdd-96a4-452a-af68-17480f3ef294.png?auth_key=1886650970-f9c1ef7bfaee409087e586e111750759-0-a425f5a888d88dbe026099ee7d52253d';
+
 // ---------------------------------------------------------------------------
 // Field metadata for the guided form — one entry per namedValues key the
 // solver understands (see NAMED_CLUE_EXPRESSIONS_2/3 in setTheorySolver.js).
@@ -425,7 +428,11 @@ export default function SetTheoryExplorer() {
       style={{
         fontFamily: FONT_BODY,
         color: COLORS.ink,
-        background: COLORS.bg,
+        // Added the background image with a deep navy overlay for readability
+        backgroundImage: `linear-gradient(rgba(15, 23, 60, 0.88), rgba(5, 10, 25, 0.92)), url(${BACKGROUND_IMAGE_URL})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center center',
+        backgroundAttachment: 'fixed',
         minHeight: "100%",
         padding: "24px 16px 64px",
       }}
@@ -442,12 +449,12 @@ export default function SetTheoryExplorer() {
             fontWeight: 700,
             fontSize: 28,
             margin: "0 0 4px",
-            color: COLORS.rule,
+            color: "#ffffff", // Updated to white for the dark background
           }}
         >
           Set Theory Explorer
         </h1>
-        <p style={{ margin: "0 0 24px", color: COLORS.inkSoft, fontSize: 15 }}>
+        <p style={{ margin: "0 0 24px", color: "#E8EAF6", fontSize: 15 }}> {/* Updated to light color */}
           Solve Venn diagram problems two ways, and get every region explained.
         </p>
 
