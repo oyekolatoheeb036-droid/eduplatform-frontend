@@ -5,6 +5,9 @@ import { useAuth } from '../AuthContext';
 
 const API = 'https://eduplatform-api-pol1.onrender.com';
 
+// The image URL you provided
+const BACKGROUND_IMAGE_URL = 'https://z-cdn-media.chatglm.cn/files/cb758230-6e40-4fae-b34c-5b768c0491b8.png?auth_key=1886650295-34fc000333f2456c89c61829911727b9-0-a3198ab6bcbfd8d5767c736ebbbbde0a';
+
 const TOOLS = [
   {
     id: 'quadratic-explorer',
@@ -194,7 +197,14 @@ export default function MathematicalTools() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f2f8' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      // Added the background image with a deep navy overlay for readability
+      backgroundImage: `linear-gradient(rgba(15, 23, 60, 0.92), rgba(5, 10, 25, 0.95)), url(${BACKGROUND_IMAGE_URL})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center center',
+      backgroundAttachment: 'fixed',
+    }}>
       <style>{`
         @keyframes mt-bounce-in {
           0% { opacity: 0; transform: translateY(40px) scale(0.92); }
@@ -258,7 +268,8 @@ export default function MathematicalTools() {
 
       {user && !savesLoading && saves.length > 0 && (
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px 0' }}>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 800, color: '#0a0a0a', marginBottom: 16 }}>
+          {/* Changed title color to white so it's visible on the dark background */}
+          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 22, fontWeight: 800, color: '#ffffff', marginBottom: 16 }}>
             My Saved Work
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, marginBottom: 8 }}>
