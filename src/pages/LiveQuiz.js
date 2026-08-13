@@ -20,10 +20,17 @@ const colors = {
   incorrect: '#DC2626',
 };
 
+// The URL of the image you provided
+const BACKGROUND_IMAGE_URL = 'https://z-cdn-media.chatglm.cn/files/66f4f052-a370-4b48-bd4e-2d9104b6ebc6.png?auth_key=1886649132-b276bd5f9f9d45be93fb087b60c6c1ec-0-94ada472e024c946b4f34ab32a230ee4';
+
 const styles = {
   page: {
-    minHeight: '80vh',
-    background: `linear-gradient(135deg, ${colors.bg} 0%, #E0E5F0 100%)`,
+    minHeight: '100vh',
+    // Added the background image with a dark navy gradient overlay for readability
+    backgroundImage: `linear-gradient(to bottom, rgba(22, 32, 96, 0.88), rgba(0, 0, 0, 0.92)), url(${BACKGROUND_IMAGE_URL})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center center',
+    backgroundAttachment: 'fixed', // Keeps the image static while scrolling
     padding: '40px 16px',
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     perspective: '1000px',
@@ -47,20 +54,20 @@ const styles = {
     marginBottom: '8px',
     display: 'inline-block',
     padding: '4px 12px',
-    background: '#FFF7E8',
+    background: 'rgba(245, 158, 11, 0.15)',
     borderRadius: '20px',
-    border: '1px solid rgba(245, 158, 11, 0.2)',
+    border: '1px solid rgba(245, 158, 11, 0.4)',
   },
   title: {
     fontSize: '32px',
     fontWeight: 800,
-    color: colors.navy,
+    color: '#FFFFFF', // Changed to white for the dark background
     margin: 0,
-    textShadow: '1px 1px 0px rgba(255,255,255,1), 2px 2px 4px rgba(30, 42, 120, 0.1)',
+    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
   },
   subtitle: {
     fontSize: '15px',
-    color: colors.textMuted,
+    color: '#E4E7F2', // Lighter color for readability
     marginTop: '8px',
   },
   card: {
@@ -69,7 +76,7 @@ const styles = {
     borderRadius: '16px',
     padding: '28px',
     marginBottom: '24px',
-    boxShadow: '0 10px 30px rgba(30, 42, 120, 0.08), 0 4px 12px rgba(30, 42, 120, 0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
+    boxShadow: '0 15px 35px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
     transition: 'transform 0.3s ease, box-shadow 0.3s ease',
   },
   topicGrid: {
@@ -263,7 +270,7 @@ const styles = {
         ? `linear-gradient(145deg, #FEF1F1, #FEE2E2)` 
         : `linear-gradient(145deg, #FFF7E8, #FEF3C7)`,
     marginBottom: '24px',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8)',
+    boxShadow: '0 15px 35px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.8)',
     border: '1px solid rgba(0,0,0,0.05)',
   }),
   resultTitle: (won) => ({
@@ -284,7 +291,7 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     flexWrap: 'wrap',
-    boxShadow: '0 4px 0 rgba(245, 158, 11, 0.2), 0 10px 20px rgba(0,0,0,0.05)',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.2), 0 4px 0 rgba(245, 158, 11, 0.2)',
   },
   pendingText: {
     fontSize: '14px',
@@ -554,7 +561,7 @@ function LiveQuiz() {
       <style>{`
         .nf-3d-btn:hover:not(:disabled) {
           transform: translateY(-2px) !important;
-          box-shadow: 0 6px 0 rgba(30, 42, 120, 0.1), 0 8px 15px rgba(0,0,0,0.08) !important;
+          box-shadow: 0 6px 0 rgba(30, 42, 120, 0.1), 0 8px 15px rgba(0,0,0,0.1) !important;
         }
         .nf-3d-btn:active:not(:disabled) {
           transform: translateY(2px) !important;
