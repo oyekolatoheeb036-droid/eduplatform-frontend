@@ -16,13 +16,29 @@
 //     plain number, e.g. "x study all three subjects and 2x study none" —
 //     the unknown is solved as part of the same linear system, not as a
 //     separate algebra step (see parseLinearExpression below)
+//   - RELATIONAL clues that tie two regions together directly, e.g.
+//       "11 more customers bought shoes than bags" ->
+//       { expr: "B∩A' - A∩B'", value: 11 }
+//     (see parseLinearRegionExpression below — new in this version)
+//   - ELEMENT-LEVEL problems where the sets are given as actual lists of
+//     elements (e.g. A = {1,3,5,7,9,11}) rather than plain counts, so the
+//     tutor can list out and count the exact elements in any region or any
+//     "find" expression instead of just returning a number
+//     (see classifyElements / evaluateExpressionElements / solveElementSetProblem
+//     below — new in this version)
 //
-// The engine works by representing every possible region as a row in a
-// truth table over the input sets (A, B, [C]), then solving a linear system:
-// each known clue becomes one equation (sum of the regions it covers =
-// given value), and Gaussian elimination solves for every individual
-// region's population. This is why "full flexible shading" works for
-// ANY region combination, not just a fixed list of pre-coded cases.
+// The count-based engine works by representing every possible region as a
+// row in a truth table over the input sets (A, B, [C]), then solving a
+// linear system: each known clue becomes one equation (a linear combination
+// of regions = a linear combination of unknowns + a constant), solved by
+// Gaussian elimination. This is why "full flexible shading" works for ANY
+// region combination or relationship, not just a fixed list of pre-coded
+// cases.
+//
+// The element-level engine is a straightforward classifier: given the real
+// contents of A, B, (C) and (optionally) the universal set, every element is
+// sorted into exactly one region by direct membership testing — no linear
+// algebra needed there, since nothing is unknown.
 // ============================================================================
 
 // ---------------------------------------------------------------------------
@@ -151,6 +167,86 @@ function parseSetExpression(expr, numSets) {
   const result = parseExprInternal();
   if (pos !== src.length) error(`unexpected trailing characters "${src.slice(pos)}"`);
   return result; // boolean[] aligned with regions array
+}
+
+// ---------------------------------------------------------------------------
+// NEW: Linear region-combination parser
+// ---------------------------------------------------------------------------
+// Real word problems ("11 more customers bought shoes than bags") relate
+// TWO regions to each other directly, rather than pinning one region to a
+// number. This parser extends the set-expression grammar with top-level
+// "+" and "-" (and optional numeric coefficients), so a clue's LEFT-HAND
+// side can be a linear combination of set expressions:
+//
+//     "B∩A' - A∩B'"      -> (shoes only) - (bags only)
+//     "2(A∩B∩C)"          -> twice the "all three" region
+//     "A∩B'∩C' - B∩A'∩C'" -> (only A) - (only B)
+//
+// A plain set expression like "A∩B" still parses exactly as before (single
+// term, coefficient 1) — this is a strict superset of parseSetExpression,
+// so every existing clue keeps working unchanged.
+//
+// Returns a NUMBER array over the region table (not boolean), aligned with
+// getRegions(numSets).
+
+function splitTopLevelAdditiveTerms(src) {
+  const terms = [];
+  let depth = 0;
+  let i = 0;
+  let sign = 1;
+  let termStart = 0;
+
+  if (src[0] === "+" || src[0] === "-") {
+    sign = src[0] === "-" ? -1 : 1;
+    i = 1;
+    termStart = 1;
+  }
+
+  for (; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+    else if (depth === 0 && (ch === "+" || ch === "-")) {
+      terms.push({ sign, text: src.slice(termStart, i) });
+      sign = ch === "-" ? -1 : 1;
+      termStart = i + 1;
+    }
+  }
+  terms.push({ sign, text: src.slice(termStart) });
+  return terms;
+}
+
+function parseLinearRegionExpression(expr, numSets) {
+  const regions = getRegions(numSets);
+  const src = normalizeExpr(expr);
+  if (!src) throw new Error(`Empty region expression "${expr}".`);
+
+  const terms = splitTopLevelAdditiveTerms(src);
+  const coeffs = new Array(regions.length).fill(0);
+
+  for (const { sign, text } of terms) {
+    if (!text) {
+      throw new Error(`Could not parse region expression "${expr}": empty term.`);
+    }
+    const coeffMatch = text.match(/^(\d+(?:\.\d+)?)\*?/);
+    let coeff = 1;
+    let setPart = text;
+    if (coeffMatch && coeffMatch[1] !== undefined) {
+      coeff = Number(coeffMatch[1]);
+      setPart = text.slice(coeffMatch[0].length);
+    }
+    if (!setPart) {
+      throw new Error(
+        `Could not parse region expression "${expr}": term "${text}" has no set part.`
+      );
+    }
+    const mask = parseSetExpression(setPart, numSets);
+    mask.forEach((included, i) => {
+      if (included) coeffs[i] += sign * coeff;
+    });
+  }
+
+  return coeffs; // number[] aligned with regions
 }
 
 // ---------------------------------------------------------------------------
@@ -360,11 +456,14 @@ function gaussianSolve(A, b) {
 }
 
 // ---------------------------------------------------------------------------
-// Main solve function
+// Main solve function (count-based)
 // ---------------------------------------------------------------------------
 // Input:
 //   numSets: 2 | 3
-//   clues:   [{ expr: "A∩B", value: 12 }, ...]   (raw set-notation clues)
+//   clues:   [{ expr: "A∩B", value: 12 }, ...]   (raw set-notation clues —
+//            expr may now also be a linear COMBINATION of regions, e.g.
+//            "B∩A' - A∩B'", to encode relational clues like "11 more X
+//            than Y" directly, without inventing an unknown variable)
 //   namedValues: { universal: 40, nA: 25, ... }   (alternative to clues, for
 //                the guided-form UI — pass EITHER clues OR namedValues, or
 //                both; they get merged)
@@ -402,10 +501,16 @@ function solveSetProblem({ numSets, clues = [], namedValues = {}, findExpr = nul
   // like "x" just becomes one more column next to the 4 or 8 region
   // columns, so Gaussian elimination resolves regions and unknowns together
   // in one pass — there is no separate "algebra step".
+  //
+  // The LEFT-HAND side of each clue is parsed by parseLinearRegionExpression,
+  // which is a strict superset of the plain set-expression grammar: a bare
+  // clue like "A∩B" still becomes a 0/1 mask exactly as before, but clues
+  // can now also be linear combinations like "B∩A' - A∩B'" to express
+  // relational statements directly.
   let parsedClues;
   try {
     parsedClues = allClues.map((clue) => ({
-      mask: parseSetExpression(clue.expr, numSets).map((v) => (v ? 1 : 0)),
+      mask: parseLinearRegionExpression(clue.expr, numSets),
       rhs: parseLinearExpression(clue.value),
     }));
   } catch (err) {
@@ -514,15 +619,230 @@ function solveSetProblem({ numSets, clues = [], namedValues = {}, findExpr = nul
 // just want to shade/evaluate a different expression without re-solving,
 // e.g. the student picks a new shading in the UI after the diagram is built)
 // ---------------------------------------------------------------------------
+// Upgraded to use parseLinearRegionExpression internally, so it also accepts
+// relational expressions (e.g. "B - A") in addition to plain set expressions
+// — a strict superset of the previous behaviour, so existing callers that
+// only ever pass plain set expressions ("A∩B'") are unaffected.
 
 function evaluateExpressionValue(expr, numSets, regionsById) {
   const regions = getRegions(numSets);
-  const mask = parseSetExpression(expr, numSets);
+  const coeffs = parseLinearRegionExpression(expr, numSets);
   let sum = 0;
   regions.forEach((r, i) => {
-    if (mask[i]) sum += Number(regionsById[r.id] || 0);
+    sum += coeffs[i] * Number(regionsById[r.id] || 0);
   });
   return round(sum);
+}
+
+// ---------------------------------------------------------------------------
+// NEW: Element-level classification engine
+// ---------------------------------------------------------------------------
+// For problems where the sets are given as actual elements, e.g.
+//   A = {1,3,5,7,9,11}, B = {2,3,5,7,11,15}, C = {3,6,9,12,15}, ε = {1..15}
+// this sorts every element of ε into exactly one region by direct membership
+// testing (no linear algebra needed — nothing is unknown here), so the
+// tutor can list real elements per region, not just counts.
+//
+// Input:
+//   numSets: 2 | 3
+//   sets: { A: [...], B: [...], C: [...] }   (C omitted/ignored if numSets===2)
+//   universal: [...] | null                  (if omitted, ε defaults to the
+//                                              union of A, B, (C) — fine for
+//                                              problems that never state ε
+//                                              explicitly, e.g. the shop
+//                                              customers problem)
+//
+// Output:
+//   {
+//     success, error,
+//     universal: [...],                       // sorted
+//     regionElements: { none:[...], A:[...], ... },
+//     regionList: [{ id, label, elements, count }, ...],
+//     derived: { nA, nB, nUnion, universal, ... }   // counts, same shape as
+//                                                     // solveSetProblem's derived
+//   }
+
+function sortElements(arr) {
+  const isNumericLike = (x) =>
+    typeof x === "number" || (typeof x === "string" && x.trim() !== "" && !isNaN(Number(x)));
+  const allNumeric = arr.length > 0 && arr.every(isNumericLike);
+  const copy = [...arr];
+  if (allNumeric) {
+    copy.sort((a, b) => Number(a) - Number(b));
+  } else {
+    copy.sort((a, b) => String(a).localeCompare(String(b)));
+  }
+  return copy;
+}
+
+function classifyElements({ numSets, sets = {}, universal = null }) {
+  if (numSets !== 2 && numSets !== 3) {
+    return { success: false, error: "numSets must be 2 or 3.", regionElements: null };
+  }
+
+  const regions = getRegions(numSets);
+  const setKeys = numSets === 2 ? ["A", "B"] : ["A", "B", "C"];
+
+  for (const key of setKeys) {
+    if (!Array.isArray(sets[key])) {
+      return {
+        success: false,
+        error: `Set ${key} must be provided as an array of elements.`,
+        regionElements: null,
+      };
+    }
+  }
+
+  // Build the universal set: use the given universal array if provided,
+  // otherwise fall back to the union of all given sets (so problems that
+  // never state ε explicitly still work — they simply won't have an
+  // "outside all sets" region, which is correct).
+  let universalSet;
+  if (Array.isArray(universal)) {
+    universalSet = [...universal];
+  } else {
+    const union = new Set();
+    setKeys.forEach((key) => sets[key].forEach((el) => union.add(el)));
+    universalSet = Array.from(union);
+  }
+
+  // Sanity check: every element named inside A/B/C must actually appear in
+  // the universal set, otherwise the problem statement is inconsistent.
+  for (const key of setKeys) {
+    for (const el of sets[key]) {
+      if (!universalSet.some((u) => String(u) === String(el))) {
+        return {
+          success: false,
+          error: `Element "${el}" in set ${key} is not part of the given universal set.`,
+          regionElements: null,
+        };
+      }
+    }
+  }
+
+  const memberOf = (key, el) => sets[key].some((x) => String(x) === String(el));
+
+  const regionElementsById = {};
+  regions.forEach((r) => (regionElementsById[r.id] = []));
+
+  universalSet.forEach((el) => {
+    const flagA = memberOf("A", el) ? 1 : 0;
+    const flagB = memberOf("B", el) ? 1 : 0;
+    const flagC = numSets === 3 ? (memberOf("C", el) ? 1 : 0) : undefined;
+
+    const region = regions.find((r) => {
+      if (r.a !== flagA || r.b !== flagB) return false;
+      if (numSets === 3 && r.c !== flagC) return false;
+      return true;
+    });
+    if (region) regionElementsById[region.id].push(el);
+  });
+
+  Object.keys(regionElementsById).forEach((id) => {
+    regionElementsById[id] = sortElements(regionElementsById[id]);
+  });
+
+  const regionList = regions.map((r) => ({
+    id: r.id,
+    label: r.label,
+    elements: regionElementsById[r.id],
+    count: regionElementsById[r.id].length,
+  }));
+
+  // Derived counts, same named shape as solveSetProblem's `derived`, but
+  // counted straight from real elements instead of solved populations.
+  const derived = {};
+  const namedMap = getNamedClueMap(numSets);
+  for (const key of Object.keys(namedMap)) {
+    const mask = parseSetExpression(namedMap[key], numSets);
+    let count = 0;
+    mask.forEach((include, i) => {
+      if (include) count += regionList[i].count;
+    });
+    derived[key] = count;
+  }
+
+  return {
+    success: true,
+    error: null,
+    universal: sortElements(universalSet),
+    regionElements: regionElementsById,
+    regionList,
+    derived,
+  };
+}
+
+// Evaluate any set expression (e.g. "C∩A'", "A'∩(B∪C)") against already
+// classified regions and return the ACTUAL elements, not just a count.
+// Reuses parseSetExpression (boolean mask) — relational "+ / -" combinations
+// don't make sense for element lists, so this intentionally stays on the
+// plain set-expression grammar rather than parseLinearRegionExpression.
+
+function evaluateExpressionElements(expr, numSets, regionElementsById) {
+  const regions = getRegions(numSets);
+  const mask = parseSetExpression(expr, numSets);
+  let elements = [];
+  regions.forEach((r, i) => {
+    if (mask[i]) elements = elements.concat(regionElementsById[r.id] || []);
+  });
+  elements = sortElements(elements);
+  return { expr, elements, count: elements.length };
+}
+
+// Convenience wrapper: classify + evaluate one or more "find" expressions in
+// one call — this is the function the AI tutor should call for WAEC-style
+// questions like "(i) C∩A′ ; (ii) A′∩(B∪C)".
+
+function solveElementSetProblem({ numSets, sets, universal = null, findExprs = [] }) {
+  const classification = classifyElements({ numSets, sets, universal });
+  if (!classification.success) return classification;
+
+  const targets = (findExprs || []).map((expr) => {
+    try {
+      return evaluateExpressionElements(expr, numSets, classification.regionElements);
+    } catch (err) {
+      return { expr, error: err.message, elements: null, count: null };
+    }
+  });
+
+  return {
+    ...classification,
+    targets,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// NEW: Probability helper
+// ---------------------------------------------------------------------------
+// Small utility for the common "probability that a random selection is in
+// region X" follow-up question. Returns a reduced fraction alongside the
+// decimal so the tutor can show working like "77/120 ≈ 0.6417".
+
+function simplifyFraction(numerator, denominator) {
+  function gcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b) {
+      [a, b] = [b, a % b];
+    }
+    return a || 1;
+  }
+  const g = gcd(numerator, denominator) || 1;
+  return { numerator: numerator / g, denominator: denominator / g };
+}
+
+function computeProbability(favorable, total) {
+  if (!total) {
+    return { success: false, error: "Total cannot be zero." };
+  }
+  const fraction = simplifyFraction(favorable, total);
+  const decimal = round(favorable / total);
+  return {
+    success: true,
+    fraction,
+    decimal,
+    percent: round(decimal * 100, 2),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -545,9 +865,16 @@ function round(n, d = 6) {
 export {
   getRegions,
   parseSetExpression,
+  parseLinearRegionExpression,
   parseLinearExpression,
   solveSetProblem,
   evaluateExpressionValue,
   getNamedClueMap,
   namedValuesToClues,
+  classifyElements,
+  evaluateExpressionElements,
+  solveElementSetProblem,
+  sortElements,
+  simplifyFraction,
+  computeProbability,
 };
