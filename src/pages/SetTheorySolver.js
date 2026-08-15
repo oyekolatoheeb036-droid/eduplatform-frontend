@@ -216,15 +216,19 @@ function splitTopLevelAdditiveTerms(src) {
   return terms;
 }
 
-function parseLinearRegionExpression(expr, numSets) {
+// Detailed version — same parsing as above, but keeps each term's own mask
+// and set-notation text around (instead of collapsing straight to a single
+// coefficient vector), so a step-by-step explanation can be built from it.
+// parseLinearRegionExpression() below is just this with only `.coeffs` kept,
+// so nothing about the original behaviour changes.
+
+function parseLinearRegionExpressionDetailed(expr, numSets) {
   const regions = getRegions(numSets);
   const src = normalizeExpr(expr);
   if (!src) throw new Error(`Empty region expression "${expr}".`);
 
-  const terms = splitTopLevelAdditiveTerms(src);
-  const coeffs = new Array(regions.length).fill(0);
-
-  for (const { sign, text } of terms) {
+  const rawTerms = splitTopLevelAdditiveTerms(src);
+  const terms = rawTerms.map(({ sign, text }) => {
     if (!text) {
       throw new Error(`Could not parse region expression "${expr}": empty term.`);
     }
@@ -241,12 +245,108 @@ function parseLinearRegionExpression(expr, numSets) {
       );
     }
     const mask = parseSetExpression(setPart, numSets);
+    return { sign, coeff, setPart, mask };
+  });
+
+  const coeffs = new Array(regions.length).fill(0);
+  terms.forEach(({ sign, coeff, mask }) => {
     mask.forEach((included, i) => {
       if (included) coeffs[i] += sign * coeff;
     });
+  });
+
+  return { terms, coeffs };
+}
+
+function parseLinearRegionExpression(expr, numSets) {
+  return parseLinearRegionExpressionDetailed(expr, numSets).coeffs; // number[] aligned with regions
+}
+
+// ---------------------------------------------------------------------------
+// NEW: Step-by-step expression explainer (deterministic — no AI)
+// ---------------------------------------------------------------------------
+// This is the engine behind the "Ask the Solver" free-expression panel: the
+// student builds ANY set expression with the symbol palette (e.g. "C∩A'",
+// "A'∩(B∪C)", "B∩A'-A∩B'"), and this walks it region-by-region and returns
+// a plain-English working, using the ALREADY-SOLVED region counts — it never
+// recomputes or estimates anything, so it can never produce the kind of
+// arithmetic drift an AI narrating from scratch can.
+//
+// Input:
+//   expr:        the expression as typed, e.g. "C∩A'"
+//   numSets:     2 | 3
+//   regionsById: solved counts, e.g. { none, A, B, C, AB, AC, BC, ABC }
+//                (this is exactly solveSetProblem(...).regions)
+//   setLabels:   optional { A, B, C } custom names, e.g. { A: "Bags", B: "Shoes" } —
+//                purely cosmetic, substituted into the step text only
+//
+// Output:
+//   { success: true, expr, value, steps: [string, ...] }
+//   { success: false, error, expr }
+
+function formatRegionLabel(label, setLabels) {
+  if (!setLabels) return label;
+  return label
+    .replace(/\bA\b/g, setLabels.A || "A")
+    .replace(/\bB\b/g, setLabels.B || "B")
+    .replace(/\bC\b/g, setLabels.C || "C");
+}
+
+function explainExpression(expr, numSets, regionsById, setLabels = null) {
+  const regions = getRegions(numSets);
+
+  let detailed;
+  try {
+    detailed = parseLinearRegionExpressionDetailed(expr, numSets);
+  } catch (err) {
+    return { success: false, error: err.message, expr };
   }
 
-  return coeffs; // number[] aligned with regions
+  const termSummaries = detailed.terms.map((term) => {
+    const included = regions.filter((r, i) => term.mask[i]);
+    const parts = included.map((r) => ({
+      label: formatRegionLabel(r.label, setLabels),
+      value: round(Number(regionsById[r.id] ?? 0)),
+    }));
+    const sum = round(parts.reduce((s, p) => s + p.value, 0));
+    return { ...term, parts, sum };
+  });
+
+  const steps = termSummaries.map((t) => {
+    if (t.parts.length === 0) {
+      return `${t.setPart} matches no regions here, so it contributes 0.`;
+    }
+    if (t.parts.length === 1) {
+      return `${t.setPart} = ${t.parts[0].label} = ${t.parts[0].value}`;
+    }
+    const breakdown = t.parts.map((p) => `${p.label} (${p.value})`).join(" + ");
+    return `${t.setPart} = ${breakdown} = ${t.sum}`;
+  });
+
+  let total = 0;
+  const comboPieces = termSummaries.map((t, idx) => {
+    const signedVal = t.sign * t.coeff * t.sum;
+    total += signedVal;
+    const coeffTxt = t.coeff !== 1 ? `${t.coeff}×` : "";
+    const magnitude = `${coeffTxt}${t.sum}`;
+    if (idx === 0) return t.sign < 0 ? `−${magnitude}` : magnitude;
+    return t.sign < 0 ? ` − ${magnitude}` : ` + ${magnitude}`;
+  });
+  total = round(total);
+
+  if (termSummaries.length > 1) {
+    steps.push(`Combine the terms: ${expr} = ${comboPieces.join("")} = ${total}`);
+  } else {
+    steps.push(`So ${expr} = ${total}`);
+  }
+
+  return {
+    success: true,
+    error: null,
+    expr,
+    value: total,
+    steps,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -866,9 +966,11 @@ export {
   getRegions,
   parseSetExpression,
   parseLinearRegionExpression,
+  parseLinearRegionExpressionDetailed,
   parseLinearExpression,
   solveSetProblem,
   evaluateExpressionValue,
+  explainExpression,
   getNamedClueMap,
   namedValuesToClues,
   classifyElements,

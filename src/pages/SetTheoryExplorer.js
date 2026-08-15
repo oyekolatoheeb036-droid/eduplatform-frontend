@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { solveSetProblem } from "./SetTheorySolver";
+import { solveSetProblem, explainExpression } from "./SetTheorySolver";
 import VennDiagram, { getRegionRevealOrder } from "./VennDiagram";
 import { generateFormulaWorkings } from "./FormulaWorkings";
 
@@ -9,11 +9,16 @@ import { generateFormulaWorkings } from "./FormulaWorkings";
 // Matches the same shape as your other Explorer pages (Quadratic, Linear):
 //   1. Student enters a problem — either through a guided form of named
 //      values, or by pasting a full word problem for the AI to parse.
-//   2. solveSetProblem() (setTheorySolver.js) does 100% of the actual math,
+//   2. solveSetProblem() (SetTheorySolver.js) does 100% of the actual math,
 //      client-side, no network call.
 //   3. The result renders as a Venn diagram, revealed all-at-once (Formula
 //      Method) or region-by-region (Region Method).
-//   4. A scoped AI tutor chat (set-theory-chat backend route) explains the
+//   4. NEW: "Ask the Solver" — a symbol-palette + text box where the student
+//      builds ANY set expression (not just the 5-7 preset "find" buttons)
+//      and gets it solved step-by-step by explainExpression(), deterministically,
+//      with zero AI involved — so it can never misfire the way a free-text
+//      AI answer can.
+//   5. A scoped AI tutor chat (set-theory-chat backend route) explains the
 //      already-solved numbers and can highlight regions on request.
 //
 // Only two things touch the network: POST /api/ai/set-theory-parse (word
@@ -48,7 +53,7 @@ const BACKGROUND_IMAGE_URL = 'https://z-cdn-media.chatglm.cn/files/265aacdd-96a4
 
 // ---------------------------------------------------------------------------
 // Field metadata for the guided form — one entry per namedValues key the
-// solver understands (see NAMED_CLUE_EXPRESSIONS_2/3 in setTheorySolver.js).
+// solver understands (see NAMED_CLUE_EXPRESSIONS_2/3 in SetTheorySolver.js).
 // `sets` controls which fields show for 2-set vs 3-set problems.
 // ---------------------------------------------------------------------------
 
@@ -158,6 +163,30 @@ function TextField({ label, value, onChange, placeholder }) {
   );
 }
 
+// NEW: one tappable symbol-palette button, used by the "Ask the Solver" panel.
+function PaletteButton({ label, onClick, wide }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        minWidth: wide ? 64 : 40,
+        padding: "8px 10px",
+        fontFamily: FONT_MONO,
+        fontWeight: 700,
+        fontSize: 15,
+        borderRadius: 6,
+        border: `1.5px solid ${COLORS.border}`,
+        background: "#fff",
+        color: COLORS.rule,
+        cursor: "pointer",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
@@ -188,6 +217,13 @@ export default function SetTheoryExplorer() {
   const [regionExplaining, setRegionExplaining] = useState(false);
   const [regionExplainError, setRegionExplainError] = useState(null);
 
+  // NEW: "Ask the Solver" — free-expression builder. 100% deterministic,
+  // powered by explainExpression() in SetTheorySolver.js — no network call,
+  // works even if the AI tutor backend is down.
+  const [builderExpr, setBuilderExpr] = useState("");
+  const [builderResult, setBuilderResult] = useState(null); // explainExpression() output
+  const builderInputRef = useRef(null);
+
   const [chatHistory, setChatHistory] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -214,6 +250,8 @@ export default function SetTheoryExplorer() {
     setFormulaWorking(null);
     setRegionExplanations({});
     setRegionExplainError(null);
+    setBuilderExpr("");
+    setBuilderResult(null);
   }
 
   function updateNamedValue(key, value) {
@@ -257,6 +295,8 @@ export default function SetTheoryExplorer() {
       setFormulaWorking(null);
       setRegionExplanations({});
       setRegionExplainError(null);
+      setBuilderExpr("");
+      setBuilderResult(null);
       // Switch to guided view so the student can see/edit what the AI
       // extracted before solving — never solve silently off a raw parse.
       setInputMode("guided");
@@ -273,6 +313,8 @@ export default function SetTheoryExplorer() {
     const result = solveSetProblem({ numSets, namedValues, findExpr: findExpr || null });
     setRegionExplanations({});
     setRegionExplainError(null);
+    setBuilderExpr("");
+    setBuilderResult(null);
     if (!result.success) {
       setSolveError(result.error);
       setSolved(result); // may still carry partial regions/unresolved info
@@ -360,6 +402,57 @@ export default function SetTheoryExplorer() {
         setRevealedIds([]);
       }
     }
+  }
+
+  // ---- Ask the Solver: free-expression builder (deterministic, no AI) -----
+  // The palette inserts the CANONICAL letter (A/B/C) at the cursor position,
+  // even though the button itself is labelled with the student's custom set
+  // name (e.g. a button captioned "Bags" inserts "A") — the solver's parser
+  // only ever understands A/B/C, custom names are cosmetic everywhere else.
+
+  function insertIntoBuilder(token) {
+    const el = builderInputRef.current;
+    if (!el) {
+      setBuilderExpr((prev) => prev + token);
+      return;
+    }
+    const start = el.selectionStart ?? builderExpr.length;
+    const end = el.selectionEnd ?? builderExpr.length;
+    const next = builderExpr.slice(0, start) + token + builderExpr.slice(end);
+    setBuilderExpr(next);
+    const nextPos = start + token.length;
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(nextPos, nextPos);
+    });
+  }
+
+  function handleBuilderBackspace() {
+    const el = builderInputRef.current;
+    if (!el) {
+      setBuilderExpr((prev) => prev.slice(0, -1));
+      return;
+    }
+    const start = el.selectionStart ?? builderExpr.length;
+    const end = el.selectionEnd ?? builderExpr.length;
+    const deleteFrom = start === end ? Math.max(0, start - 1) : start;
+    const next = builderExpr.slice(0, deleteFrom) + builderExpr.slice(end);
+    setBuilderExpr(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(deleteFrom, deleteFrom);
+    });
+  }
+
+  function handleBuilderClear() {
+    setBuilderExpr("");
+    setBuilderResult(null);
+  }
+
+  function handleBuilderSolve() {
+    if (!solved?.success || !builderExpr.trim()) return;
+    const result = explainExpression(builderExpr.trim(), numSets, solved.regions, setLabels);
+    setBuilderResult(result);
   }
 
   // ---- Chat (AI tutor, backend) -------------------------------------------
@@ -711,6 +804,95 @@ export default function SetTheoryExplorer() {
           <div style={{ ...errorBoxStyle, marginTop: 4 }}>{solved.error}</div>
         )}
 
+        {/* ---- NEW: Ask the Solver — build & solve ANY expression, no AI ---- */}
+        {solved?.success && (
+          <div style={cardStyle}>
+            <div style={sectionLabelStyle}>Ask the Solver</div>
+            <p style={{ fontSize: 12, color: COLORS.inkSoft, marginTop: -4, marginBottom: 12 }}>
+              Not covered by the buttons above? Build any expression with the symbols below and the
+              solver will work it out step-by-step from the diagram — instantly, no AI involved, so
+              the answer is always exactly correct.
+            </p>
+
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+              {setLetters.map((letter) => (
+                <PaletteButton
+                  key={letter}
+                  label={setLabels[letter] || letter}
+                  wide
+                  onClick={() => insertIntoBuilder(letter)}
+                />
+              ))}
+              <PaletteButton label="∩" onClick={() => insertIntoBuilder("∩")} />
+              <PaletteButton label="∪" onClick={() => insertIntoBuilder("∪")} />
+              <PaletteButton label="'" onClick={() => insertIntoBuilder("'")} />
+              <PaletteButton label="(" onClick={() => insertIntoBuilder("(")} />
+              <PaletteButton label=")" onClick={() => insertIntoBuilder(")")} />
+              <PaletteButton label="U" wide onClick={() => insertIntoBuilder("U")} />
+              <PaletteButton label="+" onClick={() => insertIntoBuilder("+")} />
+              <PaletteButton label="−" onClick={() => insertIntoBuilder("-")} />
+              <PaletteButton label="⌫" onClick={handleBuilderBackspace} />
+              <PaletteButton label="Clear" wide onClick={handleBuilderClear} />
+            </div>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                ref={builderInputRef}
+                type="text"
+                value={builderExpr}
+                onChange={(e) => setBuilderExpr(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleBuilderSolve()}
+                placeholder={numSets === 2 ? "e.g. A∩B'" : "e.g. C∩A'"}
+                style={{
+                  flex: 1,
+                  fontFamily: FONT_MONO,
+                  fontSize: 15,
+                  padding: "10px 12px",
+                  border: `1.5px solid ${COLORS.border}`,
+                  borderRadius: 6,
+                }}
+              />
+              <button
+                onClick={handleBuilderSolve}
+                disabled={!builderExpr.trim()}
+                style={primaryButtonStyle(!builderExpr.trim())}
+              >
+                Solve
+              </button>
+            </div>
+
+            {builderResult && builderResult.success && (
+              <div
+                style={{
+                  marginTop: 12,
+                  background: COLORS.bg,
+                  border: `1.5px solid ${COLORS.border}`,
+                  borderRadius: 8,
+                  padding: "12px 14px",
+                }}
+              >
+                {builderResult.steps.map((line, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      fontFamily: FONT_MONO,
+                      fontSize: 13.5,
+                      lineHeight: 1.7,
+                      color: i === builderResult.steps.length - 1 ? COLORS.work : COLORS.ink,
+                      fontWeight: i === builderResult.steps.length - 1 ? 700 : 400,
+                    }}
+                  >
+                    {line}
+                  </div>
+                ))}
+              </div>
+            )}
+            {builderResult && !builderResult.success && (
+              <div style={{ ...errorBoxStyle, marginTop: 12 }}>{builderResult.error}</div>
+            )}
+          </div>
+        )}
+
         {/* ---- Tutor chat ---- */}
         {solved?.success && (
           <div style={cardStyle}>
@@ -730,6 +912,8 @@ export default function SetTheoryExplorer() {
                 <p style={{ color: COLORS.inkSoft, fontSize: 13, margin: 0 }}>
                   Ask things like "why is the center region {revealOrder[0] ? revealOrder[0] : "X"}?"
                   or "explain the {method === "formula" ? "formula" : "region"} method step by step".
+                  For an exact expression like C∩A', try Ask the Solver above for a guaranteed-correct
+                  step-by-step answer.
                 </p>
               )}
               {chatHistory.map((m, i) => (
